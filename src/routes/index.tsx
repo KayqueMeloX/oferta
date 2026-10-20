@@ -99,14 +99,14 @@ const FLAVIO_SCENARIOS: Scenario[] = [
   {
     id: "flavio-selfie-22",
     title: "Selfie com Flávio (Sinal 22)",
-    description: "Selfie oficial com Flávio Bolsonaro fazendo o sinal da vitória com a camisa da Seleção.",
+    description: "",
     image: "/flavio-cenario-selfie.jpg",
     tag: "Mais Escolhida 🔥",
   },
   {
     id: "flavio-abraco",
     title: "Abraço com Flávio",
-    description: "Foto emocionante de abraço fraterno com Flávio Bolsonaro no gabinete.",
+    description: "",
     image: "/flavio-cenario-abraco.jpg",
     tag: "Emocionante 💛",
   },
@@ -511,11 +511,8 @@ function PoliticalFunnel() {
                       <strong className="text-xs font-black text-white block leading-tight">
                         {sc.title}
                       </strong>
-                      <span className="text-[10px] text-white/70 block mt-0.5 line-clamp-2">
-                        {sc.description}
-                      </span>
                       <div className="mt-2 w-full py-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-black font-black text-[11px] text-center shadow-md">
-                        ESCOLHER ESTA
+                        ESCOLHER
                       </div>
                     </div>
                   </button>
