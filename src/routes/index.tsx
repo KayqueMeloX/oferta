@@ -17,6 +17,9 @@ import {
   ChevronLeft,
   Camera,
   CheckCircle2,
+  TrendingUp,
+  Flame,
+  AlertTriangle,
 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -126,6 +129,21 @@ function PoliticalFunnel() {
   const [step, setStep] = useState<Step>("candidate");
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate>(CANDIDATES[0]);
   const [selectedScenario, setSelectedScenario] = useState<Scenario>(SCENARIOS[0]);
+
+  // Contadores de fotos em tempo real para gerar rivalidade
+  const [lulaCount, setLulaCount] = useState(14832);
+  const [flavioCount, setFlavioCount] = useState(14705);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (Math.random() > 0.5) {
+        setLulaCount((prev) => prev + 1);
+      } else {
+        setFlavioCount((prev) => prev + 1);
+      }
+    }, 4000);
+    return () => clearInterval(timer);
+  }, []);
 
   // Foto do usuário
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
@@ -244,124 +262,196 @@ function PoliticalFunnel() {
     setTimeout(() => setPixCopied(false), 3000);
   };
 
+  const totalCount = lulaCount + flavioCount;
+  const lulaPct = ((lulaCount / totalCount) * 100).toFixed(1);
+  const flavioPct = ((flavioCount / totalCount) * 100).toFixed(1);
+  const diffCount = Math.abs(lulaCount - flavioCount);
+
   return (
     <div className="min-h-screen bg-[#090807] text-white flex flex-col items-center justify-between font-sans selection:bg-amber-400 selection:text-black">
       {/* Container Principal Mobile-First */}
-      <main className="w-full max-w-[440px] px-4 py-4 flex-1 flex flex-col items-center justify-between min-h-screen">
+      <main className="w-full max-w-[440px] px-3.5 py-4 flex-1 flex flex-col items-center justify-between min-h-screen">
         {/* ========================================================================= */}
-        {/* ABA 1: ESCOLHA DO CANDIDATO (LULA 13 OU FLÁVIO BOLSONARO 22)             */}
+        {/* ABA 1: ESCOLHA DO CANDIDATO COM PLACAR DE DISPUTA AO VIVO                */}
         {/* ========================================================================= */}
         {step === "candidate" && (
           <div className="w-full flex-1 flex flex-col items-center justify-between text-center animate-in fade-in duration-300">
             <div className="w-full flex flex-col items-center">
-              {/* Badge no Topo */}
-              <div className="inline-flex items-center gap-1.5 bg-white/10 border border-white/20 text-white/90 px-3 py-1 rounded-full text-xs font-bold mb-3">
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                <span>Montagem Oficial com IA</span>
+              {/* Badge de Duelo */}
+              <div className="inline-flex items-center gap-1.5 bg-gradient-to-r from-red-600/30 via-amber-400/20 to-yellow-500/30 border border-amber-400/40 text-amber-300 px-3 py-1 rounded-full text-[11px] font-black mb-2 shadow-lg">
+                <Flame className="w-3.5 h-3.5 text-amber-400 animate-bounce" />
+                <span>DISPUTA AO VIVO DO DIA</span>
               </div>
 
               {/* Título de Impacto */}
-              <h1 className="text-2xl sm:text-[27px] font-black text-white tracking-tight leading-tight">
-                Com quem você quer <br />
-                <span className="text-amber-400">tirar uma foto?</span>
+              <h1 className="text-2xl sm:text-[26px] font-black text-white tracking-tight leading-tight">
+                Qual eleitorado está <br />
+                <span className="text-amber-400">gerando mais fotos?</span>
               </h1>
-              <p className="text-xs sm:text-[13px] text-white/70 mt-1 mb-5">
-                Toque na imagem para escolher o seu líder e criar sua montagem com IA:
+              <p className="text-xs text-white/70 mt-1 mb-3">
+                Toque no seu líder para apoiar seu lado e não deixar o outro vencer o placar:
               </p>
 
-              {/* 2 Cartões Grandes Clicáveis com as Imagens Fornecidas */}
-              <div className="grid grid-cols-2 gap-3.5 w-full">
-                {/* Opção Lula 13 */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedCandidate(CANDIDATES[0]);
-                    setStep("scenario");
-                  }}
-                  className="group relative rounded-2xl overflow-hidden border-2 border-red-600/80 bg-neutral-950 aspect-[3/4.6] flex flex-col justify-end text-left transition-all active:scale-95 hover:border-red-500 hover:shadow-2xl hover:shadow-red-600/30 focus:outline-none focus:ring-4 focus:ring-red-500/40"
-                >
-                  <img
-                    src="/lula-13.jpg"
-                    alt="Lula 13"
-                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              {/* Placar Comparativo em Tempo Real (Termômetro da Disputa) */}
+              <div className="w-full bg-neutral-900/95 border border-white/15 rounded-2xl p-3 mb-4 shadow-2xl">
+                <div className="flex items-center justify-between text-xs mb-1.5 font-black">
+                  <div className="flex items-center gap-1.5 text-red-500">
+                    <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
+                    <span>Lula: {lulaCount.toLocaleString("pt-BR")}</span>
+                  </div>
+                  <span className="text-[10px] text-amber-400 font-extrabold uppercase tracking-wider bg-black/60 px-2 py-0.5 rounded border border-amber-400/30">
+                    {diffCount} fotos de diferença!
+                  </span>
+                  <div className="flex items-center gap-1.5 text-yellow-400">
+                    <span>Flávio: {flavioCount.toLocaleString("pt-BR")}</span>
+                    <span className="w-2 h-2 rounded-full bg-yellow-400 animate-ping" />
+                  </div>
+                </div>
+
+                {/* Barra Visual de Duelo */}
+                <div className="w-full h-3 rounded-full bg-neutral-800 overflow-hidden flex shadow-inner border border-white/10">
+                  <div
+                    className="bg-red-600 h-full transition-all duration-700 ease-out"
+                    style={{ width: `${lulaPct}%` }}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
+                  <div
+                    className="bg-yellow-400 h-full transition-all duration-700 ease-out"
+                    style={{ width: `${flavioPct}%` }}
+                  />
+                </div>
 
-                  {/* Badge 13 no topo */}
-                  <div className="absolute top-2.5 left-2.5 bg-red-600 text-white text-xs font-black px-2.5 py-0.5 rounded-full shadow-lg border border-red-400">
-                    PT • 13
-                  </div>
+                <div className="flex justify-between items-center text-[11px] text-white/70 mt-1.5 font-bold">
+                  <span className="text-red-400">{lulaPct}% do total</span>
+                  <span className="text-[10px] text-white/50">Disputa voto a voto</span>
+                  <span className="text-yellow-400">{flavioPct}% do total</span>
+                </div>
+              </div>
 
-                  {/* Informações no rodapé do card */}
-                  <div className="relative p-3 z-10">
-                    <span className="text-[11px] font-bold text-red-400 uppercase tracking-wider block">
-                      Presidente
-                    </span>
-                    <strong className="text-lg font-black text-white leading-tight block">
-                      LULA 13
-                    </strong>
-                    <div className="mt-2 w-full py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-black text-xs text-center shadow-md shadow-red-700/50">
-                      ESCOLHER LULA
+              {/* 2 Cartões Grandes Clicáveis com as Imagens Fornecidas */}
+              <div className="grid grid-cols-2 gap-3 w-full">
+                {/* Opção Lula 13 */}
+                <div className="flex flex-col">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedCandidate(CANDIDATES[0]);
+                      setStep("scenario");
+                    }}
+                    className="group relative rounded-2xl overflow-hidden border-2 border-red-600/80 bg-neutral-950 aspect-[3/4.4] flex flex-col justify-end text-left transition-all active:scale-95 hover:border-red-500 hover:shadow-2xl hover:shadow-red-600/30 focus:outline-none focus:ring-4 focus:ring-red-500/40"
+                  >
+                    <img
+                      src="/lula-13.jpg"
+                      alt="Lula 13"
+                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
+
+                    {/* Badge 13 no topo */}
+                    <div className="absolute top-2.5 left-2.5 bg-red-600 text-white text-xs font-black px-2.5 py-0.5 rounded-full shadow-lg border border-red-400">
+                      PT • 13
                     </div>
+
+                    {/* Informações no rodapé do card */}
+                    <div className="relative p-2.5 z-10">
+                      <span className="text-[10px] font-bold text-red-400 uppercase tracking-wider block">
+                        Presidente
+                      </span>
+                      <strong className="text-base sm:text-lg font-black text-white leading-tight block">
+                        LULA 13
+                      </strong>
+                      <div className="mt-1.5 w-full py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-black text-xs text-center shadow-md shadow-red-700/50">
+                        ESCOLHER LULA
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* Estimativa de Pessoas e Alerta de Conflito para o Eleitor do Lula */}
+                  <div className="mt-2 bg-red-950/80 border border-red-500/40 rounded-xl p-2.5 text-center shadow-inner">
+                    <div className="flex items-center justify-between text-[11px] font-extrabold mb-1">
+                      <span className="text-white/80">Fotos geradas:</span>
+                      <span className="text-red-400">{lulaCount.toLocaleString("pt-BR")}</span>
+                    </div>
+                    <div className="w-full bg-red-900/60 h-1.5 rounded-full overflow-hidden mb-1.5">
+                      <div className="bg-red-500 h-full rounded-full" style={{ width: `${lulaPct}%` }} />
+                    </div>
+                    <p className="text-[10px] text-red-200 font-bold leading-tight">
+                      ⚠️ O Flávio 22 está colado na disputa! Crie sua foto agora para manter o Lula na liderança!
+                    </p>
                   </div>
-                </button>
+                </div>
 
                 {/* Opção Flávio Bolsonaro 22 */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedCandidate(CANDIDATES[1]);
-                    setStep("scenario");
-                  }}
-                  className="group relative rounded-2xl overflow-hidden border-2 border-yellow-400/80 bg-neutral-950 aspect-[3/4.6] flex flex-col justify-end text-left transition-all active:scale-95 hover:border-yellow-300 hover:shadow-2xl hover:shadow-yellow-500/30 focus:outline-none focus:ring-4 focus:ring-yellow-400/40"
-                >
-                  <img
-                    src="/flavio-bolsonaro-22.jpg"
-                    alt="Flávio Bolsonaro 22"
-                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
+                <div className="flex flex-col">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedCandidate(CANDIDATES[1]);
+                      setStep("scenario");
+                    }}
+                    className="group relative rounded-2xl overflow-hidden border-2 border-yellow-400/80 bg-neutral-950 aspect-[3/4.4] flex flex-col justify-end text-left transition-all active:scale-95 hover:border-yellow-300 hover:shadow-2xl hover:shadow-yellow-500/30 focus:outline-none focus:ring-4 focus:ring-yellow-400/40"
+                  >
+                    <img
+                      src="/flavio-bolsonaro-22.jpg"
+                      alt="Flávio Bolsonaro 22"
+                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
 
-                  {/* Badge 22 no topo */}
-                  <div className="absolute top-2.5 left-2.5 bg-yellow-400 text-black text-xs font-black px-2.5 py-0.5 rounded-full shadow-lg border border-yellow-300">
-                    PL • 22
-                  </div>
-
-                  {/* Informações no rodapé do card */}
-                  <div className="relative p-3 z-10">
-                    <span className="text-[11px] font-bold text-yellow-400 uppercase tracking-wider block">
-                      Senador
-                    </span>
-                    <strong className="text-lg font-black text-white leading-tight block">
-                      FLÁVIO 22
-                    </strong>
-                    <div className="mt-2 w-full py-2 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-black font-black text-xs text-center shadow-md shadow-yellow-500/50">
-                      ESCOLHER FLÁVIO
+                    {/* Badge 22 no topo */}
+                    <div className="absolute top-2.5 left-2.5 bg-yellow-400 text-black text-xs font-black px-2.5 py-0.5 rounded-full shadow-lg border border-yellow-300">
+                      PL • 22
                     </div>
+
+                    {/* Informações no rodapé do card */}
+                    <div className="relative p-2.5 z-10">
+                      <span className="text-[10px] font-bold text-yellow-400 uppercase tracking-wider block">
+                        Senador
+                      </span>
+                      <strong className="text-base sm:text-lg font-black text-white leading-tight block">
+                        FLÁVIO 22
+                      </strong>
+                      <div className="mt-1.5 w-full py-2 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-black font-black text-xs text-center shadow-md shadow-yellow-500/50">
+                        ESCOLHER FLÁVIO
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* Estimativa de Pessoas e Alerta de Conflito para o Eleitor do Flávio */}
+                  <div className="mt-2 bg-yellow-950/80 border border-yellow-500/40 rounded-xl p-2.5 text-center shadow-inner">
+                    <div className="flex items-center justify-between text-[11px] font-extrabold mb-1">
+                      <span className="text-white/80">Fotos geradas:</span>
+                      <span className="text-yellow-400">{flavioCount.toLocaleString("pt-BR")}</span>
+                    </div>
+                    <div className="w-full bg-yellow-900/60 h-1.5 rounded-full overflow-hidden mb-1.5">
+                      <div className="bg-yellow-400 h-full rounded-full" style={{ width: `${flavioPct}%` }} />
+                    </div>
+                    <p className="text-[10px] text-yellow-200 font-bold leading-tight">
+                      ⚠️ O Lula 13 está à frente por apenas {diffCount} fotos! Gere a sua foto agora para virar o placar!
+                    </p>
                   </div>
-                </button>
+                </div>
               </div>
 
               {/* Prova de Confiança */}
-              <div className="mt-6 p-3 rounded-xl bg-white/5 border border-white/10 text-left w-full flex items-center gap-3">
+              <div className="mt-5 p-3 rounded-xl bg-white/5 border border-white/10 text-left w-full flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-amber-400/20 text-amber-400 flex items-center justify-center flex-shrink-0">
                   <Camera className="w-5 h-5" />
                 </div>
                 <div>
                   <strong className="text-xs font-bold text-white block">
-                    Montagem Realista com seu Rosto
+                    Gere sua foto e fortaleça seu lado
                   </strong>
                   <span className="text-[11px] text-white/60">
-                    Você envia uma foto simples e a IA recorta e ajusta a iluminação perfeitamente.
+                    Sua foto é gerada em segundos com IA realista e conta automaticamente no placar do dia.
                   </span>
                 </div>
               </div>
             </div>
 
             {/* Rodapé Informativo */}
-            <footer className="mt-6 pt-3 pb-2 text-center text-xs text-white/40 w-full border-t border-white/10">
+            <footer className="mt-5 pt-3 pb-2 text-center text-xs text-white/40 w-full border-t border-white/10">
               <p className="text-[11px]">
-                Entretenimento digital com Inteligência Artificial • Entrega imediata no WhatsApp
+                Placar atualizado a cada minuto • Entrega imediata em alta definição no seu WhatsApp
               </p>
             </footer>
           </div>
