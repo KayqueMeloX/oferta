@@ -253,10 +253,23 @@ function PoliticalFunnel() {
   };
 
   const currentPrice = 27.9;
-  const pixCodeString = `00020126580014br.gov.bcb.pix0136clique-${selectedCandidate.id}-${Date.now().toString(36)}5204000053039865405${currentPrice.toFixed(2)}5802BR5920FOTO OFICIAL6009SAO PAULO62070503***6304`;
+  const pixCodeString = `00020126580014br.gov.bcb.pix0136clique-${selectedCandidate.id}-pay20265204000053039865405${currentPrice.toFixed(2)}5802BR5920FOTO OFICIAL6009SAO PAULO62070503***6304`;
 
-  const handleCopyPix = () => {
-    navigator.clipboard.writeText(pixCodeString);
+  const handleCopyPix = async () => {
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(pixCodeString);
+      } else {
+        const textarea = document.createElement("textarea");
+        textarea.value = pixCodeString;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+      }
+    } catch {
+      // Fallback para ambientes restritos de iframe
+    }
     setPixCopied(true);
     setTimeout(() => setPixCopied(false), 3000);
   };
