@@ -112,21 +112,21 @@ const FLAVIO_SCENARIOS: Scenario[] = [
   },
 ];
 
-// Opções para Lula
+// Opções para Lula fornecidas pelo usuário
 const LULA_SCENARIOS: Scenario[] = [
   {
-    id: "lula-comicio",
-    title: "Selfie no Comício",
-    description: "No meio do povo e das bandeiras, estilo selfie espontânea com Lula acenando ao seu lado.",
-    image: "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=700&q=80",
-    tag: "Comício Popular",
+    id: "lula-selfie-l",
+    title: "Selfie com Lula (Fazendo o L)",
+    description: "",
+    image: "/lula-cenario-selfie-l.jpg",
+    tag: "Mais Escolhida 🔥",
   },
   {
-    id: "lula-gabinete",
-    title: "Gabinete Presidencial",
-    description: "Sentados lado a lado na mesa oficial de reuniões e despachos em Brasília.",
-    image: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=700&q=80",
-    tag: "Formal & Oficial",
+    id: "lula-abraco",
+    title: "Abraço com Lula",
+    description: "",
+    image: "/lula-cenario-abraco.jpg",
+    tag: "Emocionante ❤️",
   },
 ];
 
@@ -480,12 +480,10 @@ function PoliticalFunnel() {
                 com <span className={selectedCandidate.colorTheme.accentText}>{selectedCandidate.name}</span>
               </h1>
               <p className="text-xs text-white/70 mt-1 mb-4">
-                {selectedCandidate.id === "flavio"
-                  ? "Selecione uma das duas montagens oficiais abaixo:"
-                  : "Toque no ambiente onde você quer aparecer ao lado dele:"}
+                Selecione uma das duas montagens oficiais abaixo:
               </p>
 
-              {/* Grade com exatamente as 2 opções para Flávio */}
+              {/* Grade com exatamente as 2 opções por candidato */}
               <div className="grid grid-cols-2 gap-3 w-full">
                 {activeScenarios.map((sc) => (
                   <button
@@ -494,7 +492,11 @@ function PoliticalFunnel() {
                       setSelectedScenario(sc);
                       setStep("upload");
                     }}
-                    className="relative group rounded-2xl overflow-hidden border-2 border-white/20 bg-neutral-950 aspect-[3/4.2] flex flex-col justify-end text-left transition-all active:scale-95 hover:border-amber-400 hover:shadow-2xl hover:shadow-amber-500/20 focus:outline-none focus:ring-4 focus:ring-amber-400"
+                    className={`relative group rounded-2xl overflow-hidden border-2 border-white/20 bg-neutral-950 aspect-[3/4.2] flex flex-col justify-end text-left transition-all active:scale-95 focus:outline-none focus:ring-4 ${
+                      selectedCandidate.id === "lula"
+                        ? "hover:border-red-500 hover:shadow-2xl hover:shadow-red-600/20 focus:ring-red-500"
+                        : "hover:border-amber-400 hover:shadow-2xl hover:shadow-amber-500/20 focus:ring-amber-400"
+                    }`}
                   >
                     <img
                       src={sc.image}
@@ -511,7 +513,11 @@ function PoliticalFunnel() {
                       <strong className="text-xs font-black text-white block leading-tight">
                         {sc.title}
                       </strong>
-                      <div className="mt-2 w-full py-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-black font-black text-[11px] text-center shadow-md">
+                      <div className={`mt-2 w-full py-1.5 rounded-lg font-black text-[11px] text-center shadow-md ${
+                        selectedCandidate.id === "lula"
+                          ? "bg-red-600 hover:bg-red-500 text-white shadow-red-700/50"
+                          : "bg-amber-400 hover:bg-amber-300 text-black shadow-amber-500/50"
+                      }`}>
                         ESCOLHER
                       </div>
                     </div>
