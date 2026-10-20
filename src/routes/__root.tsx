@@ -66,8 +66,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" },
-      { title: "Sua Foto com Lula 13 ou Flávio Bolsonaro 22 — Montagem com IA" },
-      { name: "description", content: "Escolha entre Lula 13 e Flávio Bolsonaro 22 e receba sua montagem personalizada criada com inteligência artificial para redes sociais e WhatsApp." },
+      { title: "Sua Foto com Lula 13 ou Flávio Bolsonaro 22 — Montagem Personalizada" },
+      { name: "description", content: "Escolha entre Lula 13 e Flávio Bolsonaro 22 e receba sua montagem personalizada em alta resolução para redes sociais e WhatsApp." },
       { name: "theme-color", content: "#0c0a09" },
     ],
     links: [

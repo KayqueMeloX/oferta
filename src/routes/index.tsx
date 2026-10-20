@@ -446,7 +446,7 @@ function PoliticalFunnel() {
                     Gere sua foto e fortaleça seu lado
                   </strong>
                   <span className="text-[11px] text-white/60">
-                    Sua foto é gerada em segundos com IA realista e conta automaticamente no placar do dia.
+                    Sua foto é produzida em alta definição profissional e conta automaticamente no placar do dia.
                   </span>
                 </div>
               </div>
@@ -550,7 +550,7 @@ function PoliticalFunnel() {
                 Agora, envie a sua foto
               </h1>
               <p className="text-xs text-white/70 mt-1 mb-4">
-                Envie uma foto de rosto ou selfie. A IA vai colocar o seu rosto perfeitamente na montagem escolhida (
+                Envie uma foto de rosto ou selfie. Vamos colocar o seu rosto perfeitamente na montagem escolhida (
                 <strong className={selectedCandidate.colorTheme.accentText}>{selectedScenario.title}</strong>).
               </p>
 
@@ -590,7 +590,7 @@ function PoliticalFunnel() {
 
               {/* Dica de Privacidade */}
               <p className="text-[12px] text-white/60 mt-3 flex items-center gap-1.5 justify-center">
-                <span>🔒</span> Suas fotos são usadas estritamente para criar a sua montagem com IA.
+                <span>🔒</span> Suas fotos são usadas estritamente para criar a sua montagem personalizada.
               </p>
 
               {/* Botão de Avançar */}
@@ -947,9 +947,6 @@ function PoliticalFunnel() {
                     alt="Montagem Pronta"
                     className="w-full h-full object-contain"
                   />
-                  <div className="absolute bottom-2.5 right-2.5 bg-black/75 backdrop-blur-md text-white text-[10px] font-semibold px-2.5 py-1 rounded-md border border-white/20">
-                    🤖 Imagem fictícia gerada por IA
-                  </div>
                 </div>
 
                 {/* Botões de Ação */}
