@@ -5,85 +5,142 @@ import {
   Copy,
   Lock,
   ShieldCheck,
-  Star,
-  ChevronRight,
-  ChevronDown,
-  ArrowRight,
-  Download,
-  Share2,
-  RefreshCw,
   Sparkles,
   Phone,
   Mail,
+  Download,
+  Share2,
+  RefreshCw,
   QrCode,
   FileText,
+  ArrowRight,
+  ChevronLeft,
+  Camera,
+  CheckCircle2,
 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
-  component: EternizaFunnel,
+  component: PoliticalFunnel,
 });
 
-type Step = "scenes" | "upload" | "loading" | "contact" | "checkout" | "delivered";
+type Step = "candidate" | "scenario" | "upload" | "loading" | "contact" | "checkout" | "delivered";
 
-interface SceneOption {
-  id: string;
-  title: string;
-  video: string;
-  poster: string;
+interface Candidate {
+  id: "lula" | "flavio";
+  name: string;
+  fullName: string;
+  number: string;
+  party: string;
+  role: string;
+  image: string;
+  colorTheme: {
+    bgBadge: string;
+    textBadge: string;
+    borderActive: string;
+    btnBg: string;
+    btnHover: string;
+    ringColor: string;
+    accentText: string;
+  };
 }
 
-const SCENES: SceneOption[] = [
+const CANDIDATES: Candidate[] = [
   {
-    id: "reencontro",
-    title: "A escadaria dourada",
-    video: "https://eternizaamor.com/assets/video/estilo-escadaria-nuvens.mp4",
-    poster: "https://eternizaamor.com/assets/video/estilo-escadaria-nuvens-poster.webp",
+    id: "lula",
+    name: "Lula",
+    fullName: "Luiz Inácio Lula da Silva",
+    number: "13",
+    party: "PT",
+    role: "Presidente da República",
+    image: "/lula-13.jpg",
+    colorTheme: {
+      bgBadge: "bg-red-600",
+      textBadge: "text-white",
+      borderActive: "border-red-500",
+      btnBg: "bg-gradient-to-r from-red-600 to-rose-700",
+      btnHover: "hover:from-red-500 hover:to-rose-600",
+      ringColor: "ring-red-500/40",
+      accentText: "text-red-500",
+    },
   },
   {
-    id: "reencontrocarinho",
-    title: "O carinho no céu",
-    video: "https://eternizaamor.com/assets/video/estilo-carinho-ceu.mp4",
-    poster: "https://eternizaamor.com/assets/video/estilo-carinho-ceu-poster.webp",
-  },
-  {
-    id: "reencontronuvens",
-    title: "O abraço nas nuvens",
-    video: "https://eternizaamor.com/assets/video/estilo-nuvens.mp4",
-    poster: "https://eternizaamor.com/assets/video/estilo-nuvens-poster.webp",
-  },
-  {
-    id: "anjopraia",
-    title: "Caminhada na praia",
-    video: "https://eternizaamor.com/assets/video/estilo-praia.mp4",
-    poster: "https://eternizaamor.com/assets/video/estilo-praia-poster.webp",
+    id: "flavio",
+    name: "Flávio Bolsonaro",
+    fullName: "Flávio Bolsonaro",
+    number: "22",
+    party: "PL",
+    role: "Senador da República",
+    image: "/flavio-bolsonaro-22.jpg",
+    colorTheme: {
+      bgBadge: "bg-yellow-400 text-slate-950 font-black",
+      textBadge: "text-slate-950",
+      borderActive: "border-yellow-400",
+      btnBg: "bg-gradient-to-r from-emerald-600 via-teal-600 to-blue-600",
+      btnHover: "hover:from-emerald-500 hover:to-blue-500",
+      ringColor: "ring-yellow-400/50",
+      accentText: "text-yellow-400",
+    },
   },
 ];
 
-const REVIEWS = [
-  "https://eternizaamor.com/assets/img/prova-reencontro-1.webp",
-  "https://eternizaamor.com/assets/img/prova-reencontro-2.webp",
-  "https://eternizaamor.com/assets/img/prova-reencontro-3.webp",
-  "https://eternizaamor.com/assets/img/prova-reencontro-4.webp",
+interface Scenario {
+  id: string;
+  title: string;
+  description: string;
+  image: string;
+  tag: string;
+}
+
+const SCENARIOS: Scenario[] = [
+  {
+    id: "comicio-selfie",
+    title: "Selfie no Comício",
+    description: "No meio da multidão, estilo selfie espontânea com o candidato sorrindo e acenando ao seu lado.",
+    image: "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=700&q=80",
+    tag: "Mais Escolhido",
+  },
+  {
+    id: "gabinete-oficial",
+    title: "Gabinete de Reuniões",
+    description: "Sentados lado a lado na mesa de reuniões oficial com pastas e ambiente executivo formal.",
+    image: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=700&q=80",
+    tag: "Formal & Elegante",
+  },
+  {
+    id: "encontro-institucional",
+    title: "Aperto de Mão Oficial",
+    description: "Aperto de mão firme e conversa amistosa com a bandeira do Brasil ao fundo.",
+    image: "https://images.unsplash.com/photo-1577495508048-b635879837f1?auto=format&fit=crop&w=700&q=80",
+    tag: "Institucional",
+  },
+  {
+    id: "palco-multidao",
+    title: "No Palco com a Multidão",
+    description: "Em cima do palco principal ou caminhão de som, com milhares de pessoas aplaudindo ao fundo.",
+    image: "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?auto=format&fit=crop&w=700&q=80",
+    tag: "Grande Evento",
+  },
 ];
 
-function EternizaFunnel() {
-  const [step, setStep] = useState<Step>("scenes");
-  const [selectedScene, setSelectedScene] = useState<SceneOption>(SCENES[0]);
+function PoliticalFunnel() {
+  const [step, setStep] = useState<Step>("candidate");
+  const [selectedCandidate, setSelectedCandidate] = useState<Candidate>(CANDIDATES[0]);
+  const [selectedScenario, setSelectedScenario] = useState<Scenario>(SCENARIOS[0]);
 
-  // Photos
-  const [photoYou, setPhotoYou] = useState<string | null>(null);
-  const [photoLoved, setPhotoLoved] = useState<string | null>(null);
+  // Foto do usuário
+  const [userPhoto, setUserPhoto] = useState<string | null>(null);
 
-  // Loading progress
+  // Progresso do loading
   const [bar1, setBar1] = useState(0);
   const [bar2, setBar2] = useState(0);
   const [bar3, setBar3] = useState(0);
 
-  // Contact
-  const [email, setEmail] = useState("");
+  // Contato
   const [whatsapp, setWhatsapp] = useState("");
+  const [email, setEmail] = useState("");
 
-  // Checkout & PIX
+  // Checkout
+  const [plan, setPlan] = useState<"single" | "pack3">("pack3");
   const [pixGenerated, setPixGenerated] = useState(false);
   const [pixCopied, setPixCopied] = useState(false);
   const [showCode, setShowCode] = useState(false);
@@ -94,7 +151,7 @@ function EternizaFunnel() {
   const [genStage, setGenStage] = useState(1);
   const [genComplete, setGenComplete] = useState(false);
 
-  // Countdown timer
+  // Cronômetro
   useEffect(() => {
     if (step === "checkout" && timeLeft > 0) {
       const timer = setInterval(() => setTimeLeft((t) => (t > 0 ? t - 1 : 0)), 1000);
@@ -102,15 +159,13 @@ function EternizaFunnel() {
     }
   }, [step, timeLeft]);
 
-  // Format time mm:ss
   const formatTime = (secs: number) => {
     const m = Math.floor(secs / 60);
     const s = secs % 60;
     return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
 
-  // WhatsApp mask
-  const handleWhatsappChange = (val: string) => {
+  const handlePhoneMask = (val: string) => {
     const raw = val.replace(/\D/g, "").slice(0, 11);
     let formatted = raw;
     if (raw.length > 2) formatted = `(${raw.slice(0, 2)}) ${raw.slice(2)}`;
@@ -118,22 +173,20 @@ function EternizaFunnel() {
     setWhatsapp(formatted);
   };
 
-  // Image Upload handler
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: "you" | "loved") => {
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = (event) => {
         if (event.target?.result) {
-          if (target === "you") setPhotoYou(event.target.result as string);
-          else setPhotoLoved(event.target.result as string);
+          setUserPhoto(event.target.result as string);
         }
       };
       reader.readAsDataURL(file);
     }
   };
 
-  // Run loading animation
+  // Simulação de Loading
   const startLoading = () => {
     setStep("loading");
     setBar1(0);
@@ -141,322 +194,371 @@ function EternizaFunnel() {
     setBar3(0);
 
     let p1 = 0;
-    const interval1 = setInterval(() => {
-      p1 += 4;
+    const i1 = setInterval(() => {
+      p1 += 5;
       if (p1 >= 100) {
         p1 = 100;
-        clearInterval(interval1);
+        clearInterval(i1);
 
         let p2 = 0;
-        const interval2 = setInterval(() => {
-          p2 += 4;
+        const i2 = setInterval(() => {
+          p2 += 5;
           if (p2 >= 100) {
             p2 = 100;
-            clearInterval(interval2);
+            clearInterval(i2);
 
             let p3 = 0;
-            const interval3 = setInterval(() => {
-              p3 += 4;
+            const i3 = setInterval(() => {
+              p3 += 5;
               if (p3 >= 100) {
                 p3 = 100;
-                clearInterval(interval3);
-                setTimeout(() => setStep("contact"), 600);
+                clearInterval(i3);
+                setTimeout(() => setStep("contact"), 500);
               }
               setBar3(p3);
-            }, 60);
+            }, 50);
           }
           setBar2(p2);
-        }, 60);
+        }, 50);
       }
       setBar1(p1);
-    }, 60);
+    }, 50);
   };
 
-  // Start Generation on Delivered
   const handlePaymentConfirmed = () => {
     setStep("delivered");
     setGenStage(1);
     setGenComplete(false);
 
-    setTimeout(() => setGenStage(2), 2500);
-    setTimeout(() => setGenStage(3), 5000);
-    setTimeout(() => setGenComplete(true), 8000);
+    setTimeout(() => setGenStage(2), 2000);
+    setTimeout(() => setGenStage(3), 4000);
+    setTimeout(() => setGenComplete(true), 6500);
   };
 
-  // PIX Code
-  const pixCodeString =
-    "00020126580014br.gov.bcb.pix0136d89e7c41-3b77-4482-9694-8149d5bf1c46520400005303986540528.895802BR5916ETERNIZA SERVICOS6009SAO PAULO62070503***6304C7F2";
+  const currentPrice = plan === "single" ? 19.9 : 29.9;
+  const pixCodeString = `00020126580014br.gov.bcb.pix0136clique-${selectedCandidate.id}-${Date.now().toString(36)}5204000053039865405${currentPrice.toFixed(2)}5802BR5920FOTO POLITICA AI6009SAO PAULO62070503***6304`;
 
   const handleCopyPix = () => {
     navigator.clipboard.writeText(pixCodeString);
     setPixCopied(true);
-    setTimeout(() => setPixCopied(false), 3500);
+    setTimeout(() => setPixCopied(false), 3000);
   };
 
   return (
-    <div className="min-h-screen bg-[#0c0a09] text-white flex flex-col items-center justify-between font-sans selection:bg-[#E7C86B] selection:text-black">
-      {/* Centralized Container for mobile/desktop layout */}
+    <div className="min-h-screen bg-[#090807] text-white flex flex-col items-center justify-between font-sans selection:bg-amber-400 selection:text-black">
+      {/* Container Principal Mobile-First */}
       <main className="w-full max-w-[440px] px-4 py-4 flex-1 flex flex-col items-center justify-between min-h-screen">
         {/* ========================================================================= */}
-        {/* TELA 21: ESCOLHA DO CENÁRIO                                               */}
+        {/* ABA 1: ESCOLHA DO CANDIDATO (LULA 13 OU FLÁVIO BOLSONARO 22)             */}
         {/* ========================================================================= */}
-        {step === "scenes" && (
+        {step === "candidate" && (
           <div className="w-full flex-1 flex flex-col items-center justify-between text-center animate-in fade-in duration-300">
             <div className="w-full flex flex-col items-center">
-              {/* Logo */}
-              <div className="mb-2">
-                <img
-                  src="https://eternizaamor.com/assets/img/eterniza-logo.webp"
-                  alt="Eterniza"
-                  className="h-10 object-contain mx-auto"
-                />
+              {/* Badge no Topo */}
+              <div className="inline-flex items-center gap-1.5 bg-white/10 border border-white/20 text-white/90 px-3 py-1 rounded-full text-xs font-bold mb-3">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                <span>Montagem Oficial com IA</span>
               </div>
 
-              {/* Title */}
-              <h1 className="font-fraunces text-2xl sm:text-[27px] font-bold text-white tracking-tight leading-tight mt-1">
-                Escolha o cenário
+              {/* Título de Impacto */}
+              <h1 className="text-2xl sm:text-[27px] font-black text-white tracking-tight leading-tight">
+                Com quem você quer <br />
+                <span className="text-amber-400">tirar uma foto?</span>
               </h1>
-              <p className="text-xs sm:text-[13px] text-white/70 mt-1 mb-4">
-                Toque na cena e veja novamente quem fez tanta falta 💛
+              <p className="text-xs sm:text-[13px] text-white/70 mt-1 mb-5">
+                Toque na imagem para escolher o seu líder e criar sua montagem com IA:
               </p>
 
-              {/* Grid 2x2 of Scenes */}
-              <div className="grid grid-cols-2 gap-3 w-full">
-                {SCENES.map((scene) => (
-                  <button
-                    key={scene.id}
-                    onClick={() => {
-                      setSelectedScene(scene);
-                      setStep("upload");
-                    }}
-                    className="relative group rounded-2xl overflow-hidden border border-white/20 bg-black aspect-[9/15] flex flex-col justify-end text-left transition-all active:scale-95 hover:border-[#E7C86B] focus:outline-none focus:ring-2 focus:ring-[#E7C86B]"
-                  >
-                    <video
-                      src={scene.video}
-                      poster={scene.poster}
-                      autoPlay
-                      muted
-                      loop
-                      playsInline
-                      className="absolute inset-0 w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent pointer-events-none" />
-                    <div className="relative p-2.5 z-10">
-                      <span className="text-[13px] font-bold text-white block leading-tight group-hover:text-[#E7C86B] transition-colors">
-                        {scene.title}
-                      </span>
+              {/* 2 Cartões Grandes Clicáveis com as Imagens Fornecidas */}
+              <div className="grid grid-cols-2 gap-3.5 w-full">
+                {/* Opção Lula 13 */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedCandidate(CANDIDATES[0]);
+                    setStep("scenario");
+                  }}
+                  className="group relative rounded-2xl overflow-hidden border-2 border-red-600/80 bg-neutral-950 aspect-[3/4.6] flex flex-col justify-end text-left transition-all active:scale-95 hover:border-red-500 hover:shadow-2xl hover:shadow-red-600/30 focus:outline-none focus:ring-4 focus:ring-red-500/40"
+                >
+                  <img
+                    src="/lula-13.jpg"
+                    alt="Lula 13"
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
+
+                  {/* Badge 13 no topo */}
+                  <div className="absolute top-2.5 left-2.5 bg-red-600 text-white text-xs font-black px-2.5 py-0.5 rounded-full shadow-lg border border-red-400">
+                    PT • 13
+                  </div>
+
+                  {/* Informações no rodapé do card */}
+                  <div className="relative p-3 z-10">
+                    <span className="text-[11px] font-bold text-red-400 uppercase tracking-wider block">
+                      Presidente
+                    </span>
+                    <strong className="text-lg font-black text-white leading-tight block">
+                      LULA 13
+                    </strong>
+                    <div className="mt-2 w-full py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-black text-xs text-center shadow-md shadow-red-700/50">
+                      ESCOLHER LULA
                     </div>
-                  </button>
-                ))}
+                  </div>
+                </button>
+
+                {/* Opção Flávio Bolsonaro 22 */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedCandidate(CANDIDATES[1]);
+                    setStep("scenario");
+                  }}
+                  className="group relative rounded-2xl overflow-hidden border-2 border-yellow-400/80 bg-neutral-950 aspect-[3/4.6] flex flex-col justify-end text-left transition-all active:scale-95 hover:border-yellow-300 hover:shadow-2xl hover:shadow-yellow-500/30 focus:outline-none focus:ring-4 focus:ring-yellow-400/40"
+                >
+                  <img
+                    src="/flavio-bolsonaro-22.jpg"
+                    alt="Flávio Bolsonaro 22"
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
+
+                  {/* Badge 22 no topo */}
+                  <div className="absolute top-2.5 left-2.5 bg-yellow-400 text-black text-xs font-black px-2.5 py-0.5 rounded-full shadow-lg border border-yellow-300">
+                    PL • 22
+                  </div>
+
+                  {/* Informações no rodapé do card */}
+                  <div className="relative p-3 z-10">
+                    <span className="text-[11px] font-bold text-yellow-400 uppercase tracking-wider block">
+                      Senador
+                    </span>
+                    <strong className="text-lg font-black text-white leading-tight block">
+                      FLÁVIO 22
+                    </strong>
+                    <div className="mt-2 w-full py-2 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-black font-black text-xs text-center shadow-md shadow-yellow-500/50">
+                      ESCOLHER FLÁVIO
+                    </div>
+                  </div>
+                </button>
+              </div>
+
+              {/* Prova de Confiança */}
+              <div className="mt-6 p-3 rounded-xl bg-white/5 border border-white/10 text-left w-full flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-amber-400/20 text-amber-400 flex items-center justify-center flex-shrink-0">
+                  <Camera className="w-5 h-5" />
+                </div>
+                <div>
+                  <strong className="text-xs font-bold text-white block">
+                    Montagem Realista com seu Rosto
+                  </strong>
+                  <span className="text-[11px] text-white/60">
+                    Você envia uma foto simples e a IA recorta e ajusta a iluminação perfeitamente.
+                  </span>
+                </div>
               </div>
             </div>
 
-            {/* Footer */}
-            <footer className="mt-6 pt-2 pb-2 text-center text-xs text-white/50 w-full flex flex-col gap-1 border-t border-white/10">
-              <div className="flex justify-center gap-3">
-                <a href="https://eternizaamor.com/termos" target="_blank" rel="noreferrer" className="hover:underline">
-                  Termos de Uso
-                </a>
-                <span>•</span>
-                <a href="https://eternizaamor.com/privacidade" target="_blank" rel="noreferrer" className="hover:underline">
-                  Privacidade
-                </a>
-              </div>
-              <p className="text-[11px] mt-0.5">
-                Precisa de ajuda?{" "}
-                <a href="mailto:contato@eternizaamor.com" className="text-[#E7C86B] underline">
-                  contato@eternizaamor.com
-                </a>
+            {/* Rodapé Informativo */}
+            <footer className="mt-6 pt-3 pb-2 text-center text-xs text-white/40 w-full border-t border-white/10">
+              <p className="text-[11px]">
+                Entretenimento digital com Inteligência Artificial • Entrega imediata no WhatsApp
               </p>
             </footer>
           </div>
         )}
 
         {/* ========================================================================= */}
-        {/* TELA 1: UPLOAD DAS 2 FOTOS                                                */}
+        {/* ABA 2: ESCOLHA DO CENÁRIO                                                 */}
+        {/* ========================================================================= */}
+        {step === "scenario" && (
+          <div className="w-full flex-1 flex flex-col items-center justify-between text-center animate-in fade-in duration-300">
+            <div className="w-full flex flex-col items-center">
+              {/* Botão Voltar */}
+              <button
+                onClick={() => setStep("candidate")}
+                className="self-start text-xs text-amber-400 flex items-center gap-1 mb-2 hover:opacity-80 transition font-bold"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <span>Trocar candidato ({selectedCandidate.name})</span>
+              </button>
+
+              <h1 className="text-2xl font-black text-white tracking-tight leading-snug">
+                Escolha o cenário <br />
+                com <span className={selectedCandidate.colorTheme.accentText}>{selectedCandidate.name}</span>
+              </h1>
+              <p className="text-xs text-white/70 mt-1 mb-4">
+                Toque no ambiente fictício onde você quer aparecer ao lado dele:
+              </p>
+
+              {/* Grade de Cenários */}
+              <div className="grid grid-cols-2 gap-3 w-full">
+                {SCENARIOS.map((sc) => (
+                  <button
+                    key={sc.id}
+                    onClick={() => {
+                      setSelectedScenario(sc);
+                      setStep("upload");
+                    }}
+                    className="relative group rounded-2xl overflow-hidden border border-white/20 bg-black aspect-[9/14] flex flex-col justify-end text-left transition-all active:scale-95 hover:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  >
+                    <img
+                      src={sc.image}
+                      alt={sc.title}
+                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+
+                    <div className="absolute top-2 left-2 bg-black/70 backdrop-blur-xs text-amber-400 text-[10px] font-bold px-2 py-0.5 rounded-md border border-white/10">
+                      {sc.tag}
+                    </div>
+
+                    <div className="relative p-2.5 z-10">
+                      <strong className="text-xs font-bold text-white block leading-tight">
+                        {sc.title}
+                      </strong>
+                      <span className="text-[10px] text-white/60 block mt-0.5 line-clamp-2">
+                        {sc.description}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* ABA 3: ENVIO DA SUA FOTO                                                  */}
         {/* ========================================================================= */}
         {step === "upload" && (
           <div className="w-full flex-1 flex flex-col items-center justify-between text-center animate-in fade-in duration-300">
             <div className="w-full flex flex-col items-center">
-              {/* Back to scenes */}
               <button
-                onClick={() => setStep("scenes")}
-                className="self-start text-xs text-[#E7C86B] flex items-center gap-1 mb-2 hover:opacity-80 transition"
+                onClick={() => setStep("scenario")}
+                className="self-start text-xs text-amber-400 flex items-center gap-1 mb-2 hover:opacity-80 transition font-bold"
               >
-                ← Trocar cenário ({selectedScene.title})
+                <ChevronLeft className="w-4 h-4" />
+                <span>Voltar aos cenários</span>
               </button>
 
-              <div className="mb-2">
-                <img
-                  src="https://eternizaamor.com/assets/img/eterniza-logo.webp"
-                  alt="Eterniza"
-                  className="h-9 object-contain mx-auto"
-                />
-              </div>
-
-              <h1 className="font-fraunces text-2xl font-bold tracking-tight leading-snug">
-                Agora dê vida <br />a esse reencontro <span className="inline-block">💛</span>
+              <h1 className="text-2xl font-black text-white tracking-tight leading-snug">
+                Agora, envie a sua foto
               </h1>
-              <p className="text-xs sm:text-[13px] text-white/70 mt-1 mb-4">
-                Envie uma foto sua e uma de quem você quer rever.
+              <p className="text-xs text-white/70 mt-1 mb-4">
+                Envie uma foto de rosto ou selfie. A IA vai colocar você ao lado de{" "}
+                <strong className={selectedCandidate.colorTheme.accentText}>{selectedCandidate.name}</strong> no cenário "{selectedScenario.title}".
               </p>
 
-              {/* Labels */}
-              <div className="grid grid-cols-2 gap-3 w-full mb-1 text-[11px] font-bold tracking-wider uppercase text-[#E7C86B]">
-                <span>Você</span>
-                <span>Quem partiu</span>
-              </div>
-
-              {/* Upload Slots */}
-              <div className="grid grid-cols-2 gap-3 w-full">
-                {/* Slot 1: Você */}
-                <label className="relative aspect-[3/4] rounded-2xl border-2 border-dashed border-[#E7C86B]/40 bg-[#E7C86B]/5 flex flex-col items-center justify-center cursor-pointer overflow-hidden hover:border-[#E7C86B] transition active:scale-98">
+              {/* Slot de Upload com Preview */}
+              <div className="w-full">
+                <label className="relative aspect-[3/3.8] rounded-2xl border-2 border-dashed border-amber-400/40 bg-amber-400/5 flex flex-col items-center justify-center cursor-pointer overflow-hidden hover:border-amber-400 transition active:scale-98">
                   <input
                     type="file"
                     accept="image/*"
                     className="hidden"
-                    onChange={(e) => handlePhotoUpload(e, "you")}
+                    onChange={handlePhotoUpload}
                   />
-                  {photoYou ? (
+                  {userPhoto ? (
                     <div className="relative w-full h-full">
-                      <img src={photoYou} alt="Sua foto" className="w-full h-full object-cover" />
+                      <img src={userPhoto} alt="Sua foto" className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition">
-                        <span className="text-xs font-bold text-white bg-black/60 px-2 py-1 rounded-md">TROCAR</span>
+                        <span className="text-xs font-bold text-white bg-black/70 px-3 py-1.5 rounded-lg">
+                          TROCAR FOTO
+                        </span>
                       </div>
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center p-3">
-                      <span className="text-3xl text-[#E7C86B] mb-1 font-light">+</span>
-                      <span className="text-[12px] font-bold text-white/90 tracking-wide">SUA FOTO</span>
-                      <span className="text-[10px] text-white/50 mt-1">Toque para enviar</span>
-                    </div>
-                  )}
-                </label>
-
-                {/* Slot 2: Quem partiu */}
-                <label className="relative aspect-[3/4] rounded-2xl border-2 border-dashed border-[#E7C86B]/40 bg-[#E7C86B]/5 flex flex-col items-center justify-center cursor-pointer overflow-hidden hover:border-[#E7C86B] transition active:scale-98">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => handlePhotoUpload(e, "loved")}
-                  />
-                  {photoLoved ? (
-                    <div className="relative w-full h-full">
-                      <img src={photoLoved} alt="Foto dele(a)" className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition">
-                        <span className="text-xs font-bold text-white bg-black/60 px-2 py-1 rounded-md">TROCAR</span>
+                    <div className="flex flex-col items-center p-4">
+                      <div className="w-16 h-16 rounded-full bg-amber-400/10 text-amber-400 flex items-center justify-center text-3xl font-light mb-2">
+                        +
                       </div>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center p-3">
-                      <span className="text-3xl text-[#E7C86B] mb-1 font-light">+</span>
-                      <span className="text-[12px] font-bold text-white/90 tracking-wide">A FOTO DELE(A)</span>
-                      <span className="text-[10px] text-white/50 mt-1">Toque para enviar</span>
+                      <span className="text-sm font-bold text-white tracking-wide">
+                        TOQUE PARA ENVIAR SUA FOTO
+                      </span>
+                      <span className="text-xs text-white/50 mt-1">
+                        Selfie comum, foto de frente ou perfil
+                      </span>
                     </div>
                   )}
                 </label>
               </div>
 
-              {/* Privacy badge */}
+              {/* Dica de Privacidade */}
               <p className="text-[12px] text-white/60 mt-3 flex items-center gap-1.5 justify-center">
-                <span>🔒</span> Suas fotos são usadas só para criar o seu vídeo.
+                <span>🔒</span> Suas fotos são usadas estritamente para criar a sua montagem com IA.
               </p>
 
-              {/* Button */}
+              {/* Botão de Avançar */}
               <button
-                disabled={!photoYou || !photoLoved}
+                disabled={!userPhoto}
                 onClick={startLoading}
-                className={`w-full mt-4 py-4 rounded-xl font-bold text-sm sm:text-base tracking-wide transition shadow-lg ${
-                  photoYou && photoLoved
-                    ? "bg-gradient-to-r from-[#FF7A4D] via-[#F8545D] to-[#FFA230] text-white shadow-red-500/20 active:scale-98 animate-pulse-gold"
+                className={`w-full mt-5 py-4 rounded-xl font-black text-sm sm:text-base tracking-wide transition shadow-lg ${
+                  userPhoto
+                    ? `${selectedCandidate.colorTheme.btnBg} text-white active:scale-98 animate-pulse`
                     : "bg-white/10 text-white/30 cursor-not-allowed"
                 }`}
               >
-                CRIAR MEU REENCONTRO
+                CRIAR MINHA FOTO COM {selectedCandidate.name.toUpperCase()}
               </button>
-
-              {/* Gallery proof below */}
-              <div className="mt-5 rounded-2xl overflow-hidden border border-white/10 shadow-md">
-                <img
-                  src="https://eternizaamor.com/assets/img/templates-grid-eterniza.webp?v=2"
-                  alt="Exemplos de reencontro"
-                  className="w-full h-auto object-cover"
-                />
-              </div>
             </div>
           </div>
         )}
 
         {/* ========================================================================= */}
-        {/* TELA 3: LOADING INTERATIVO                                                */}
+        {/* ABA 4: LOADING / PROCESSAMENTO EM TEMPO REAL                              */}
         {/* ========================================================================= */}
         {step === "loading" && (
-          <div className="w-full flex-1 flex flex-col items-center justify-between text-center animate-in fade-in duration-300">
+          <div className="w-full flex-1 flex flex-col items-center justify-center text-center animate-in fade-in duration-300 py-6">
             <div className="w-full flex flex-col items-center">
-              <h1 className="font-fraunces text-xl sm:text-2xl font-bold tracking-tight mt-2">
-                Preparando o reencontro de vocês…
+              <h1 className="text-xl sm:text-2xl font-black tracking-tight mb-1">
+                Criando sua foto com {selectedCandidate.name}…
               </h1>
-              <p className="text-xs text-white/70 mt-1 mb-4">
-                Estamos reconhecendo os dois rostos e criando o abraço
+              <p className="text-xs text-white/70 mb-6">
+                Estamos reconhecendo seu rosto e ajustando a iluminação no cenário
               </p>
 
-              {/* Example Video */}
-              <div className="w-full rounded-2xl overflow-hidden border border-[#E7C86B]/30 shadow-2xl relative bg-black aspect-[9/14] max-h-[380px]">
-                <div className="absolute top-2 left-2 z-10 bg-black/70 backdrop-blur-md px-2.5 py-1 rounded-full text-[11px] text-[#E7C86B] font-semibold flex items-center gap-1">
-                  <span>✨</span> Um exemplo do que estamos criando pra você 💛
+              {/* Dois avatares se aproximando */}
+              <div className="relative flex items-center justify-center gap-4 mb-8">
+                <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-white/20 shadow-xl">
+                  <img src={userPhoto || ""} alt="Você" className="w-full h-full object-cover" />
                 </div>
-                <video
-                  src="https://eternizaamor.com/assets/video/exemplo-reencontro.mp4"
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  className="w-full h-full object-cover"
-                />
+                <div className="w-10 h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent relative">
+                  <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-amber-400/60 filter blur-[2px] animate-ping" />
+                </div>
+                <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-amber-400 shadow-xl shadow-amber-400/20">
+                  <img src={selectedCandidate.image} alt={selectedCandidate.name} className="w-full h-full object-cover" />
+                </div>
               </div>
 
-              {/* Animated Progress Bars */}
-              <div className="w-full flex flex-col gap-3 mt-5">
-                {/* Bar 1 */}
+              {/* Barras de Progresso */}
+              <div className="w-full flex flex-col gap-3.5 max-w-[340px]">
                 <div className="w-full text-left">
                   <div className="flex justify-between text-xs font-semibold text-white/80 mb-1">
-                    <span>Reconhecendo os dois rostos</span>
-                    <span className="text-[#E7C86B]">{bar1}%</span>
+                    <span>Reconhecendo traços faciais</span>
+                    <span className="text-amber-400">{bar1}%</span>
                   </div>
                   <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
-                    <div
-                      className="h-full bg-[#E7C86B] rounded-full transition-all duration-100 ease-out"
-                      style={{ width: `${bar1}%` }}
-                    />
+                    <div className="h-full bg-amber-400 rounded-full transition-all duration-100" style={{ width: `${bar1}%` }} />
                   </div>
                 </div>
 
-                {/* Bar 2 */}
                 <div className="w-full text-left">
                   <div className="flex justify-between text-xs font-semibold text-white/80 mb-1">
-                    <span>Preparando o encontro</span>
-                    <span className="text-[#E7C86B]">{bar2}%</span>
+                    <span>Inserindo no cenário com {selectedCandidate.name}</span>
+                    <span className="text-amber-400">{bar2}%</span>
                   </div>
                   <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
-                    <div
-                      className="h-full bg-[#E7C86B] rounded-full transition-all duration-100 ease-out"
-                      style={{ width: `${bar2}%` }}
-                    />
+                    <div className="h-full bg-amber-400 rounded-full transition-all duration-100" style={{ width: `${bar2}%` }} />
                   </div>
                 </div>
 
-                {/* Bar 3 */}
                 <div className="w-full text-left">
                   <div className="flex justify-between text-xs font-semibold text-white/80 mb-1">
-                    <span>Criando o abraço</span>
-                    <span className="text-[#E7C86B]">{bar3}%</span>
+                    <span>Finalizando em alta resolução</span>
+                    <span className="text-amber-400">{bar3}%</span>
                   </div>
                   <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-[#E7C86B] to-[#FF7A4D] rounded-full transition-all duration-100 ease-out"
-                      style={{ width: `${bar3}%` }}
-                    />
+                    <div className="h-full bg-gradient-to-r from-amber-400 to-emerald-400 rounded-full transition-all duration-100" style={{ width: `${bar3}%` }} />
                   </div>
                 </div>
               </div>
@@ -465,24 +567,34 @@ function EternizaFunnel() {
         )}
 
         {/* ========================================================================= */}
-        {/* TELA 5: CAPTURA DE CONTATO (E-MAIL + WHATSAPP)                            */}
+        {/* ABA 5: CONTATO (WHATSAPP E E-MAIL)                                        */}
         {/* ========================================================================= */}
         {step === "contact" && (
           <div className="w-full flex-1 flex flex-col items-center justify-between text-center animate-in fade-in duration-300">
             <div className="w-full flex flex-col items-center">
-              <div className="mb-2">
-                <img
-                  src="https://eternizaamor.com/assets/img/eterniza-logo.webp"
-                  alt="Eterniza"
-                  className="h-9 object-contain mx-auto"
-                />
+              <div className="w-12 h-12 rounded-full bg-amber-400/20 text-amber-400 flex items-center justify-center mb-3">
+                <Phone className="w-6 h-6" />
               </div>
 
-              <h1 className="font-fraunces text-2xl font-bold tracking-tight leading-snug mt-1">
-                Pra onde enviamos a sua <span className="text-[#E7C86B]">cópia</span> do vídeo?
+              <h1 className="text-2xl font-black tracking-tight leading-snug">
+                Para onde enviamos a sua <span className="text-amber-400">foto oficial</span>?
               </h1>
+              <p className="text-xs text-white/70 mt-1 mb-5">
+                Você visualiza aqui na hora e ainda recebe uma cópia sem compressão no WhatsApp.
+              </p>
 
-              <div className="w-full flex flex-col gap-3 mt-5">
+              <div className="w-full flex flex-col gap-3">
+                <div className="relative">
+                  <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                  <input
+                    type="tel"
+                    value={whatsapp}
+                    onChange={(e) => handlePhoneMask(e.target.value)}
+                    placeholder="Seu WhatsApp com DDD (Ex: 11 99999-9999)"
+                    className="w-full pl-10 pr-4 py-3.5 rounded-xl bg-white/5 border border-white/20 text-white placeholder-white/40 text-sm focus:outline-none focus:border-amber-400 transition"
+                  />
+                </div>
+
                 <div className="relative">
                   <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
                   <input
@@ -490,128 +602,128 @@ function EternizaFunnel() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Seu melhor e-mail"
-                    className="w-full pl-10 pr-4 py-3.5 rounded-xl bg-white/5 border border-white/20 text-white placeholder-white/40 text-sm focus:outline-none focus:border-[#E7C86B] transition"
-                  />
-                </div>
-
-                <div className="relative">
-                  <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-                  <input
-                    type="tel"
-                    value={whatsapp}
-                    onChange={(e) => handleWhatsappChange(e.target.value)}
-                    placeholder="Seu WhatsApp com DDD"
-                    className="w-full pl-10 pr-4 py-3.5 rounded-xl bg-white/5 border border-white/20 text-white placeholder-white/40 text-sm focus:outline-none focus:border-[#E7C86B] transition"
+                    className="w-full pl-10 pr-4 py-3.5 rounded-xl bg-white/5 border border-white/20 text-white placeholder-white/40 text-sm focus:outline-none focus:border-amber-400 transition"
                   />
                 </div>
               </div>
 
-              <p className="text-xs text-white/70 mt-3 text-left leading-relaxed bg-white/5 p-3 rounded-xl border border-white/10">
-                Você vê o vídeo aqui na hora e ainda mandamos uma cópia no seu WhatsApp pra guardar pra sempre.{" "}
-                <strong className="text-white">Confira se estão corretos.</strong>
+              <p className="text-xs text-white/60 mt-3 text-left leading-relaxed bg-white/5 p-3 rounded-xl border border-white/10">
+                🔒 Seus dados são confidenciais e usados exclusivamente para entregar o arquivo em alta resolução.
               </p>
             </div>
 
             <div className="w-full pt-4">
               <button
-                disabled={!email || whatsapp.length < 14}
+                disabled={whatsapp.length < 14 || !email}
                 onClick={() => setStep("checkout")}
-                className={`w-full py-4 rounded-xl font-bold text-base tracking-wide transition shadow-lg ${
-                  email && whatsapp.length >= 14
-                    ? "bg-gradient-to-r from-[#FF7A4D] via-[#F8545D] to-[#FFA230] text-white active:scale-98 animate-pulse-gold"
+                className={`w-full py-4 rounded-xl font-black text-base tracking-wide transition shadow-lg ${
+                  whatsapp.length >= 14 && email
+                    ? `${selectedCandidate.colorTheme.btnBg} text-white active:scale-98`
                     : "bg-white/10 text-white/30 cursor-not-allowed"
                 }`}
               >
-                Continuar
+                Continuar para Pagamento
               </button>
             </div>
           </div>
         )}
 
         {/* ========================================================================= */}
-        {/* TELA 6: CHECKOUT / PAYWALL (PIX)                                          */}
+        {/* ABA 6: CHECKOUT / PAGAMENTO PIX                                           */}
         {/* ========================================================================= */}
         {step === "checkout" && (
           <div className="w-full flex-1 flex flex-col items-center justify-start text-center animate-in fade-in duration-300">
-            {/* Countdown Badge */}
-            <div className="w-full bg-[#FFC73B]/10 border border-[#FFC73B]/30 text-[#FFD873] py-2 px-3 rounded-xl text-xs font-semibold mb-3 flex items-center justify-center gap-1.5">
+            {/* Faixa de Desconto */}
+            <div className="w-full bg-amber-400/10 border border-amber-400/30 text-amber-400 py-2 px-3 rounded-xl text-xs font-bold mb-3 flex items-center justify-center gap-1.5">
               <span>🎁 50% OFF aplicado · expira em</span>
               <strong className="text-white font-mono text-sm">{formatTime(timeLeft)}</strong>
             </div>
 
-            {/* Blurred Teaser Image */}
-            <div className="w-full rounded-2xl overflow-hidden relative aspect-[16/8] border border-white/10 mb-3">
+            {/* Teaser Borrado da Foto com Cadeado */}
+            <div className="w-full rounded-2xl overflow-hidden relative aspect-[16/8] border border-white/10 mb-3 bg-black">
               <img
-                src="https://eternizaamor.com/assets/img/checkout-hero-reencontro.webp"
-                alt="Teaser"
-                className="w-full h-full object-cover filter blur-[4px] brightness-75"
+                src={selectedCandidate.image}
+                alt="Teaser da montagem"
+                className="w-full h-full object-cover filter blur-[5px] brightness-75"
               />
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-11 h-11 rounded-full bg-black/60 border border-white/30 flex items-center justify-center text-xl backdrop-blur-md">
+                <div className="w-12 h-12 rounded-full bg-black/70 border border-white/30 flex items-center justify-center text-xl backdrop-blur-md">
                   🔒
                 </div>
               </div>
             </div>
 
-            {/* Title */}
-            <span className="text-[11px] font-extrabold tracking-widest text-[#E7C86B] uppercase">
+            <span className="text-[11px] font-extrabold tracking-widest text-amber-400 uppercase">
               FALTA SÓ O PAGAMENTO
             </span>
-            <h1 className="font-fraunces text-xl sm:text-[22px] font-bold tracking-tight leading-snug mt-0.5">
-              Você está a 1 passo de ver essa lembrança ganhar vida
+            <h1 className="text-xl font-black tracking-tight leading-snug mt-0.5">
+              Sua foto com {selectedCandidate.name} está pronta!
             </h1>
-            <p className="text-xs text-white/70 mt-1 mb-3">
-              ⭐️ 4,9/5 · <strong className="text-[#E7C86B]">milhares de famílias</strong> emocionadas
-            </p>
 
-            {/* Pricing Card */}
-            <div className="w-full bg-white/5 border border-white/15 rounded-2xl p-4 text-left mb-4 shadow-xl">
-              <div className="flex justify-between items-end border-b border-white/10 pb-3 mb-3">
-                <div>
-                  <h3 className="text-sm font-bold text-white tracking-wide">VÍDEO DO REENCONTRO</h3>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-xs line-through text-white/40">R$ 54,00</span>
-                    <span className="text-[11px] font-bold bg-[#FFC73B]/20 border border-[#FFC73B]/40 text-[#FFC73B] px-1.5 py-0.5 rounded">
-                      50% OFF
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-white/50 mt-1 flex items-center gap-1">
-                    Taxa de serviço • <strong className="text-white/80">R$ 0,99</strong>
-                  </p>
-                </div>
-                <div className="text-right">
-                  <span className="text-2xl font-black text-[#FFC73B]">R$ 27,90</span>
-                  <span className="block text-[10px] text-white/40">pagamento único</span>
-                </div>
+            {/* Card de Escolha de Pacote */}
+            <div className="w-full bg-white/5 border border-white/15 rounded-2xl p-4 text-left my-4 shadow-xl">
+              <div className="grid grid-cols-2 gap-2 mb-3">
+                <button
+                  type="button"
+                  onClick={() => setPlan("single")}
+                  className={`p-3 rounded-xl border text-left transition ${
+                    plan === "single"
+                      ? "border-amber-400 bg-amber-400/10"
+                      : "border-white/10 bg-black/40 hover:border-white/20"
+                  }`}
+                >
+                  <span className="text-[10px] text-white/60 block">1 FOTO</span>
+                  <span className="text-lg font-black text-white">R$ 19,90</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setPlan("pack3")}
+                  className={`p-3 rounded-xl border text-left transition relative ${
+                    plan === "pack3"
+                      ? "border-amber-400 bg-amber-400/15"
+                      : "border-white/10 bg-black/40 hover:border-white/20"
+                  }`}
+                >
+                  <span className="absolute -top-2 right-2 bg-amber-400 text-black text-[9px] font-black px-1.5 py-0.5 rounded">
+                    MAIS POPULAR
+                  </span>
+                  <span className="text-[10px] text-white/60 block">3 FOTOS</span>
+                  <span className="text-lg font-black text-amber-400">R$ 29,90</span>
+                </button>
               </div>
 
               {!pixGenerated ? (
                 <div>
                   <button
                     onClick={() => setPixGenerated(true)}
-                    className="w-full py-4 rounded-xl font-black text-sm sm:text-base tracking-wide bg-gradient-to-r from-[#FF7A4D] via-[#F8545D] to-[#FFA230] text-white shadow-xl shadow-red-500/20 active:scale-98 animate-pulse-gold transition"
+                    className={`w-full py-4 rounded-xl font-black text-sm tracking-wide ${selectedCandidate.colorTheme.btnBg} text-white shadow-xl active:scale-98 transition`}
                   >
-                    QUERO VIVER ESTE REENCONTRO
+                    GERAR PIX DE R$ {currentPrice.toFixed(2).replace(".", ",")}
                   </button>
-                  <p className="text-center text-[11px] text-white/60 mt-2 flex items-center justify-center gap-1">
-                    ⚡ Pague com <strong>PIX</strong> · aprovação imediata
+                  <p className="text-center text-[11px] text-white/60 mt-2">
+                    ⚡ Aprovação imediata via Pix • Sem mensalidade
                   </p>
                 </div>
               ) : (
                 <div className="flex flex-col gap-3 animate-in fade-in duration-300">
                   <div className="text-center">
-                    <span className="text-xs text-[#E7C86B] font-bold">⚡ PIX · aprovação na hora</span>
-                    <div className="text-3xl font-black text-white mt-1">R$ 28,89</div>
-                    <p className="text-[11px] text-white/60">Pagamento único · seu vídeo chega no WhatsApp</p>
+                    <span className="text-xs text-amber-400 font-bold">⚡ PIX · aprovação imediata</span>
+                    <div className="text-3xl font-black text-white mt-1">
+                      R$ {currentPrice.toFixed(2).replace(".", ",")}
+                    </div>
+                    <p className="text-[11px] text-white/60">
+                      Montagem com {selectedCandidate.name} ({selectedScenario.title})
+                    </p>
                   </div>
 
-                  {/* PIX Copy Button */}
+                  {/* Botão Copiar PIX */}
                   <button
                     onClick={handleCopyPix}
-                    className={`w-full py-4 px-3 rounded-xl font-black text-sm tracking-wide text-black flex items-center justify-center gap-2 transition relative overflow-hidden shadow-xl ${
+                    className={`w-full py-4 px-3 rounded-xl font-black text-sm tracking-wide text-black flex items-center justify-center gap-2 transition ${
                       pixCopied
                         ? "bg-[#8ff0b3]"
-                        : "bg-gradient-to-b from-[#41E877] via-[#25C55B] to-[#17A94B] animate-pix-halo animate-pix-shine text-black"
+                        : "bg-gradient-to-b from-[#41E877] via-[#25C55B] to-[#17A94B] text-black shadow-lg shadow-green-500/20"
                     }`}
                   >
                     {pixCopied ? (
@@ -627,318 +739,154 @@ function EternizaFunnel() {
                     )}
                   </button>
 
-                  {/* 3 Steps */}
-                  <ol className="bg-black/30 border border-white/10 rounded-xl p-3 flex flex-col gap-2 text-xs text-white/80">
-                    <li className="flex items-center gap-2">
-                      <span className="w-4 h-4 rounded-full bg-[#E7C86B] text-black font-bold flex items-center justify-center text-[10px]">
-                        1
-                      </span>
-                      <span>Abra o app do seu banco</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <span className="w-4 h-4 rounded-full bg-[#E7C86B] text-black font-bold flex items-center justify-center text-[10px]">
-                        2
-                      </span>
-                      <span>
-                        Cole em <strong>Pix Copia e Cola</strong>
-                      </span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <span className="w-4 h-4 rounded-full bg-[#E7C86B] text-black font-bold flex items-center justify-center text-[10px]">
-                        3
-                      </span>
-                      <span>
-                        Seu vídeo chega no <strong>WhatsApp</strong>
-                      </span>
-                    </li>
-                  </ol>
-
-                  {/* Collapsibles for Code and QR */}
-                  <div className="grid grid-cols-2 gap-2 mt-1">
-                    <button
-                      type="button"
-                      onClick={() => setShowCode(!showCode)}
-                      className="py-2 px-3 rounded-lg bg-white/5 border border-white/10 text-xs text-white/70 flex items-center justify-center gap-1.5 hover:text-white"
-                    >
-                      <FileText className="w-3.5 h-3.5" />
-                      <span>{showCode ? "Ocultar código" : "Ver código"}</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowQr(!showQr)}
-                      className="py-2 px-3 rounded-lg bg-white/5 border border-white/10 text-xs text-white/70 flex items-center justify-center gap-1.5 hover:text-white"
-                    >
-                      <QrCode className="w-3.5 h-3.5" />
-                      <span>{showQr ? "Ocultar QR" : "Ver QR Code"}</span>
-                    </button>
+                  {/* QR Code Opcional */}
+                  <div className="bg-white p-3 rounded-xl mx-auto flex flex-col items-center">
+                    <img
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(
+                        pixCodeString
+                      )}`}
+                      alt="QR Code Pix"
+                      className="w-32 h-32"
+                    />
+                    <span className="text-[10px] text-black/70 font-semibold mt-1">
+                      Aponte a câmera do seu banco
+                    </span>
                   </div>
 
-                  {showCode && (
-                    <div className="mt-1">
-                      <textarea
-                        readOnly
-                        value={pixCodeString}
-                        className="w-full text-[11px] font-mono bg-black/60 border border-white/20 p-2 rounded-lg text-white/90 h-20 resize-none break-all"
-                      />
-                    </div>
-                  )}
-
-                  {showQr && (
-                    <div className="bg-white p-3 rounded-xl mx-auto flex flex-col items-center">
-                      <img
-                        src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
-                          pixCodeString
-                        )}`}
-                        alt="QR Code PIX"
-                        className="w-36 h-36"
-                      />
-                      <span className="text-[10px] text-black/70 font-semibold mt-1">
-                        Aponte a câmera do seu banco
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Pulsing Status */}
-                  <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl p-2.5 mt-1">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#E7C86B] animate-ping" />
+                  {/* Status pulsante */}
+                  <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl p-2.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping" />
                     <div className="text-left text-xs leading-tight">
-                      <strong className="text-white block">Aguardando o pagamento…</strong>
+                      <strong className="text-white block">Aguardando confirmação do pagamento…</strong>
                       <span className="text-[11px] text-white/50">Você não precisa fazer mais nada</span>
                     </div>
                   </div>
 
-                  {/* Dev Simulation Button */}
+                  {/* Botão de Teste / Simulação */}
                   <button
                     onClick={handlePaymentConfirmed}
-                    className="mt-2 text-xs text-[#E7C86B] underline opacity-80 hover:opacity-100"
+                    className="mt-2 text-xs text-amber-400 underline opacity-80 hover:opacity-100"
                   >
-                    ⚡ Simular confirmação de pagamento (Ver resultado)
+                    ⚡ Simular confirmação (Ver resultado final)
                   </button>
                 </div>
               )}
             </div>
 
-            {/* Features list */}
+            {/* O que você recebe */}
             <div className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-left mb-4">
-              <h2 className="text-sm font-bold text-white mb-2 flex items-center gap-1">
-                <span>✨</span> O que você recebe
-              </h2>
-              <ul className="text-xs text-white/80 space-y-2">
-                <li className="flex items-center gap-2">
-                  <span>🎬</span> O vídeo do reencontro de vocês, em movimento
-                </li>
-                <li className="flex items-center gap-2">
-                  <span>🎵</span> Com música emocionante e sem marca d'água
-                </li>
-                <li className="flex items-center gap-2">
-                  <span>📱</span> Aparece na sua tela em ~2 minutos (+ cópia no WhatsApp)
-                </li>
-                <li className="flex items-center gap-2">
-                  <span>💳</span> Pagamento único — sem mensalidade
-                </li>
+              <h3 className="text-xs font-bold text-white mb-2 flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <span>O que está incluído:</span>
+              </h3>
+              <ul className="text-xs text-white/80 space-y-1.5">
+                <li>• Foto em altíssima resolução para redes e impressão</li>
+                <li>• Envio imediato no seu WhatsApp e e-mail</li>
+                <li>• Iluminação realista ajustada com o candidato</li>
+                <li>• Pagamento único — sem pegadinhas nem assinaturas</li>
               </ul>
             </div>
-
-            {/* Guarantee */}
-            <div className="w-full bg-[#3ddc6f]/5 border border-[#3ddc6f]/20 rounded-2xl p-4 text-left mb-4 flex items-start gap-3">
-              <img
-                src="https://eternizaamor.com/assets/img/guarantee-shield.png"
-                alt="Garantia"
-                className="w-10 h-10 object-contain flex-shrink-0"
-              />
-              <div>
-                <h3 className="text-xs font-bold text-[#8ff0b3]">
-                  Emoção garantida ou seu dinheiro de volta
-                </h3>
-                <p className="text-[11px] text-white/70 mt-1 leading-relaxed">
-                  Se o seu reencontro não tocar o seu coração, devolvemos 100% do seu dinheiro em até 14 dias.
-                </p>
-              </div>
-            </div>
-
-            {/* Reviews Carousel */}
-            <div className="w-full mb-6">
-              <p className="text-[11px] text-[#E7C86B] font-bold text-center mb-1">⭐️ 4,9/5 · DEPOIMENTOS REAIS</p>
-              <h2 className="font-fraunces text-base font-bold text-center mb-3">
-                Amado por milhares de famílias brasileiras 👇
-              </h2>
-              <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-none">
-                {REVIEWS.map((src, i) => (
-                  <div
-                    key={i}
-                    className="flex-shrink-0 w-[78%] rounded-2xl overflow-hidden border border-white/10 shadow-lg snap-center bg-black"
-                  >
-                    <img src={src} alt="Depoimento real" className="w-full h-auto object-cover" />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Footer */}
-            <footer className="text-xs text-white/50 text-center pb-6 flex flex-col gap-1 w-full border-t border-white/10 pt-4">
-              <div className="flex justify-center gap-3">
-                <a href="https://eternizaamor.com/termos" target="_blank" rel="noreferrer" className="hover:underline">
-                  Termos de Uso
-                </a>
-                <span>•</span>
-                <a href="https://eternizaamor.com/privacidade" target="_blank" rel="noreferrer" className="hover:underline">
-                  Privacidade
-                </a>
-              </div>
-              <p className="text-[11px]">
-                Precisa de ajuda?{" "}
-                <a href="mailto:contato@eternizaamor.com" className="text-[#E7C86B] underline">
-                  contato@eternizaamor.com
-                </a>
-              </p>
-            </footer>
           </div>
         )}
 
         {/* ========================================================================= */}
-        {/* TELA 7: VÍDEO PRONTO (ENTREGÁVEL) & UPSELL                                */}
+        {/* ABA 7: FOTO ENTREGUE / SUCESSO                                            */}
         {/* ========================================================================= */}
         {step === "delivered" && (
           <div className="w-full flex-1 flex flex-col items-center justify-between text-center animate-in fade-in duration-300">
             {!genComplete ? (
-              /* Waiting Scene: "A luz que atravessa" */
               <div className="w-full flex-1 flex flex-col items-center justify-center py-8">
-                {/* Two user photos floating towards each other */}
-                <div className="relative flex items-center justify-center gap-4 mb-8">
-                  <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-white/20 shadow-2xl animate-cena-respira">
-                    <img
-                      src={photoYou || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300"}
-                      alt="Você"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  {/* Beam of glowing light */}
-                  <div className="w-12 h-0.5 bg-gradient-to-r from-transparent via-[#E7C86B] to-transparent relative">
-                    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-[#E7C86B]/60 filter blur-[2px] animate-ping" />
-                  </div>
-                  <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-[#E7C86B] shadow-2xl shadow-[#E7C86B]/30 animate-cena-respira">
-                    <img
-                      src={photoLoved || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300"}
-                      alt="Quem partiu"
-                      className="w-full h-full object-cover filter sepia-[0.2] brightness-105"
-                    />
-                  </div>
+                <div className="relative w-28 h-28 rounded-full overflow-hidden border-4 border-amber-400 shadow-2xl mb-4 animate-pulse">
+                  <img src={selectedCandidate.image} alt={selectedCandidate.name} className="w-full h-full object-cover" />
                 </div>
-
-                <h2 className="font-fraunces text-2xl font-bold text-white mb-2">
-                  Estamos preparando o encontro de vocês
+                <h2 className="text-xl font-bold text-white mb-1">
+                  Finalizando sua montagem…
                 </h2>
-                <p className="text-xs text-[#E7C86B] font-semibold mb-6">⏱️ costuma levar alguns instantes</p>
+                <p className="text-xs text-amber-400 font-semibold mb-6">
+                  ⏱️ leva apenas alguns instantes
+                </p>
 
-                {/* Steps */}
-                <ol className="text-left text-xs space-y-2.5 max-w-[260px] mx-auto mb-6">
+                <ol className="text-left text-xs space-y-2.5 max-w-[260px] mx-auto">
                   <li className={`flex items-center gap-2 ${genStage >= 1 ? "text-white font-bold" : "text-white/30"}`}>
-                    <span
-                      className={`w-2 h-2 rounded-full ${
-                        genStage >= 1 ? "bg-[#E7C86B] shadow-[0_0_8px_#E7C86B]" : "bg-white/20"
-                      }`}
-                    />
-                    Reconhecendo os rostos
+                    <span className={`w-2 h-2 rounded-full ${genStage >= 1 ? "bg-amber-400 shadow-[0_0_8px_#fbbf24]" : "bg-white/20"}`} />
+                    Ajustando enquadramento no cenário
                   </li>
                   <li className={`flex items-center gap-2 ${genStage >= 2 ? "text-white font-bold" : "text-white/30"}`}>
-                    <span
-                      className={`w-2 h-2 rounded-full ${
-                        genStage >= 2 ? "bg-[#E7C86B] shadow-[0_0_8px_#E7C86B]" : "bg-white/20"
-                      }`}
-                    />
-                    Construindo o encontro
+                    <span className={`w-2 h-2 rounded-full ${genStage >= 2 ? "bg-amber-400 shadow-[0_0_8px_#fbbf24]" : "bg-white/20"}`} />
+                    Equalizando iluminação e sombras
                   </li>
                   <li className={`flex items-center gap-2 ${genStage >= 3 ? "text-white font-bold" : "text-white/30"}`}>
-                    <span
-                      className={`w-2 h-2 rounded-full ${
-                        genStage >= 3 ? "bg-[#E7C86B] shadow-[0_0_8px_#E7C86B]" : "bg-white/20"
-                      }`}
-                    />
-                    Dando vida à cena
+                    <span className={`w-2 h-2 rounded-full ${genStage >= 3 ? "bg-amber-400 shadow-[0_0_8px_#fbbf24]" : "bg-white/20"}`} />
+                    Gerando arquivo em alta resolução
                   </li>
                 </ol>
-
-                <p className="text-xs text-white/70 max-w-[30ch]">
-                  Fica aqui com a gente — ele aparece nesta tela 💛
-                </p>
               </div>
             ) : (
-              /* Completed Video View */
               <div className="w-full flex-1 flex flex-col items-center animate-in zoom-in-95 duration-500">
                 <div className="text-center mb-3">
-                  <h1 className="font-fraunces text-2xl font-bold text-white">
-                    🎉 Seu reencontro está pronto!
+                  <span className="text-xs font-bold text-emerald-400 bg-emerald-400/10 px-3 py-1 rounded-full border border-emerald-400/20">
+                    ✓ Pagamento Confirmado
+                  </span>
+                  <h1 className="text-2xl font-black text-white mt-2">
+                    🎉 Sua foto está pronta!
                   </h1>
-                  <p className="text-xs text-white/70 mt-0.5">Enviamos uma cópia também no seu WhatsApp 💛</p>
+                  <p className="text-xs text-white/70 mt-0.5">
+                    Enviamos uma cópia também no seu WhatsApp 💛
+                  </p>
                 </div>
 
-                {/* Video Player */}
-                <div className="w-full rounded-2xl overflow-hidden border border-[#E7C86B]/40 shadow-2xl relative bg-black aspect-[9/15] max-h-[460px] mb-4">
-                  <video
-                    src={selectedScene.video}
-                    controls
-                    autoPlay
-                    loop
-                    playsInline
+                {/* Exibição da Montagem */}
+                <div className="w-full rounded-2xl overflow-hidden border-2 border-amber-400/50 shadow-2xl relative bg-black aspect-[3/3.8] mb-4">
+                  <img
+                    src={selectedCandidate.image}
+                    alt="Montagem Pronta"
                     className="w-full h-full object-cover"
                   />
+                  <div className="absolute bottom-2.5 right-2.5 bg-black/75 backdrop-blur-md text-white text-[10px] font-semibold px-2.5 py-1 rounded-md border border-white/20">
+                    🤖 Imagem fictícia gerada por IA
+                  </div>
                 </div>
 
-                {/* Download Button */}
+                {/* Botões de Ação */}
                 <div className="w-full flex flex-col gap-2.5 mb-6">
                   <a
-                    href={selectedScene.video}
-                    download="meu-reencontro.mp4"
+                    href={selectedCandidate.image}
+                    download={`minha-foto-com-${selectedCandidate.id}.jpg`}
                     target="_blank"
                     rel="noreferrer"
-                    className="w-full py-4 rounded-xl font-bold text-sm bg-gradient-to-r from-[#B47B1E] to-[#E8C25A] text-black shadow-lg flex items-center justify-center gap-2 active:scale-98 transition"
+                    className="w-full py-4 rounded-xl font-black text-sm bg-amber-400 hover:bg-amber-300 text-black shadow-lg flex items-center justify-center gap-2 active:scale-98 transition"
                   >
                     <Download className="w-4 h-4" />
-                    <span>Baixar meu vídeo</span>
+                    <span>Baixar Foto em Alta Resolução</span>
                   </a>
 
                   <button
                     onClick={() => {
                       if (navigator.share) {
                         navigator.share({
-                          title: "Meu Reencontro Eterniza",
+                          title: `Minha foto com ${selectedCandidate.name}`,
                           url: window.location.href,
                         });
                       } else {
                         alert("Link copiado para compartilhar!");
                       }
                     }}
-                    className="w-full py-3 rounded-xl font-semibold text-xs bg-white/10 text-white flex items-center justify-center gap-2 hover:bg-white/15 transition"
+                    className="w-full py-3 rounded-xl font-bold text-xs bg-white/10 text-white flex items-center justify-center gap-2 hover:bg-white/15 transition"
                   >
                     <Share2 className="w-3.5 h-3.5" />
-                    <span>Compartilhar com a família</span>
+                    <span>Compartilhar no WhatsApp</span>
                   </button>
-                </div>
 
-                {/* Upsell Card */}
-                <div className="w-full bg-gradient-to-b from-[#E7C86B]/15 to-transparent border border-[#E7C86B]/30 rounded-2xl p-4 text-center mb-6">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#E7C86B] bg-[#E7C86B]/10 px-2.5 py-1 rounded-full">
-                    Oferta especial
-                  </span>
-                  <h3 className="font-fraunces text-lg font-bold text-white mt-2">
-                    Vocês dois, em outro cenário
-                  </h3>
-                  <p className="text-xs text-white/70 mt-1 mb-3">
-                    Use as mesmas fotos ou escolha outras.
-                  </p>
-                  <div className="flex items-baseline justify-center gap-2 mb-3">
-                    <span className="text-xs text-white/40 line-through">R$ 27,00</span>
-                    <span className="text-2xl font-black text-[#E7C86B]">R$ 19,90</span>
-                  </div>
                   <button
                     onClick={() => {
-                      setStep("scenes");
+                      setStep("candidate");
                       setGenComplete(false);
                       setPixGenerated(false);
+                      setUserPhoto(null);
                     }}
-                    className="w-full py-3.5 rounded-xl font-bold text-xs bg-white text-black hover:bg-white/90 active:scale-98 transition"
+                    className="mt-2 text-xs text-white/50 underline hover:text-white"
                   >
-                    APROVEITAR DESCONTO
+                    Criar outra foto com novo candidato ou cenário
                   </button>
                 </div>
               </div>
