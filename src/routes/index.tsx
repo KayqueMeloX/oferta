@@ -1,32 +1,24 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import {
   Check,
   Copy,
   Lock,
-  ShieldCheck,
-  Sparkles,
   Phone,
   Mail,
   Download,
   Share2,
-  RefreshCw,
-  QrCode,
-  FileText,
-  ArrowRight,
   ChevronLeft,
-  Camera,
-  CheckCircle2,
-  TrendingUp,
   Flame,
-  AlertTriangle,
+  X,
+  Star,
 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: PoliticalFunnel,
 });
 
-type Step = "candidate" | "scenario" | "upload" | "loading" | "contact" | "checkout" | "delivered";
+type Step = "candidate" | "scenario" | "upload" | "loading" | "offer" | "delivered";
 
 interface Candidate {
   id: "lula" | "flavio";
@@ -161,13 +153,12 @@ function PoliticalFunnel() {
   // Contato
   const [whatsapp, setWhatsapp] = useState("");
   const [email, setEmail] = useState("");
+  const [showContactModal, setShowContactModal] = useState(false);
+  const [modalStage, setModalStage] = useState<"contact" | "pix">("contact");
 
-  // Checkout
-  const [plan, setPlan] = useState<"single" | "pack3">("pack3");
+  // Checkout & PIX
   const [pixGenerated, setPixGenerated] = useState(false);
   const [pixCopied, setPixCopied] = useState(false);
-  const [showCode, setShowCode] = useState(false);
-  const [showQr, setShowQr] = useState(false);
   const [timeLeft, setTimeLeft] = useState(15 * 60);
 
   // Delivered animation
@@ -179,11 +170,11 @@ function PoliticalFunnel() {
 
   // Cronômetro
   useEffect(() => {
-    if (step === "checkout" && timeLeft > 0) {
+    if ((step === "offer" || showContactModal) && timeLeft > 0) {
       const timer = setInterval(() => setTimeLeft((t) => (t > 0 ? t - 1 : 0)), 1000);
       return () => clearInterval(timer);
     }
-  }, [step, timeLeft]);
+  }, [step, showContactModal, timeLeft]);
 
   const formatTime = (secs: number) => {
     const m = Math.floor(secs / 60);
@@ -239,7 +230,7 @@ function PoliticalFunnel() {
               if (p3 >= 100) {
                 p3 = 100;
                 clearInterval(i3);
-                setTimeout(() => setStep("contact"), 500);
+                setTimeout(() => setStep("offer"), 500);
               }
               setBar3(p3);
             }, 50);
@@ -261,8 +252,8 @@ function PoliticalFunnel() {
     setTimeout(() => setGenComplete(true), 6500);
   };
 
-  const currentPrice = plan === "single" ? 19.9 : 29.9;
-  const pixCodeString = `00020126580014br.gov.bcb.pix0136clique-${selectedCandidate.id}-${Date.now().toString(36)}5204000053039865405${currentPrice.toFixed(2)}5802BR5920FOTO POLITICA AI6009SAO PAULO62070503***6304`;
+  const currentPrice = 27.9;
+  const pixCodeString = `00020126580014br.gov.bcb.pix0136clique-${selectedCandidate.id}-${Date.now().toString(36)}5204000053039865405${currentPrice.toFixed(2)}5802BR5920FOTO OFICIAL6009SAO PAULO62070503***6304`;
 
   const handleCopyPix = () => {
     navigator.clipboard.writeText(pixCodeString);
@@ -672,160 +663,317 @@ function PoliticalFunnel() {
         )}
 
         {/* ========================================================================= */}
-        {/* ABA 5: CONTATO (WHATSAPP E E-MAIL)                                        */}
+        {/* ABA 5: OFERTA / CHECKOUT IDENTICA AO MODELO                               */}
         {/* ========================================================================= */}
-        {step === "contact" && (
-          <div className="w-full flex-1 flex flex-col items-center justify-between text-center animate-in fade-in duration-300">
-            <div className="w-full flex flex-col items-center">
-              <div className="w-12 h-12 rounded-full bg-amber-400/20 text-amber-400 flex items-center justify-center mb-3">
-                <Phone className="w-6 h-6" />
-              </div>
-
-              <h1 className="text-2xl font-black tracking-tight leading-snug">
-                Para onde enviamos a sua <span className="text-amber-400">foto oficial</span>?
-              </h1>
-              <p className="text-xs text-white/70 mt-1 mb-5">
-                Você visualiza aqui na hora e ainda recebe uma cópia sem compressão no WhatsApp.
-              </p>
-
-              <div className="w-full flex flex-col gap-3">
-                <div className="relative">
-                  <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-                  <input
-                    type="tel"
-                    value={whatsapp}
-                    onChange={(e) => handlePhoneMask(e.target.value)}
-                    placeholder="Seu WhatsApp com DDD (Ex: 11 99999-9999)"
-                    className="w-full pl-10 pr-4 py-3.5 rounded-xl bg-white/5 border border-white/20 text-white placeholder-white/40 text-sm focus:outline-none focus:border-amber-400 transition"
-                  />
-                </div>
-
-                <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Seu melhor e-mail"
-                    className="w-full pl-10 pr-4 py-3.5 rounded-xl bg-white/5 border border-white/20 text-white placeholder-white/40 text-sm focus:outline-none focus:border-amber-400 transition"
-                  />
-                </div>
-              </div>
-
-              <p className="text-xs text-white/60 mt-3 text-left leading-relaxed bg-white/5 p-3 rounded-xl border border-white/10">
-                🔒 Seus dados são confidenciais e usados exclusivamente para entregar o arquivo em alta resolução.
-              </p>
+        {step === "offer" && (
+          <div className="w-full flex-1 flex flex-col items-center justify-start text-center animate-in fade-in duration-300">
+            {/* Faixa Superior 50% OFF */}
+            <div className="w-full bg-[#5a0b12] text-amber-300 py-1.5 px-3 rounded-t-xl text-center text-xs font-black tracking-wide border-b border-red-500/20 shadow-inner">
+              🎁 50% OFF aplicado
             </div>
 
-            <div className="w-full pt-4">
+            {/* Teaser Borrado da Foto com Cadeado */}
+            <div className="w-full rounded-2xl overflow-hidden relative aspect-[16/10] border border-white/15 my-3 bg-black shadow-2xl">
+              <img
+                src={selectedScenario.image}
+                alt="Prévia da montagem"
+                className="w-full h-full object-cover filter blur-[6px] brightness-75 scale-105"
+              />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-xl bg-amber-500/20 border-2 border-amber-400/80 backdrop-blur-md flex items-center justify-center shadow-lg shadow-amber-500/30">
+                  <Lock className="w-6 h-6 text-amber-300" />
+                </div>
+              </div>
+            </div>
+
+            {/* Headline Principal */}
+            <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight leading-snug px-1">
+              Você está a 1 passo de ver essa lembrança ganhar vida
+            </h1>
+            <div className="flex items-center justify-center gap-1.5 text-xs text-white/80 mt-1 mb-4">
+              <span className="text-amber-400 text-sm">★</span>
+              <span className="font-extrabold text-white">4,9/5</span>
+              <span className="text-white/40">•</span>
+              <span className="text-amber-300 font-bold">milhares de eleitores</span>
+              <span className="text-white/70">impressionados</span>
+            </div>
+
+            {/* Card: FALTA SÓ O PAGAMENTO */}
+            <div className="w-full bg-[#131010] border border-red-950/80 rounded-2xl p-4 shadow-2xl relative mb-5">
+              <div className="w-full text-center mb-3">
+                <span className="inline-block bg-[#4d0b13] border border-red-600/40 text-amber-300 text-[10px] font-black tracking-widest px-3 py-1 rounded-full uppercase shadow-md">
+                  FALTA SÓ O PAGAMENTO
+                </span>
+              </div>
+
+              {/* Tabela de Preço */}
+              <div className="space-y-1.5 text-xs font-semibold">
+                <div className="flex items-center justify-between text-white/85">
+                  <span>Foto com {selectedCandidate.name} em Alta Definição</span>
+                  <span className="font-mono">R$ 55,80</span>
+                </div>
+                <div className="flex items-center justify-between text-emerald-400">
+                  <span>Desconto de hoje (50%)</span>
+                  <span className="font-mono font-bold">- R$ 27,90</span>
+                </div>
+                <div className="flex items-center justify-between text-white/50">
+                  <span className="flex items-center gap-1">
+                    Taxa de serviço
+                    <span className="text-[10px] opacity-70">ⓘ</span>
+                  </span>
+                  <span className="font-mono">R$ 0,00</span>
+                </div>
+              </div>
+
+              <div className="border-t border-white/10 my-3" />
+
+              {/* Linha Total */}
+              <div className="flex items-center justify-between mb-4">
+                <div className="text-left">
+                  <span className="text-base font-black text-white block leading-tight">Total hoje</span>
+                  <span className="text-[10px] text-white/50 block">pagamento único • PIX</span>
+                </div>
+                <div className="text-2xl sm:text-3xl font-black text-amber-400 tracking-tight font-mono">
+                  R$ 27,90
+                </div>
+              </div>
+
+              {/* Botão CTA Laranja */}
               <button
-                disabled={whatsapp.length < 14 || !email}
-                onClick={() => setStep("checkout")}
-                className={`w-full py-4 rounded-xl font-black text-base tracking-wide transition shadow-lg ${
-                  whatsapp.length >= 14 && email
-                    ? `${selectedCandidate.colorTheme.btnBg} text-white active:scale-98`
-                    : "bg-white/10 text-white/30 cursor-not-allowed"
-                }`}
+                type="button"
+                onClick={() => {
+                  setShowContactModal(true);
+                  if (!whatsapp || !email) {
+                    setModalStage("contact");
+                  }
+                }}
+                className="w-full py-4 px-4 rounded-xl font-black text-sm sm:text-base tracking-wide bg-gradient-to-r from-[#ff6b3d] via-[#ff5722] to-[#e64a19] hover:from-[#ff7b50] hover:to-[#f4511e] text-white shadow-xl shadow-orange-600/30 active:scale-98 transition transform cursor-pointer flex items-center justify-center gap-2"
               >
-                Continuar para Pagamento
+                <span>QUERO MINHA FOTO OFICIAL</span>
               </button>
+
+              <p className="text-[11px] text-white/60 mt-2.5 text-center flex items-center justify-center gap-1.5 font-medium">
+                <Lock className="w-3.5 h-3.5 text-amber-400" />
+                <span>Pagamento seguro via PIX • aprovação na hora</span>
+              </p>
             </div>
+
+            {/* O que você recebe */}
+            <div className="w-full text-left mb-6 px-1">
+              <h3 className="text-sm font-black text-white mb-3 flex items-center gap-2">
+                <span>✨</span>
+                <span>O que você recebe</span>
+              </h3>
+
+              <ul className="space-y-2.5 text-xs text-white/90">
+                <li className="flex items-start gap-2">
+                  <span className="text-amber-400 font-black mt-0.5">✓</span>
+                  <span>
+                    📸 <strong className="text-white">Foto de você ao lado de {selectedCandidate.name}</strong>, em altíssima resolução
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-amber-400 font-black mt-0.5">✓</span>
+                  <span>
+                    🎵 <strong className="text-white">Sem marca d'água</strong> e pronta para postar no Instagram, WhatsApp e redes
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-amber-400 font-black mt-0.5">✓</span>
+                  <span>
+                    📱 <strong className="text-white">Aparece na sua tela em ~2 minutos</strong> (+ cópia no WhatsApp)
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-amber-400 font-black mt-0.5">✓</span>
+                  <span>
+                    💳 <strong className="text-white">Pagamento único</strong> — sem mensalidade
+                  </span>
+                </li>
+              </ul>
+            </div>
+
+            {/* Garantia de Emoção / Dinheiro de Volta */}
+            <div className="w-full text-center my-6 px-2 flex flex-col items-center">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-b from-[#22c55e] to-[#15803d] border-2 border-emerald-300 shadow-xl shadow-emerald-500/30 flex items-center justify-center mb-3">
+                <Star className="w-7 h-7 text-white fill-white" />
+              </div>
+
+              <h3 className="text-base font-black text-white leading-tight">
+                Emoção garantida <br />
+                ou seu dinheiro de volta
+              </h3>
+              <p className="text-[11px] text-white/70 mt-2 max-w-[320px] leading-relaxed">
+                Se a sua foto não superar suas expectativas, devolvemos 100% do seu dinheiro em até 14 dias.
+              </p>
+              <p className="text-[10px] text-white/50 mt-1">
+                Sem pegadinha e sem mensalidade. É uma compra única.
+              </p>
+            </div>
+
+            {/* Amado por milhares de brasileiros */}
+            <div className="w-full text-center mt-3 mb-6">
+              <div className="flex items-center justify-center gap-1 text-[11px] text-white/70 mb-1">
+                <span className="text-amber-400">★</span>
+                <span className="font-extrabold text-white">4,9/5</span>
+                <span>• milhares de fotos entregues</span>
+              </div>
+              <h3 className="text-base font-black text-white mb-3">
+                Amado por milhares de brasileiros 👇
+              </h3>
+
+              <div className="w-full rounded-2xl overflow-hidden border border-amber-400/30 bg-neutral-900/90 shadow-2xl relative">
+                <div className="relative aspect-[1024/853] w-full bg-black">
+                  <img
+                    src={selectedScenario.image}
+                    alt={`Exemplo com ${selectedCandidate.name}`}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+
+                <div className="p-3.5 bg-black/85 backdrop-blur-md border-t border-white/10 text-left flex items-start justify-between gap-3">
+                  <div>
+                    <div className="flex text-amber-400 text-xs mb-1">
+                      ★★★★★
+                    </div>
+                    <strong className="text-xs font-bold text-white block">
+                      {selectedCandidate.id === "lula" ? "Carlos Eduardo Mendes" : "Marcos Vinícius Silveira"}
+                    </strong>
+                    <span className="text-[10px] text-white/50 block mb-1">
+                      {selectedCandidate.id === "lula" ? "São Paulo - SP" : "Curitiba - PR"}
+                    </span>
+                    <p className="text-[11px] text-white/80 italic leading-snug">
+                      {selectedCandidate.id === "lula"
+                        ? '"Ficou muito perfeito! Mandei no grupo da família e todo mundo achou que eu realmente estive com o Lula em Brasília. Parabéns pelo trabalho!"'
+                        : '"Sensacional, imagem nítida e muito realista! Todo mundo elogiou no meu WhatsApp parecendo que estive pessoalmente com o Flávio. Recomendo muito!"'}
+                    </p>
+                  </div>
+                  <div className="w-10 h-10 rounded-full overflow-hidden border border-amber-400/50 shrink-0">
+                    <img
+                      src={userPhoto || (selectedCandidate.id === "lula" ? "/lula-13.jpg" : "/flavio-bolsonaro-22.jpg")}
+                      alt="Cliente"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Rodapé institucional */}
+            <footer className="mt-4 pt-4 pb-6 text-center text-xs text-white/50 w-full border-t border-white/10 flex flex-col items-center gap-2">
+              <div className="flex items-center justify-center gap-4 text-xs text-white/60">
+                <a href="#" className="hover:underline">Termos de Uso</a>
+                <span>•</span>
+                <a href="#" className="hover:underline">Política de Privacidade</a>
+              </div>
+              <p className="text-[11px] text-white/40">
+                Precisa de ajuda? <span className="text-amber-400 font-bold">contato@cliquepolitico.com.br</span>
+              </p>
+            </footer>
           </div>
         )}
 
         {/* ========================================================================= */}
-        {/* ABA 6: CHECKOUT / PAGAMENTO PIX                                           */}
+        {/* MODAL POPUP: EMAIL, WHATSAPP E PAGAMENTO PIX                              */}
         {/* ========================================================================= */}
-        {step === "checkout" && (
-          <div className="w-full flex-1 flex flex-col items-center justify-start text-center animate-in fade-in duration-300">
-            {/* Faixa de Desconto */}
-            <div className="w-full bg-amber-400/10 border border-amber-400/30 text-amber-400 py-2 px-3 rounded-xl text-xs font-bold mb-3 flex items-center justify-center gap-1.5">
-              <span>🎁 50% OFF aplicado · expira em</span>
-              <strong className="text-white font-mono text-sm">{formatTime(timeLeft)}</strong>
-            </div>
+        {showContactModal && (
+          <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3.5 animate-in fade-in duration-200">
+            <div className="w-full max-w-[400px] bg-neutral-950 border border-white/20 rounded-2xl p-5 shadow-2xl relative text-left max-h-[95vh] overflow-y-auto">
+              {/* Botão Fechar */}
+              <button
+                type="button"
+                onClick={() => setShowContactModal(false)}
+                className="absolute top-4 right-4 text-white/60 hover:text-white transition p-1 rounded-full bg-white/10"
+              >
+                <X className="w-4 h-4" />
+              </button>
 
-            {/* Teaser Borrado da Foto com Cadeado */}
-            <div className="w-full rounded-2xl overflow-hidden relative aspect-[16/9] border border-white/10 mb-3 bg-black">
-              <img
-                src={selectedScenario.image}
-                alt="Teaser da montagem"
-                className="w-full h-full object-cover filter blur-[5px] brightness-75"
-              />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-12 h-12 rounded-full bg-black/70 border border-white/30 flex items-center justify-center text-xl backdrop-blur-md">
-                  🔒
-                </div>
-              </div>
-            </div>
-
-            <span className="text-[11px] font-extrabold tracking-widest text-amber-400 uppercase">
-              FALTA SÓ O PAGAMENTO
-            </span>
-            <h1 className="text-xl font-black tracking-tight leading-snug mt-0.5">
-              Sua foto com {selectedCandidate.name} está pronta!
-            </h1>
-
-            {/* Card de Escolha de Pacote */}
-            <div className="w-full bg-white/5 border border-white/15 rounded-2xl p-4 text-left my-4 shadow-xl">
-              <div className="grid grid-cols-2 gap-2 mb-3">
-                <button
-                  type="button"
-                  onClick={() => setPlan("single")}
-                  className={`p-3 rounded-xl border text-left transition ${
-                    plan === "single"
-                      ? "border-amber-400 bg-amber-400/10"
-                      : "border-white/10 bg-black/40 hover:border-white/20"
-                  }`}
-                >
-                  <span className="text-[10px] text-white/60 block">1 FOTO</span>
-                  <span className="text-lg font-black text-white">R$ 19,90</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setPlan("pack3")}
-                  className={`p-3 rounded-xl border text-left transition relative ${
-                    plan === "pack3"
-                      ? "border-amber-400 bg-amber-400/15"
-                      : "border-white/10 bg-black/40 hover:border-white/20"
-                  }`}
-                >
-                  <span className="absolute -top-2 right-2 bg-amber-400 text-black text-[9px] font-black px-1.5 py-0.5 rounded">
-                    MAIS POPULAR
-                  </span>
-                  <span className="text-[10px] text-white/60 block">3 FOTOS</span>
-                  <span className="text-lg font-black text-amber-400">R$ 29,90</span>
-                </button>
-              </div>
-
-              {!pixGenerated ? (
-                <div>
-                  <button
-                    onClick={() => setPixGenerated(true)}
-                    className={`w-full py-4 rounded-xl font-black text-sm tracking-wide ${selectedCandidate.colorTheme.btnBg} text-white shadow-xl active:scale-98 transition`}
-                  >
-                    GERAR PIX DE R$ {currentPrice.toFixed(2).replace(".", ",")}
-                  </button>
-                  <p className="text-center text-[11px] text-white/60 mt-2">
-                    ⚡ Aprovação imediata via Pix • Sem mensalidade
-                  </p>
-                </div>
-              ) : (
-                <div className="flex flex-col gap-3 animate-in fade-in duration-300">
-                  <div className="text-center">
-                    <span className="text-xs text-amber-400 font-bold">⚡ PIX · aprovação imediata</span>
-                    <div className="text-3xl font-black text-white mt-1">
-                      R$ {currentPrice.toFixed(2).replace(".", ",")}
-                    </div>
-                    <p className="text-[11px] text-white/60">
-                      Montagem com {selectedCandidate.name} ({selectedScenario.title})
-                    </p>
+              {modalStage === "contact" ? (
+                <div className="flex flex-col">
+                  <div className="w-11 h-11 rounded-full bg-amber-400/20 text-amber-400 flex items-center justify-center mb-3">
+                    <Phone className="w-5 h-5" />
                   </div>
 
-                  {/* Botão Copiar PIX */}
+                  <h3 className="text-xl font-black text-white leading-tight">
+                    Para onde enviamos a sua foto oficial?
+                  </h3>
+                  <p className="text-xs text-white/70 mt-1 mb-4 leading-relaxed">
+                    Você visualiza aqui na tela e ainda recebe uma cópia original sem compressão no seu WhatsApp e e-mail.
+                  </p>
+
+                  <div className="flex flex-col gap-3">
+                    <div>
+                      <label className="text-[11px] font-bold text-white/75 mb-1 block">
+                        Seu WhatsApp com DDD:
+                      </label>
+                      <div className="relative">
+                        <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                        <input
+                          type="tel"
+                          value={whatsapp}
+                          onChange={(e) => handlePhoneMask(e.target.value)}
+                          placeholder="(11) 99999-9999"
+                          className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/5 border border-white/20 text-white placeholder-white/40 text-sm focus:outline-none focus:border-amber-400 transition font-medium"
+                          autoFocus
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-[11px] font-bold text-white/75 mb-1 block">
+                        Seu melhor e-mail:
+                      </label>
+                      <div className="relative">
+                        <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                        <input
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="seu@email.com"
+                          className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/5 border border-white/20 text-white placeholder-white/40 text-sm focus:outline-none focus:border-amber-400 transition font-medium"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <p className="text-[11px] text-white/50 mt-3 flex items-center gap-1.5 leading-tight">
+                    <Lock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    <span>Seus dados são confidenciais e protegidos pela LGPD.</span>
+                  </p>
+
+                  <button
+                    disabled={whatsapp.length < 14 || !email.includes("@")}
+                    onClick={() => {
+                      setModalStage("pix");
+                      setPixGenerated(true);
+                    }}
+                    className={`w-full mt-4 py-4 rounded-xl font-black text-sm tracking-wide transition shadow-lg ${
+                      whatsapp.length >= 14 && email.includes("@")
+                        ? "bg-gradient-to-r from-emerald-500 to-green-600 text-white active:scale-98 hover:brightness-110 cursor-pointer"
+                        : "bg-white/10 text-white/30 cursor-not-allowed"
+                    }`}
+                  >
+                    CONTINUAR PARA PAGAMENTO PIX
+                  </button>
+                </div>
+              ) : (
+                /* Modal Stage: PIX */
+                <div className="flex flex-col items-center text-center">
+                  <div className="inline-flex items-center gap-1.5 bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 px-3 py-1 rounded-full text-xs font-black mb-2">
+                    <span>⚡ PIX · APROVAÇÃO INSTANTÂNEA</span>
+                  </div>
+
+                  <div className="text-3xl font-black text-white mt-1 font-mono">
+                    R$ 27,90
+                  </div>
+                  <p className="text-[11px] text-white/60 mb-3">
+                    Montagem oficial com {selectedCandidate.name}
+                  </p>
+
+                  {/* Botão Copiar Código PIX */}
                   <button
                     onClick={handleCopyPix}
-                    className={`w-full py-4 px-3 rounded-xl font-black text-sm tracking-wide text-black flex items-center justify-center gap-2 transition ${
+                    className={`w-full py-4 px-3 rounded-xl font-black text-sm tracking-wide text-black flex items-center justify-center gap-2 transition cursor-pointer ${
                       pixCopied
                         ? "bg-[#8ff0b3]"
                         : "bg-gradient-to-b from-[#41E877] via-[#25C55B] to-[#17A94B] text-black shadow-lg shadow-green-500/20"
@@ -839,13 +987,13 @@ function PoliticalFunnel() {
                     ) : (
                       <>
                         <Copy className="w-5 h-5" />
-                        <span>COPIAR CÓDIGO E PAGAR</span>
+                        <span>COPIAR CÓDIGO PIX</span>
                       </>
                     )}
                   </button>
 
-                  {/* QR Code Opcional */}
-                  <div className="bg-white p-3 rounded-xl mx-auto flex flex-col items-center">
+                  {/* QR Code */}
+                  <div className="bg-white p-2.5 rounded-xl my-3 flex flex-col items-center">
                     <img
                       src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(
                         pixCodeString
@@ -854,42 +1002,39 @@ function PoliticalFunnel() {
                       className="w-32 h-32"
                     />
                     <span className="text-[10px] text-black/70 font-semibold mt-1">
-                      Aponte a câmera do seu banco
+                      Aponte a câmera do aplicativo do seu banco
                     </span>
                   </div>
 
-                  {/* Status pulsante */}
-                  <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl p-2.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping" />
-                    <div className="text-left text-xs leading-tight">
-                      <strong className="text-white block">Aguardando confirmação do pagamento…</strong>
-                      <span className="text-[11px] text-white/50">Você não precisa fazer mais nada</span>
+                  {/* Status pulsando */}
+                  <div className="w-full flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl p-2.5 text-left mb-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping shrink-0" />
+                    <div className="text-xs leading-tight">
+                      <strong className="text-white block">Aguardando pagamento…</strong>
+                      <span className="text-[10px] text-white/50">Expira em {formatTime(timeLeft)}</span>
                     </div>
                   </div>
 
-                  {/* Botão de Teste / Simulação */}
+                  {/* Simular para testes */}
                   <button
-                    onClick={handlePaymentConfirmed}
-                    className="mt-2 text-xs text-amber-400 underline opacity-80 hover:opacity-100"
+                    onClick={() => {
+                      setShowContactModal(false);
+                      handlePaymentConfirmed();
+                    }}
+                    className="text-xs text-amber-400 underline opacity-85 hover:opacity-100 my-1 cursor-pointer"
                   >
                     ⚡ Simular confirmação (Ver resultado final)
                   </button>
+
+                  {/* Voltar para editar contato */}
+                  <button
+                    onClick={() => setModalStage("contact")}
+                    className="text-[11px] text-white/50 hover:text-white underline mt-1 cursor-pointer"
+                  >
+                    ← Alterar WhatsApp ({whatsapp}) ou E-mail
+                  </button>
                 </div>
               )}
-            </div>
-
-            {/* O que você recebe */}
-            <div className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-left mb-4">
-              <h3 className="text-xs font-bold text-white mb-2 flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                <span>O que está incluído:</span>
-              </h3>
-              <ul className="text-xs text-white/80 space-y-1.5">
-                <li>• Foto em altíssima resolução para redes e impressão</li>
-                <li>• Envio imediato no seu WhatsApp e e-mail</li>
-                <li>• Iluminação realista ajustada com o candidato</li>
-                <li>• Pagamento único — sem pegadinhas nem assinaturas</li>
-              </ul>
             </div>
           </div>
         )}
@@ -985,6 +1130,8 @@ function PoliticalFunnel() {
                       setGenComplete(false);
                       setPixGenerated(false);
                       setUserPhoto(null);
+                      setShowContactModal(false);
+                      setModalStage("contact");
                     }}
                     className="mt-2 text-xs text-white/50 underline hover:text-white"
                   >
