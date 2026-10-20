@@ -94,41 +94,46 @@ interface Scenario {
   tag: string;
 }
 
-const SCENARIOS: Scenario[] = [
+// Opções exclusivas para Flávio Bolsonaro fornecidas pelo usuário
+const FLAVIO_SCENARIOS: Scenario[] = [
   {
-    id: "comicio-selfie",
+    id: "flavio-selfie-22",
+    title: "Selfie com Flávio (Sinal 22)",
+    description: "Selfie oficial com Flávio Bolsonaro fazendo o sinal da vitória com a camisa da Seleção.",
+    image: "/flavio-cenario-selfie.jpg",
+    tag: "Mais Escolhida 🔥",
+  },
+  {
+    id: "flavio-abraco",
+    title: "Abraço com Flávio",
+    description: "Foto emocionante de abraço fraterno com Flávio Bolsonaro no gabinete.",
+    image: "/flavio-cenario-abraco.jpg",
+    tag: "Emocionante 💛",
+  },
+];
+
+// Opções para Lula
+const LULA_SCENARIOS: Scenario[] = [
+  {
+    id: "lula-comicio",
     title: "Selfie no Comício",
-    description: "No meio da multidão, estilo selfie espontânea com o candidato sorrindo e acenando ao seu lado.",
+    description: "No meio do povo e das bandeiras, estilo selfie espontânea com Lula acenando ao seu lado.",
     image: "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=700&q=80",
-    tag: "Mais Escolhido",
+    tag: "Comício Popular",
   },
   {
-    id: "gabinete-oficial",
-    title: "Gabinete de Reuniões",
-    description: "Sentados lado a lado na mesa de reuniões oficial com pastas e ambiente executivo formal.",
+    id: "lula-gabinete",
+    title: "Gabinete Presidencial",
+    description: "Sentados lado a lado na mesa oficial de reuniões e despachos em Brasília.",
     image: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=700&q=80",
-    tag: "Formal & Elegante",
-  },
-  {
-    id: "encontro-institucional",
-    title: "Aperto de Mão Oficial",
-    description: "Aperto de mão firme e conversa amistosa com a bandeira do Brasil ao fundo.",
-    image: "https://images.unsplash.com/photo-1577495508048-b635879837f1?auto=format&fit=crop&w=700&q=80",
-    tag: "Institucional",
-  },
-  {
-    id: "palco-multidao",
-    title: "No Palco com a Multidão",
-    description: "Em cima do palco principal ou caminhão de som, com milhares de pessoas aplaudindo ao fundo.",
-    image: "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?auto=format&fit=crop&w=700&q=80",
-    tag: "Grande Evento",
+    tag: "Formal & Oficial",
   },
 ];
 
 function PoliticalFunnel() {
   const [step, setStep] = useState<Step>("candidate");
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate>(CANDIDATES[0]);
-  const [selectedScenario, setSelectedScenario] = useState<Scenario>(SCENARIOS[0]);
+  const [selectedScenario, setSelectedScenario] = useState<Scenario>(LULA_SCENARIOS[0]);
 
   // Contadores de fotos em tempo real para gerar rivalidade
   const [lulaCount, setLulaCount] = useState(14832);
@@ -168,6 +173,9 @@ function PoliticalFunnel() {
   // Delivered animation
   const [genStage, setGenStage] = useState(1);
   const [genComplete, setGenComplete] = useState(false);
+
+  // Cenários ativos de acordo com o candidato selecionado
+  const activeScenarios = selectedCandidate.id === "flavio" ? FLAVIO_SCENARIOS : LULA_SCENARIOS;
 
   // Cronômetro
   useEffect(() => {
@@ -292,7 +300,7 @@ function PoliticalFunnel() {
                 Toque no seu líder para apoiar seu lado e não deixar o outro vencer o placar:
               </p>
 
-              {/* Placar Comparativo em Tempo Real (Termômetro da Disputa) */}
+              {/* Placar Comparativo em Tempo Real */}
               <div className="w-full bg-neutral-900/95 border border-white/15 rounded-2xl p-3 mb-4 shadow-2xl">
                 <div className="flex items-center justify-between text-xs mb-1.5 font-black">
                   <div className="flex items-center gap-1.5 text-red-500">
@@ -335,6 +343,7 @@ function PoliticalFunnel() {
                     type="button"
                     onClick={() => {
                       setSelectedCandidate(CANDIDATES[0]);
+                      setSelectedScenario(LULA_SCENARIOS[0]);
                       setStep("scenario");
                     }}
                     className="group relative rounded-2xl overflow-hidden border-2 border-red-600/80 bg-neutral-950 aspect-[3/4.4] flex flex-col justify-end text-left transition-all active:scale-95 hover:border-red-500 hover:shadow-2xl hover:shadow-red-600/30 focus:outline-none focus:ring-4 focus:ring-red-500/40"
@@ -346,12 +355,10 @@ function PoliticalFunnel() {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
 
-                    {/* Badge 13 no topo */}
                     <div className="absolute top-2.5 left-2.5 bg-red-600 text-white text-xs font-black px-2.5 py-0.5 rounded-full shadow-lg border border-red-400">
                       PT • 13
                     </div>
 
-                    {/* Informações no rodapé do card */}
                     <div className="relative p-2.5 z-10">
                       <span className="text-[10px] font-bold text-red-400 uppercase tracking-wider block">
                         Presidente
@@ -365,7 +372,6 @@ function PoliticalFunnel() {
                     </div>
                   </button>
 
-                  {/* Estimativa de Pessoas e Alerta de Conflito para o Eleitor do Lula */}
                   <div className="mt-2 bg-red-950/80 border border-red-500/40 rounded-xl p-2.5 text-center shadow-inner">
                     <div className="flex items-center justify-between text-[11px] font-extrabold mb-1">
                       <span className="text-white/80">Fotos geradas:</span>
@@ -386,6 +392,7 @@ function PoliticalFunnel() {
                     type="button"
                     onClick={() => {
                       setSelectedCandidate(CANDIDATES[1]);
+                      setSelectedScenario(FLAVIO_SCENARIOS[0]);
                       setStep("scenario");
                     }}
                     className="group relative rounded-2xl overflow-hidden border-2 border-yellow-400/80 bg-neutral-950 aspect-[3/4.4] flex flex-col justify-end text-left transition-all active:scale-95 hover:border-yellow-300 hover:shadow-2xl hover:shadow-yellow-500/30 focus:outline-none focus:ring-4 focus:ring-yellow-400/40"
@@ -397,12 +404,10 @@ function PoliticalFunnel() {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
 
-                    {/* Badge 22 no topo */}
                     <div className="absolute top-2.5 left-2.5 bg-yellow-400 text-black text-xs font-black px-2.5 py-0.5 rounded-full shadow-lg border border-yellow-300">
                       PL • 22
                     </div>
 
-                    {/* Informações no rodapé do card */}
                     <div className="relative p-2.5 z-10">
                       <span className="text-[10px] font-bold text-yellow-400 uppercase tracking-wider block">
                         Senador
@@ -416,7 +421,6 @@ function PoliticalFunnel() {
                     </div>
                   </button>
 
-                  {/* Estimativa de Pessoas e Alerta de Conflito para o Eleitor do Flávio */}
                   <div className="mt-2 bg-yellow-950/80 border border-yellow-500/40 rounded-xl p-2.5 text-center shadow-inner">
                     <div className="flex items-center justify-between text-[11px] font-extrabold mb-1">
                       <span className="text-white/80">Fotos geradas:</span>
@@ -448,7 +452,6 @@ function PoliticalFunnel() {
               </div>
             </div>
 
-            {/* Rodapé Informativo */}
             <footer className="mt-5 pt-3 pb-2 text-center text-xs text-white/40 w-full border-t border-white/10">
               <p className="text-[11px]">
                 Placar atualizado a cada minuto • Entrega imediata em alta definição no seu WhatsApp
@@ -458,7 +461,7 @@ function PoliticalFunnel() {
         )}
 
         {/* ========================================================================= */}
-        {/* ABA 2: ESCOLHA DO CENÁRIO                                                 */}
+        {/* ABA 2: ESCOLHA DO CENÁRIO (APENAS AS 2 FOTOS PARA FLÁVIO)                 */}
         {/* ========================================================================= */}
         {step === "scenario" && (
           <div className="w-full flex-1 flex flex-col items-center justify-between text-center animate-in fade-in duration-300">
@@ -473,42 +476,47 @@ function PoliticalFunnel() {
               </button>
 
               <h1 className="text-2xl font-black text-white tracking-tight leading-snug">
-                Escolha o cenário <br />
+                Escolha o estilo da foto <br />
                 com <span className={selectedCandidate.colorTheme.accentText}>{selectedCandidate.name}</span>
               </h1>
               <p className="text-xs text-white/70 mt-1 mb-4">
-                Toque no ambiente fictício onde você quer aparecer ao lado dele:
+                {selectedCandidate.id === "flavio"
+                  ? "Selecione uma das duas montagens oficiais abaixo:"
+                  : "Toque no ambiente onde você quer aparecer ao lado dele:"}
               </p>
 
-              {/* Grade de Cenários */}
+              {/* Grade com exatamente as 2 opções para Flávio */}
               <div className="grid grid-cols-2 gap-3 w-full">
-                {SCENARIOS.map((sc) => (
+                {activeScenarios.map((sc) => (
                   <button
                     key={sc.id}
                     onClick={() => {
                       setSelectedScenario(sc);
                       setStep("upload");
                     }}
-                    className="relative group rounded-2xl overflow-hidden border border-white/20 bg-black aspect-[9/14] flex flex-col justify-end text-left transition-all active:scale-95 hover:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                    className="relative group rounded-2xl overflow-hidden border-2 border-white/20 bg-neutral-950 aspect-[3/4.2] flex flex-col justify-end text-left transition-all active:scale-95 hover:border-amber-400 hover:shadow-2xl hover:shadow-amber-500/20 focus:outline-none focus:ring-4 focus:ring-amber-400"
                   >
                     <img
                       src={sc.image}
                       alt={sc.title}
                       className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
 
-                    <div className="absolute top-2 left-2 bg-black/70 backdrop-blur-xs text-amber-400 text-[10px] font-bold px-2 py-0.5 rounded-md border border-white/10">
+                    <div className="absolute top-2 left-2 bg-black/80 backdrop-blur-xs text-amber-300 text-[10px] font-black px-2 py-0.5 rounded-md border border-amber-400/40">
                       {sc.tag}
                     </div>
 
                     <div className="relative p-2.5 z-10">
-                      <strong className="text-xs font-bold text-white block leading-tight">
+                      <strong className="text-xs font-black text-white block leading-tight">
                         {sc.title}
                       </strong>
-                      <span className="text-[10px] text-white/60 block mt-0.5 line-clamp-2">
+                      <span className="text-[10px] text-white/70 block mt-0.5 line-clamp-2">
                         {sc.description}
                       </span>
+                      <div className="mt-2 w-full py-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-black font-black text-[11px] text-center shadow-md">
+                        ESCOLHER ESTA
+                      </div>
                     </div>
                   </button>
                 ))}
@@ -528,15 +536,15 @@ function PoliticalFunnel() {
                 className="self-start text-xs text-amber-400 flex items-center gap-1 mb-2 hover:opacity-80 transition font-bold"
               >
                 <ChevronLeft className="w-4 h-4" />
-                <span>Voltar aos cenários</span>
+                <span>Voltar às opções de foto</span>
               </button>
 
               <h1 className="text-2xl font-black text-white tracking-tight leading-snug">
                 Agora, envie a sua foto
               </h1>
               <p className="text-xs text-white/70 mt-1 mb-4">
-                Envie uma foto de rosto ou selfie. A IA vai colocar você ao lado de{" "}
-                <strong className={selectedCandidate.colorTheme.accentText}>{selectedCandidate.name}</strong> no cenário "{selectedScenario.title}".
+                Envie uma foto de rosto ou selfie. A IA vai colocar o seu rosto perfeitamente na montagem escolhida (
+                <strong className={selectedCandidate.colorTheme.accentText}>{selectedScenario.title}</strong>).
               </p>
 
               {/* Slot de Upload com Preview */}
@@ -604,7 +612,7 @@ function PoliticalFunnel() {
                 Criando sua foto com {selectedCandidate.name}…
               </h1>
               <p className="text-xs text-white/70 mb-6">
-                Estamos reconhecendo seu rosto e ajustando a iluminação no cenário
+                Estamos reconhecendo seu rosto e ajustando a iluminação na montagem
               </p>
 
               {/* Dois avatares se aproximando */}
@@ -616,7 +624,7 @@ function PoliticalFunnel() {
                   <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-amber-400/60 filter blur-[2px] animate-ping" />
                 </div>
                 <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-amber-400 shadow-xl shadow-amber-400/20">
-                  <img src={selectedCandidate.image} alt={selectedCandidate.name} className="w-full h-full object-cover" />
+                  <img src={selectedScenario.image} alt={selectedCandidate.name} className="w-full h-full object-cover" />
                 </div>
               </div>
 
@@ -634,7 +642,7 @@ function PoliticalFunnel() {
 
                 <div className="w-full text-left">
                   <div className="flex justify-between text-xs font-semibold text-white/80 mb-1">
-                    <span>Inserindo no cenário com {selectedCandidate.name}</span>
+                    <span>Encaixando no estilo ({selectedScenario.title})</span>
                     <span className="text-amber-400">{bar2}%</span>
                   </div>
                   <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
@@ -730,9 +738,9 @@ function PoliticalFunnel() {
             </div>
 
             {/* Teaser Borrado da Foto com Cadeado */}
-            <div className="w-full rounded-2xl overflow-hidden relative aspect-[16/8] border border-white/10 mb-3 bg-black">
+            <div className="w-full rounded-2xl overflow-hidden relative aspect-[16/9] border border-white/10 mb-3 bg-black">
               <img
-                src={selectedCandidate.image}
+                src={selectedScenario.image}
                 alt="Teaser da montagem"
                 className="w-full h-full object-cover filter blur-[5px] brightness-75"
               />
@@ -887,7 +895,7 @@ function PoliticalFunnel() {
             {!genComplete ? (
               <div className="w-full flex-1 flex flex-col items-center justify-center py-8">
                 <div className="relative w-28 h-28 rounded-full overflow-hidden border-4 border-amber-400 shadow-2xl mb-4 animate-pulse">
-                  <img src={selectedCandidate.image} alt={selectedCandidate.name} className="w-full h-full object-cover" />
+                  <img src={selectedScenario.image} alt={selectedCandidate.name} className="w-full h-full object-cover" />
                 </div>
                 <h2 className="text-xl font-bold text-white mb-1">
                   Finalizando sua montagem…
@@ -899,15 +907,15 @@ function PoliticalFunnel() {
                 <ol className="text-left text-xs space-y-2.5 max-w-[260px] mx-auto">
                   <li className={`flex items-center gap-2 ${genStage >= 1 ? "text-white font-bold" : "text-white/30"}`}>
                     <span className={`w-2 h-2 rounded-full ${genStage >= 1 ? "bg-amber-400 shadow-[0_0_8px_#fbbf24]" : "bg-white/20"}`} />
-                    Ajustando enquadramento no cenário
+                    Ajustando seu rosto no cenário ({selectedScenario.title})
                   </li>
                   <li className={`flex items-center gap-2 ${genStage >= 2 ? "text-white font-bold" : "text-white/30"}`}>
                     <span className={`w-2 h-2 rounded-full ${genStage >= 2 ? "bg-amber-400 shadow-[0_0_8px_#fbbf24]" : "bg-white/20"}`} />
-                    Equalizando iluminação e sombras
+                    Equalizando iluminação, sombras e nitidez
                   </li>
                   <li className={`flex items-center gap-2 ${genStage >= 3 ? "text-white font-bold" : "text-white/30"}`}>
                     <span className={`w-2 h-2 rounded-full ${genStage >= 3 ? "bg-amber-400 shadow-[0_0_8px_#fbbf24]" : "bg-white/20"}`} />
-                    Gerando arquivo em alta resolução
+                    Gerando arquivo final em alta resolução
                   </li>
                 </ol>
               </div>
@@ -928,7 +936,7 @@ function PoliticalFunnel() {
                 {/* Exibição da Montagem */}
                 <div className="w-full rounded-2xl overflow-hidden border-2 border-amber-400/50 shadow-2xl relative bg-black aspect-[3/3.8] mb-4">
                   <img
-                    src={selectedCandidate.image}
+                    src={selectedScenario.image}
                     alt="Montagem Pronta"
                     className="w-full h-full object-cover"
                   />
@@ -940,7 +948,7 @@ function PoliticalFunnel() {
                 {/* Botões de Ação */}
                 <div className="w-full flex flex-col gap-2.5 mb-6">
                   <a
-                    href={selectedCandidate.image}
+                    href={selectedScenario.image}
                     download={`minha-foto-com-${selectedCandidate.id}.jpg`}
                     target="_blank"
                     rel="noreferrer"
