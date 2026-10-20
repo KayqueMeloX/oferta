@@ -483,8 +483,8 @@ function PoliticalFunnel() {
                 Selecione uma das duas montagens oficiais abaixo:
               </p>
 
-              {/* Grade com exatamente as 2 opções por candidato */}
-              <div className="grid grid-cols-2 gap-3 w-full">
+              {/* Lista com as 2 opções em proporção completa para exibir todas as mãos */}
+              <div className="flex flex-col gap-4 w-full">
                 {activeScenarios.map((sc) => (
                   <button
                     key={sc.id}
@@ -492,32 +492,36 @@ function PoliticalFunnel() {
                       setSelectedScenario(sc);
                       setStep("upload");
                     }}
-                    className={`relative group rounded-2xl overflow-hidden border-2 border-white/20 bg-neutral-950 aspect-[3/4.2] flex flex-col justify-end text-left transition-all active:scale-95 focus:outline-none focus:ring-4 ${
+                    className={`w-full rounded-2xl overflow-hidden border-2 border-white/20 bg-neutral-950 text-left transition-all active:scale-98 focus:outline-none focus:ring-4 shadow-xl ${
                       selectedCandidate.id === "lula"
-                        ? "hover:border-red-500 hover:shadow-2xl hover:shadow-red-600/20 focus:ring-red-500"
-                        : "hover:border-amber-400 hover:shadow-2xl hover:shadow-amber-500/20 focus:ring-amber-400"
+                        ? "hover:border-red-500 hover:shadow-red-600/20 focus:ring-red-500"
+                        : "hover:border-amber-400 hover:shadow-amber-500/20 focus:ring-amber-400"
                     }`}
                   >
-                    <img
-                      src={sc.image}
-                      alt={sc.title}
-                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
-
-                    <div className="absolute top-2 left-2 bg-black/80 backdrop-blur-xs text-amber-300 text-[10px] font-black px-2 py-0.5 rounded-md border border-amber-400/40">
-                      {sc.tag}
+                    {/* Imagem em proporção 1024x853 sem cortes laterais */}
+                    <div className="relative aspect-[1024/853] w-full bg-black overflow-hidden">
+                      <img
+                        src={sc.image}
+                        alt={sc.title}
+                        className="w-full h-full object-contain"
+                      />
+                      <div className="absolute top-2.5 left-2.5 bg-black/80 backdrop-blur-xs text-amber-300 text-[10px] font-black px-2.5 py-0.5 rounded-md border border-amber-400/40">
+                        {sc.tag}
+                      </div>
                     </div>
 
-                    <div className="relative p-2.5 z-10">
-                      <strong className="text-xs font-black text-white block leading-tight">
+                    {/* Barra de título e botão */}
+                    <div className="p-3 bg-neutral-900 flex items-center justify-between gap-3 border-t border-white/10">
+                      <strong className="text-sm font-black text-white block">
                         {sc.title}
                       </strong>
-                      <div className={`mt-2 w-full py-1.5 rounded-lg font-black text-[11px] text-center shadow-md ${
-                        selectedCandidate.id === "lula"
-                          ? "bg-red-600 hover:bg-red-500 text-white shadow-red-700/50"
-                          : "bg-amber-400 hover:bg-amber-300 text-black shadow-amber-500/50"
-                      }`}>
+                      <div
+                        className={`px-4 py-2 rounded-xl font-black text-xs text-center shadow-md ${
+                          selectedCandidate.id === "lula"
+                            ? "bg-red-600 hover:bg-red-500 text-white shadow-red-700/50"
+                            : "bg-amber-400 hover:bg-amber-300 text-black shadow-amber-500/50"
+                        }`}
+                      >
                         ESCOLHER
                       </div>
                     </div>
@@ -936,12 +940,12 @@ function PoliticalFunnel() {
                   </p>
                 </div>
 
-                {/* Exibição da Montagem */}
-                <div className="w-full rounded-2xl overflow-hidden border-2 border-amber-400/50 shadow-2xl relative bg-black aspect-[3/3.8] mb-4">
+                {/* Exibição da Montagem sem cortes */}
+                <div className="w-full rounded-2xl overflow-hidden border-2 border-amber-400/50 shadow-2xl relative bg-black aspect-[1024/853] mb-4">
                   <img
                     src={selectedScenario.image}
                     alt="Montagem Pronta"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain"
                   />
                   <div className="absolute bottom-2.5 right-2.5 bg-black/75 backdrop-blur-md text-white text-[10px] font-semibold px-2.5 py-1 rounded-md border border-white/20">
                     🤖 Imagem fictícia gerada por IA
