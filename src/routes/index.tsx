@@ -12,6 +12,7 @@ import {
   Flame,
   X,
   Star,
+  Camera,
 } from "lucide-react";
 
 export const Route = createFileRoute("/")({

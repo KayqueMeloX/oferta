@@ -40,28 +40,18 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
   }, [error]);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-[#0c0a09] text-white px-4">
-      <div className="max-w-lg text-center w-full">
-        <h1 className="text-xl font-bold tracking-tight text-white mb-2">
+    <div className="flex min-h-screen items-center justify-center bg-[#0c0a09] text-white px-4">
+      <div className="max-w-md text-center">
+        <h1 className="text-xl font-semibold tracking-tight text-white">
           Ocorreu um erro ao carregar a página
         </h1>
-        <div className="bg-red-950/80 border border-red-500/50 text-red-200 text-xs p-3.5 rounded-xl text-left my-4 overflow-auto max-h-60 font-mono">
-          <strong className="text-red-400 block mb-1">
-            {error instanceof Error ? error.message : String(error)}
-          </strong>
-          {error instanceof Error && error.stack && (
-            <pre className="mt-2 text-[10px] text-red-300/80 whitespace-pre-wrap">
-              {error.stack}
-            </pre>
-          )}
-        </div>
-        <div className="mt-4 flex flex-wrap justify-center gap-3">
+        <div className="mt-6 flex flex-wrap justify-center gap-3">
           <button
             onClick={() => {
               router.invalidate();
               reset();
             }}
-            className="inline-flex items-center justify-center rounded-xl bg-amber-500 px-5 py-2.5 text-sm font-bold text-black hover:bg-amber-400 transition"
+            className="inline-flex items-center justify-center rounded-xl bg-amber-500 px-4 py-2 text-sm font-bold text-black hover:bg-amber-400"
           >
             Tentar novamente
           </button>
