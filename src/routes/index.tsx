@@ -170,11 +170,13 @@ function PoliticalFunnel() {
 
   // Cronômetro
   useEffect(() => {
-    if ((step === "offer" || showContactModal) && timeLeft > 0) {
-      const timer = setInterval(() => setTimeLeft((t) => (t > 0 ? t - 1 : 0)), 1000);
+    if (step === "offer" || showContactModal) {
+      const timer = setInterval(() => {
+        setTimeLeft((t) => (t > 0 ? t - 1 : 0));
+      }, 1000);
       return () => clearInterval(timer);
     }
-  }, [step, showContactModal, timeLeft]);
+  }, [step, showContactModal]);
 
   const formatTime = (secs: number) => {
     const m = Math.floor(secs / 60);
