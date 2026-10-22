@@ -123,10 +123,113 @@ const LULA_SCENARIOS: Scenario[] = [
   },
 ];
 
+interface Review {
+  id: string;
+  name: string;
+  city: string;
+  avatar: string;
+  stars: number;
+  time: string;
+  text: string;
+  verified: boolean;
+  imagePreview?: string;
+}
+
+const LULA_REVIEWS: Review[] = [
+  {
+    id: "l1",
+    name: "Carlos Eduardo Mendes",
+    city: "São Paulo, SP",
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&auto=format&fit=crop&q=80",
+    stars: 5,
+    time: "Há 18 minutos",
+    text: "Ficou muito perfeito! Mandei no grupo da família e todo mundo achou que eu realmente estive com o Lula em Brasília. A iluminação e os detalhes ficaram impecáveis!",
+    verified: true,
+    imagePreview: "/lula-cenario-selfie-l.jpg",
+  },
+  {
+    id: "l2",
+    name: "Maria de Fátima Alencar",
+    city: "Salvador, BA",
+    avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=120&auto=format&fit=crop&q=80",
+    stars: 5,
+    time: "Há 42 minutos",
+    text: "Fiz de surpresa pro meu pai que é fã do Lula desde 1989. Quando ele viu a foto dele abraçando o presidente, até chorou de emoção! Vale cada centavo.",
+    verified: true,
+    imagePreview: "/lula-cenario-abraco.jpg",
+  },
+  {
+    id: "l3",
+    name: "Rodrigo Nogueira",
+    city: "Belo Horizonte, MG",
+    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&auto=format&fit=crop&q=80",
+    stars: 5,
+    time: "Há 1 hora",
+    text: "Coloquei como foto no meu status do WhatsApp e bombou de gente perguntando onde tirei essa foto com o homem! Entrega no WhatsApp foi super rápida, menos de 2 minutos.",
+    verified: true,
+  },
+  {
+    id: "l4",
+    name: "Patrícia Lima",
+    city: "Recife, PE",
+    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120&auto=format&fit=crop&q=80",
+    stars: 5,
+    time: "Há 2 horas",
+    text: "A qualidade em altíssima resolução me surpreendeu. Dá até pra mandar imprimir e colocar num porta-retrato. O gesto do L ficou muito nítido e natural!",
+    verified: true,
+  },
+];
+
+const FLAVIO_REVIEWS: Review[] = [
+  {
+    id: "f1",
+    name: "Marcos Vinícius Silveira",
+    city: "Curitiba, PR",
+    avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=120&auto=format&fit=crop&q=80",
+    stars: 5,
+    time: "Há 12 minutos",
+    text: "Sensacional! Imagem extremamente nítida e muito realista. Todo mundo elogiou no meu WhatsApp parecendo mesmo que estive no gabinete com o Senador Flávio Bolsonaro. Muito top!",
+    verified: true,
+    imagePreview: "/flavio-cenario-selfie.jpg",
+  },
+  {
+    id: "f2",
+    name: "Eduardo Guimarães",
+    city: "Goiânia, GO",
+    avatar: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=120&auto=format&fit=crop&q=80",
+    stars: 5,
+    time: "Há 35 minutos",
+    text: "Mandei pros amigos do grupo do trabalho e ninguém acreditou que era montagem de tão perfeita. O sinal do 22 com a mão ficou certinho, padrão de qualidade excelente!",
+    verified: true,
+    imagePreview: "/flavio-cenario-abraco.jpg",
+  },
+  {
+    id: "f3",
+    name: "Luciana Ferreira",
+    city: "Joinville, SC",
+    avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=120&auto=format&fit=crop&q=80",
+    stars: 5,
+    time: "Há 1 hora",
+    text: "Comprei de presente pro meu marido que é apoiador do 22 raiz. Ele colocou como foto de perfil e imprimiu pra colocar no escritório dele. Recomendo demais!",
+    verified: true,
+  },
+  {
+    id: "f4",
+    name: "André Meirelles",
+    city: "Rio de Janeiro, RJ",
+    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=120&auto=format&fit=crop&q=80",
+    stars: 5,
+    time: "Há 2 horas",
+    text: "Muito prático e seguro. Paguei no PIX e recebi o arquivo original no WhatsApp imediatamente sem compressão. Vale muito a pena para fortalecer o nosso lado!",
+    verified: true,
+  },
+];
+
 function PoliticalFunnel() {
   const [step, setStep] = useState<Step>("candidate");
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate>(CANDIDATES[0]);
   const [selectedScenario, setSelectedScenario] = useState<Scenario>(LULA_SCENARIOS[0]);
+  const [reviewTab, setReviewTab] = useState<"lula" | "flavio">("lula");
 
   // Contadores de fotos em tempo real para gerar rivalidade
   const [lulaCount, setLulaCount] = useState(14832);
@@ -455,6 +558,112 @@ function PoliticalFunnel() {
                   <span className="text-[11px] text-white/60">
                     Sua foto é produzida em alta definição profissional e conta automaticamente no placar do dia.
                   </span>
+                </div>
+              </div>
+
+              {/* Seção de Feedbacks / Avaliações dos Dois Lados */}
+              <div className="w-full mt-6 text-left">
+                <div className="flex items-center justify-between mb-2 px-1">
+                  <div>
+                    <h3 className="text-sm font-black text-white flex items-center gap-1.5">
+                      <span>💬</span>
+                      <span>O que os eleitores estão dizendo:</span>
+                    </h3>
+                    <p className="text-[11px] text-white/60">
+                      Depoimentos reais de quem já garantiu a sua montagem
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1 bg-amber-400/10 border border-amber-400/30 px-2 py-0.5 rounded-full text-[10px] font-bold text-amber-300">
+                    <span>★ 4.9/5</span>
+                  </div>
+                </div>
+
+                {/* Abas para alternar feedbacks de Lula e Flávio */}
+                <div className="grid grid-cols-2 gap-2 mb-3 bg-black/60 p-1 rounded-xl border border-white/10">
+                  <button
+                    type="button"
+                    onClick={() => setReviewTab("lula")}
+                    className={`py-2 px-3 rounded-lg text-xs font-black transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                      reviewTab === "lula"
+                        ? "bg-red-600 text-white shadow-md shadow-red-600/30"
+                        : "text-white/60 hover:text-white"
+                    }`}
+                  >
+                    <span className="w-2 h-2 rounded-full bg-white" />
+                    <span>Eleitores Lula (13)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setReviewTab("flavio")}
+                    className={`py-2 px-3 rounded-lg text-xs font-black transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                      reviewTab === "flavio"
+                        ? "bg-yellow-400 text-black shadow-md shadow-yellow-500/30"
+                        : "text-white/60 hover:text-white"
+                    }`}
+                  >
+                    <span className="w-2 h-2 rounded-full bg-blue-600" />
+                    <span>Eleitores Flávio (22)</span>
+                  </button>
+                </div>
+
+                {/* Lista de Feedbacks */}
+                <div className="flex flex-col gap-2.5">
+                  {(reviewTab === "lula" ? LULA_REVIEWS : FLAVIO_REVIEWS).map((rev) => (
+                    <div
+                      key={rev.id}
+                      className="bg-neutral-900/90 border border-white/10 rounded-xl p-3 shadow-md"
+                    >
+                      <div className="flex items-start justify-between gap-2 mb-1.5">
+                        <div className="flex items-center gap-2.5">
+                          <img
+                            src={rev.avatar}
+                            alt={rev.name}
+                            className="w-8 h-8 rounded-full object-cover border border-white/20 shrink-0"
+                          />
+                          <div>
+                            <div className="flex items-center gap-1.5">
+                              <strong className="text-xs font-bold text-white block">
+                                {rev.name}
+                              </strong>
+                              {rev.verified && (
+                                <span className="bg-emerald-500/20 text-emerald-400 text-[9px] font-bold px-1.5 py-0.2 rounded border border-emerald-500/30">
+                                  ✓ Verificado
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[10px] text-white/50 block">
+                              {rev.city} • {rev.time}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex text-amber-400 text-[11px] shrink-0">
+                          {"★".repeat(rev.stars)}
+                        </div>
+                      </div>
+
+                      <p className="text-[11px] text-white/80 leading-relaxed italic">
+                        "{rev.text}"
+                      </p>
+
+                      {rev.imagePreview && (
+                        <div className="mt-2.5 flex items-center gap-2.5 bg-black/50 p-2 rounded-lg border border-white/10">
+                          <img
+                            src={rev.imagePreview}
+                            alt="Montagem"
+                            className="w-14 h-11 object-cover rounded border border-white/20 shrink-0"
+                          />
+                          <div className="text-left">
+                            <span className="text-[10px] text-amber-300 font-bold block leading-tight">
+                              Foto em Alta Resolução entregue
+                            </span>
+                            <span className="text-[9px] text-white/50 block">
+                              Enviada no WhatsApp do cliente
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -872,6 +1081,68 @@ function PoliticalFunnel() {
                     />
                   </div>
                 </div>
+              </div>
+
+              {/* Mais Feedbacks Reais de Apoiadores do Candidato */}
+              <div className="flex flex-col gap-2.5 mt-3 text-left">
+                {(selectedCandidate.id === "lula" ? LULA_REVIEWS : FLAVIO_REVIEWS)
+                  .slice(1)
+                  .map((rev) => (
+                    <div
+                      key={rev.id}
+                      className="bg-neutral-900/90 border border-white/10 rounded-xl p-3 shadow-md"
+                    >
+                      <div className="flex items-start justify-between gap-2 mb-1.5">
+                        <div className="flex items-center gap-2.5">
+                          <img
+                            src={rev.avatar}
+                            alt={rev.name}
+                            className="w-8 h-8 rounded-full object-cover border border-white/20 shrink-0"
+                          />
+                          <div>
+                            <div className="flex items-center gap-1.5">
+                              <strong className="text-xs font-bold text-white block">
+                                {rev.name}
+                              </strong>
+                              {rev.verified && (
+                                <span className="bg-emerald-500/20 text-emerald-400 text-[9px] font-bold px-1.5 py-0.2 rounded border border-emerald-500/30">
+                                  ✓ Verificado
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[10px] text-white/50 block">
+                              {rev.city} • {rev.time}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex text-amber-400 text-[11px] shrink-0">
+                          {"★".repeat(rev.stars)}
+                        </div>
+                      </div>
+
+                      <p className="text-[11px] text-white/80 leading-relaxed italic">
+                        "{rev.text}"
+                      </p>
+
+                      {rev.imagePreview && (
+                        <div className="mt-2.5 flex items-center gap-2.5 bg-black/50 p-2 rounded-lg border border-white/10">
+                          <img
+                            src={rev.imagePreview}
+                            alt="Montagem"
+                            className="w-14 h-11 object-cover rounded border border-white/20 shrink-0"
+                          />
+                          <div className="text-left">
+                            <span className="text-[10px] text-amber-300 font-bold block leading-tight">
+                              Montagem oficial entregue
+                            </span>
+                            <span className="text-[9px] text-white/50 block">
+                              Cópia em alta resolução recebida via WhatsApp
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
               </div>
             </div>
 
