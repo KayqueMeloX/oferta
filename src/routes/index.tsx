@@ -226,7 +226,7 @@ const FLAVIO_REVIEWS: Review[] = [
 ];
 
 function PoliticalFunnel() {
-  const [step, setStep] = useState<Step>("candidate");
+  const [step, setStep] = useState<Step>("offer");
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate>(CANDIDATES[0]);
   const [selectedScenario, setSelectedScenario] = useState<Scenario>(LULA_SCENARIOS[0]);
   const [reviewTab, setReviewTab] = useState<"lula" | "flavio">("lula");
@@ -895,6 +895,29 @@ function PoliticalFunnel() {
             {/* Faixa Superior 50% OFF */}
             <div className="w-full bg-[#5a0b12] text-amber-300 py-1.5 px-3 rounded-t-xl text-center text-xs font-black tracking-wide border-b border-red-500/20 shadow-inner">
               🎁 50% OFF aplicado
+            </div>
+
+            {/* Alternador de Candidato na tela de pagamento */}
+            <div className="w-full flex items-center justify-between my-2 px-1">
+              <button
+                type="button"
+                onClick={() => setStep("candidate")}
+                className="text-[11px] text-amber-400 hover:text-amber-300 flex items-center gap-1 font-bold transition cursor-pointer"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+                <span>Início</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const otherCandidate = selectedCandidate.id === "lula" ? CANDIDATES[1] : CANDIDATES[0];
+                  setSelectedCandidate(otherCandidate);
+                  setSelectedScenario(otherCandidate.id === "flavio" ? FLAVIO_SCENARIOS[0] : LULA_SCENARIOS[0]);
+                }}
+                className="text-[11px] bg-white/10 hover:bg-white/20 text-amber-300 font-bold px-2.5 py-1 rounded-lg border border-white/15 transition cursor-pointer flex items-center gap-1"
+              >
+                <span>Alternar para {selectedCandidate.id === "lula" ? "Flávio 22 💛" : "Lula 13 ❤️"}</span>
+              </button>
             </div>
 
             {/* Teaser Borrado da Foto com Cadeado */}
