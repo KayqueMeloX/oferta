@@ -1,286 +1,185 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import {
+  Sparkles,
+  Star,
+  Lock,
   Check,
   Copy,
-  Lock,
   Phone,
   Mail,
   Download,
   Share2,
+  ChevronRight,
   ChevronLeft,
-  Flame,
+  Heart,
+  ShieldCheck,
+  Clock,
+  Compass,
   X,
-  Star,
-  Camera,
+  ChevronDown,
+  Calendar,
+  User,
+  Eye,
+  CheckCircle2,
 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
-  component: PoliticalFunnel,
+  component: TinaAldeaSoulmateFunnel,
 });
 
-type Step = "candidate" | "scenario" | "upload" | "loading" | "offer" | "delivered";
+type Step = "hero" | "quiz" | "loading" | "offer" | "delivered";
+type Gender = "woman" | "man" | "other";
+type TargetGender = "man" | "woman" | "both";
 
-interface Candidate {
-  id: "lula" | "flavio";
-  name: string;
-  fullName: string;
-  number: string;
-  party: string;
-  role: string;
-  image: string;
-  colorTheme: {
-    bgBadge: string;
-    textBadge: string;
-    borderActive: string;
-    btnBg: string;
-    btnHover: string;
-    ringColor: string;
-    accentText: string;
-  };
-}
-
-const CANDIDATES: Candidate[] = [
-  {
-    id: "lula",
-    name: "Lula",
-    fullName: "Luiz Inácio Lula da Silva",
-    number: "13",
-    party: "PT",
-    role: "Presidente da República",
-    image: "/lula-13.jpg",
-    colorTheme: {
-      bgBadge: "bg-red-600",
-      textBadge: "text-white",
-      borderActive: "border-red-500",
-      btnBg: "bg-gradient-to-r from-red-600 to-rose-700",
-      btnHover: "hover:from-red-500 hover:to-rose-600",
-      ringColor: "ring-red-500/40",
-      accentText: "text-red-500",
-    },
-  },
-  {
-    id: "flavio",
-    name: "Flávio Bolsonaro",
-    fullName: "Flávio Bolsonaro",
-    number: "22",
-    party: "PL",
-    role: "Senador da República",
-    image: "/flavio-bolsonaro-22.jpg",
-    colorTheme: {
-      bgBadge: "bg-yellow-400 text-slate-950 font-black",
-      textBadge: "text-slate-950",
-      borderActive: "border-yellow-400",
-      btnBg: "bg-gradient-to-r from-emerald-600 via-teal-600 to-blue-600",
-      btnHover: "hover:from-emerald-500 hover:to-blue-500",
-      ringColor: "ring-yellow-400/50",
-      accentText: "text-yellow-400",
-    },
-  },
-];
-
-interface Scenario {
-  id: string;
-  title: string;
-  description: string;
-  image: string;
-  tag: string;
-}
-
-// Opções exclusivas para Flávio Bolsonaro fornecidas pelo usuário
-const FLAVIO_SCENARIOS: Scenario[] = [
-  {
-    id: "flavio-selfie-22",
-    title: "Selfie com Flávio (Sinal 22)",
-    description: "",
-    image: "/flavio-cenario-selfie.jpg",
-    tag: "Mais Escolhida 🔥",
-  },
-  {
-    id: "flavio-abraco",
-    title: "Abraço com Flávio",
-    description: "",
-    image: "/flavio-cenario-abraco.jpg",
-    tag: "Emocionante 💛",
-  },
-];
-
-// Opções para Lula fornecidas pelo usuário
-const LULA_SCENARIOS: Scenario[] = [
-  {
-    id: "lula-selfie-l",
-    title: "Selfie com Lula (Fazendo o L)",
-    description: "",
-    image: "/lula-cenario-selfie-l.jpg",
-    tag: "Mais Escolhida 🔥",
-  },
-  {
-    id: "lula-abraco",
-    title: "Abraço com Lula",
-    description: "",
-    image: "/lula-cenario-abraco.jpg",
-    tag: "Emocionante ❤️",
-  },
-];
-
-interface Review {
+interface Testimonial {
   id: string;
   name: string;
+  age: number;
   city: string;
-  avatar: string;
+  timeAgo: string;
   stars: number;
-  time: string;
-  text: string;
-  verified: boolean;
-  imagePreview?: string;
+  story: string;
+  avatar: string;
+  sketchThumb: string;
 }
 
-const LULA_REVIEWS: Review[] = [
+const TESTIMONIALS: Testimonial[] = [
   {
-    id: "l1",
-    name: "Carlos Eduardo Mendes",
-    city: "São Paulo, SP",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&auto=format&fit=crop&q=80",
-    stars: 5,
-    time: "Há 18 minutos",
-    text: "Ficou muito perfeito! Mandei no grupo da família e todo mundo achou que eu realmente estive com o Lula em Brasília. A iluminação e os detalhes ficaram impecáveis!",
-    verified: true,
-    imagePreview: "/lula-cenario-selfie-l.jpg",
-  },
-  {
-    id: "l2",
-    name: "Maria de Fátima Alencar",
-    city: "Salvador, BA",
-    avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=120&auto=format&fit=crop&q=80",
-    stars: 5,
-    time: "Há 42 minutos",
-    text: "Fiz de surpresa pro meu pai que é fã do Lula desde 1989. Quando ele viu a foto dele abraçando o presidente, até chorou de emoção! Vale cada centavo.",
-    verified: true,
-    imagePreview: "/lula-cenario-abraco.jpg",
-  },
-  {
-    id: "l3",
-    name: "Rodrigo Nogueira",
+    id: "t1",
+    name: "Juliana Bittencourt",
+    age: 29,
     city: "Belo Horizonte, MG",
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&auto=format&fit=crop&q=80",
+    timeAgo: "Há 3 dias",
     stars: 5,
-    time: "Há 1 hora",
-    text: "Coloquei como foto no meu status do WhatsApp e bombou de gente perguntando onde tirei essa foto com o homem! Entrega no WhatsApp foi super rápida, menos de 2 minutos.",
-    verified: true,
+    story:
+      "Eu estava muito cética, mas quando recebi o desenho no meu WhatsApp fiquei paralisada. Dois meses depois, conheci o Lucas numa cafeteria. Ele tinha EXATAMENTE o mesmo sorriso e o corte de cabelo do desenho da Tina. Hoje estamos noivos!",
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=160&auto=format&fit=crop&q=80",
+    sketchThumb: "https://images.unsplash.com/photo-1544717305-2782549b5136?w=200&auto=format&fit=crop&q=80",
   },
   {
-    id: "l4",
-    name: "Patrícia Lima",
-    city: "Recife, PE",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120&auto=format&fit=crop&q=80",
+    id: "t2",
+    name: "Rodrigo Vasconcelos",
+    age: 34,
+    city: "São Paulo, SP",
+    timeAgo: "Há 1 semana",
     stars: 5,
-    time: "Há 2 horas",
-    text: "A qualidade em altíssima resolução me surpreendeu. Dá até pra mandar imprimir e colocar num porta-retrato. O gesto do L ficou muito nítido e natural!",
-    verified: true,
+    story:
+      "A precisão da descrição de personalidade me chocou mais ainda que o desenho. A Tina descreveu os hábitos, o jeito doce e a profissão dela. Conheci a Camila no trabalho 3 semanas depois. É surreal a conexão que sentimos.",
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=160&auto=format&fit=crop&q=80",
+    sketchThumb: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=200&auto=format&fit=crop&q=80",
   },
-];
-
-const FLAVIO_REVIEWS: Review[] = [
   {
-    id: "f1",
-    name: "Marcos Vinícius Silveira",
+    id: "t3",
+    name: "Camila Guimarães",
+    age: 31,
+    city: "Florianópolis, SC",
+    timeAgo: "Há 4 dias",
+    stars: 5,
+    story:
+      "Tinha acabado de sair de uma relação desgastante e não acreditava mais no amor. O desenho da Tina me deu uma paz inexplicável e renovou minhas esperanças. Quando bati o olho no Rafael no aeroporto, reconheci na hora!",
+    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=160&auto=format&fit=crop&q=80",
+    sketchThumb: "https://images.unsplash.com/photo-1544717305-2782549b5136?w=200&auto=format&fit=crop&q=80",
+  },
+  {
+    id: "t4",
+    name: "Marcio Esteves",
+    age: 38,
     city: "Curitiba, PR",
-    avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=120&auto=format&fit=crop&q=80",
+    timeAgo: "Há 2 semanas",
     stars: 5,
-    time: "Há 12 minutos",
-    text: "Sensacional! Imagem extremamente nítida e muito realista. Todo mundo elogiou no meu WhatsApp parecendo mesmo que estive no gabinete com o Senador Flávio Bolsonaro. Muito top!",
-    verified: true,
-    imagePreview: "/flavio-cenario-selfie.jpg",
-  },
-  {
-    id: "f2",
-    name: "Eduardo Guimarães",
-    city: "Goiânia, GO",
-    avatar: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=120&auto=format&fit=crop&q=80",
-    stars: 5,
-    time: "Há 35 minutos",
-    text: "Mandei pros amigos do grupo do trabalho e ninguém acreditou que era montagem de tão perfeita. O sinal do 22 com a mão ficou certinho, padrão de qualidade excelente!",
-    verified: true,
-    imagePreview: "/flavio-cenario-abraco.jpg",
-  },
-  {
-    id: "f3",
-    name: "Luciana Ferreira",
-    city: "Joinville, SC",
-    avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=120&auto=format&fit=crop&q=80",
-    stars: 5,
-    time: "Há 1 hora",
-    text: "Comprei de presente pro meu marido que é apoiador do 22 raiz. Ele colocou como foto de perfil e imprimiu pra colocar no escritório dele. Recomendo demais!",
-    verified: true,
-  },
-  {
-    id: "f4",
-    name: "André Meirelles",
-    city: "Rio de Janeiro, RJ",
-    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=120&auto=format&fit=crop&q=80",
-    stars: 5,
-    time: "Há 2 horas",
-    text: "Muito prático e seguro. Paguei no PIX e recebi o arquivo original no WhatsApp imediatamente sem compressão. Vale muito a pena para fortalecer o nosso lado!",
-    verified: true,
+    story:
+      "Entrega rápida de verdade no WhatsApp. A riqueza de detalhes a lápis é uma verdadeira obra de arte. Vale cada centavo pela clareza e emoção que transmite.",
+    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=160&auto=format&fit=crop&q=80",
+    sketchThumb: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=200&auto=format&fit=crop&q=80",
   },
 ];
 
-function PoliticalFunnel() {
-  const [step, setStep] = useState<Step>("offer");
-  const [selectedCandidate, setSelectedCandidate] = useState<Candidate>(CANDIDATES[0]);
-  const [selectedScenario, setSelectedScenario] = useState<Scenario>(LULA_SCENARIOS[0]);
-  const [reviewTab, setReviewTab] = useState<"lula" | "flavio">("lula");
+const FAQS = [
+  {
+    q: "Como Tina Aldea consegue desenhar a minha alma gêmea?",
+    a: "Tina nasceu com um dom natural de vidência artística e clarividência. Ao conectar sua data de nascimento, nome e energia astral, ela sintoniza a frequência cósmica da pessoa predestinada a você e canaliza visualmente cada detalhe a lápis em papel no seu ateliê.",
+  },
+  {
+    q: "Em quanto tempo recebo meu desenho e leitura?",
+    a: "Seu desenho hiper-realista em alta resolução e o dossiê psíquico completo são entregues diretamente no seu WhatsApp e e-mail em até 24 horas (geralmente bem antes). Você já pode visualizar a prévia instantaneamente aqui na tela logo após a confirmação.",
+  },
+  {
+    q: "E se eu já conhecer a pessoa do desenho?",
+    a: "Isso acontece com frequência! Muitas pessoas descobrem que sua alma gêmea já é um amigo próximo, alguém do passado ou um conhecido que ainda não haviam enxergado sob essa luz espiritual.",
+  },
+  {
+    q: "O pagamento é único ou assinatura mensal?",
+    a: "É um pagamento 100% ÚNICO de R$ 27,90 via PIX. Sem assinaturas, sem cobranças recorrentes e sem taxas escondidas.",
+  },
+  {
+    q: "E se eu não ficar satisfeita(o)? Tem garantia?",
+    a: "Sim! Você conta com a Garantia Blindada Incondicional de 30 dias de Tina Aldea. Se por qualquer motivo você não se sentir tocada(o) pela precisão ou beleza do seu desenho, basta nos enviar um e-mail que devolvemos 100% do seu dinheiro sem perguntas.",
+  },
+];
 
-  // Contadores de fotos em tempo real para gerar rivalidade
-  const [lulaCount, setLulaCount] = useState(14832);
-  const [flavioCount, setFlavioCount] = useState(14705);
+function getZodiacSign(day: number, month: number) {
+  if ((month === 3 && day >= 21) || (month === 4 && day <= 19)) return { name: "Áries", symbol: "♈", element: "Fogo" };
+  if ((month === 4 && day >= 20) || (month === 5 && day <= 20)) return { name: "Touro", symbol: "♉", element: "Terra" };
+  if ((month === 5 && day >= 21) || (month === 6 && day <= 20)) return { name: "Gêmeos", symbol: "♊", element: "Ar" };
+  if ((month === 6 && day >= 21) || (month === 7 && day <= 22)) return { name: "Câncer", symbol: "♋", element: "Água" };
+  if ((month === 7 && day >= 23) || (month === 8 && day <= 22)) return { name: "Leão", symbol: "♌", element: "Fogo" };
+  if ((month === 8 && day >= 23) || (month === 9 && day <= 22)) return { name: "Virgem", symbol: "♍", element: "Terra" };
+  if ((month === 9 && day >= 23) || (month === 10 && day <= 22)) return { name: "Libra", symbol: "♎", element: "Ar" };
+  if ((month === 10 && day >= 23) || (month === 11 && day <= 21)) return { name: "Escorpião", symbol: "♏", element: "Água" };
+  if ((month === 11 && day >= 22) || (month === 12 && day <= 21)) return { name: "Sagitário", symbol: "♐", element: "Fogo" };
+  if ((month === 12 && day >= 22) || (month === 1 && day <= 19)) return { name: "Capricórnio", symbol: "♑", element: "Terra" };
+  if ((month === 1 && day >= 20) || (month === 2 && day <= 18)) return { name: "Aquário", symbol: "♒", element: "Ar" };
+  return { name: "Peixes", symbol: "♓", element: "Água" };
+}
+
+function TinaAldeaSoulmateFunnel() {
+  const [step, setStep] = useState<Step>("hero");
+
+  // Quiz State
+  const [quizStep, setQuizStep] = useState<number>(1);
+  const [gender, setGender] = useState<Gender>("woman");
+  const [targetGender, setTargetGender] = useState<TargetGender>("man");
+  const [userName, setUserName] = useState<string>("");
+  const [birthDay, setBirthDay] = useState<string>("15");
+  const [birthMonth, setBirthMonth] = useState<string>("6");
+  const [birthYear, setBirthYear] = useState<string>("1996");
+  const [loveStatus, setLoveStatus] = useState<string>("single");
+
+  // Contact State
+  const [whatsapp, setWhatsapp] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+
+  // Loading animation state
+  const [loadProgress, setLoadProgress] = useState<number>(0);
+  const [loadStage, setLoadStage] = useState<number>(1);
+
+  // Checkout PIX State
+  const [showPixModal, setShowPixModal] = useState<boolean>(false);
+  const [pixCopied, setPixCopied] = useState<boolean>(false);
+  const [timeLeft, setTimeLeft] = useState<number>(15 * 60);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
+
+  // Live count counter simulation
+  const [livePeople, setLivePeople] = useState<number>(142);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      if (Math.random() > 0.5) {
-        setLulaCount((prev) => prev + 1);
-      } else {
-        setFlavioCount((prev) => prev + 1);
-      }
-    }, 4000);
-    return () => clearInterval(timer);
+    const interval = setInterval(() => {
+      setLivePeople((prev) => {
+        const delta = Math.random() > 0.5 ? 1 : -1;
+        return Math.max(128, Math.min(165, prev + delta));
+      });
+    }, 5000);
+    return () => clearInterval(interval);
   }, []);
 
-  // Foto do usuário
-  const [userPhoto, setUserPhoto] = useState<string | null>(null);
-
-  // Progresso do loading
-  const [bar1, setBar1] = useState(0);
-  const [bar2, setBar2] = useState(0);
-  const [bar3, setBar3] = useState(0);
-
-  // Contato
-  const [whatsapp, setWhatsapp] = useState("");
-  const [email, setEmail] = useState("");
-  const [showContactModal, setShowContactModal] = useState(false);
-  const [modalStage, setModalStage] = useState<"contact" | "pix">("contact");
-
-  // Checkout & PIX
-  const [pixGenerated, setPixGenerated] = useState(false);
-  const [pixCopied, setPixCopied] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(15 * 60);
-
-  // Delivered animation
-  const [genStage, setGenStage] = useState(1);
-  const [genComplete, setGenComplete] = useState(false);
-
-  // Cenários ativos de acordo com o candidato selecionado
-  const activeScenarios = selectedCandidate.id === "flavio" ? FLAVIO_SCENARIOS : LULA_SCENARIOS;
-
-  // Cronômetro
+  // Timer regressivo do checkout
   useEffect(() => {
-    if (step === "offer" || showContactModal) {
-      const timer = setInterval(() => {
-        setTimeLeft((t) => (t > 0 ? t - 1 : 0));
-      }, 1000);
+    if ((step === "offer" || showPixModal) && timeLeft > 0) {
+      const timer = setInterval(() => setTimeLeft((t) => (t > 0 ? t - 1 : 0)), 1000);
       return () => clearInterval(timer);
     }
-  }, [step, showContactModal]);
+  }, [step, showPixModal, timeLeft]);
 
   const formatTime = (secs: number) => {
     const m = Math.floor(secs / 60);
@@ -296,70 +195,31 @@ function PoliticalFunnel() {
     setWhatsapp(formatted);
   };
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          setUserPhoto(event.target.result as string);
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+  const zodiac = getZodiacSign(parseInt(birthDay) || 1, parseInt(birthMonth) || 1);
 
-  // Simulação de Loading
-  const startLoading = () => {
+  // Simulação de Loading Místico
+  const startLoadingAnimation = () => {
     setStep("loading");
-    setBar1(0);
-    setBar2(0);
-    setBar3(0);
+    setLoadProgress(0);
+    setLoadStage(1);
 
-    let p1 = 0;
-    const i1 = setInterval(() => {
-      p1 += 5;
-      if (p1 >= 100) {
-        p1 = 100;
-        clearInterval(i1);
-
-        let p2 = 0;
-        const i2 = setInterval(() => {
-          p2 += 5;
-          if (p2 >= 100) {
-            p2 = 100;
-            clearInterval(i2);
-
-            let p3 = 0;
-            const i3 = setInterval(() => {
-              p3 += 5;
-              if (p3 >= 100) {
-                p3 = 100;
-                clearInterval(i3);
-                setTimeout(() => setStep("offer"), 500);
-              }
-              setBar3(p3);
-            }, 50);
-          }
-          setBar2(p2);
-        }, 50);
-      }
-      setBar1(p1);
-    }, 50);
-  };
-
-  const handlePaymentConfirmed = () => {
-    setStep("delivered");
-    setGenStage(1);
-    setGenComplete(false);
-
-    setTimeout(() => setGenStage(2), 2000);
-    setTimeout(() => setGenStage(3), 4000);
-    setTimeout(() => setGenComplete(true), 6500);
+    const interval = setInterval(() => {
+      setLoadProgress((prev) => {
+        const next = prev + 3;
+        if (next >= 35 && next < 70) setLoadStage(2);
+        if (next >= 70 && next < 95) setLoadStage(3);
+        if (next >= 100) {
+          clearInterval(interval);
+          setTimeout(() => setStep("offer"), 600);
+          return 100;
+        }
+        return next;
+      });
+    }, 80);
   };
 
   const currentPrice = 27.9;
-  const pixCodeString = `00020126580014br.gov.bcb.pix0136clique-${selectedCandidate.id}-pay20265204000053039865405${currentPrice.toFixed(2)}5802BR5920FOTO OFICIAL6009SAO PAULO62070503***6304`;
+  const pixCodeString = `00020126580014br.gov.bcb.pix0136tina-aldea-soulmate-${Date.now().toString(36)}5204000053039865405${currentPrice.toFixed(2)}5802BR5920TINA ALDEA SKETCH6009SAO PAULO62070503***6304`;
 
   const handleCopyPix = async () => {
     try {
@@ -374,601 +234,595 @@ function PoliticalFunnel() {
         document.body.removeChild(textarea);
       }
     } catch {
-      // Fallback para ambientes restritos de iframe
+      // fallback
     }
     setPixCopied(true);
     setTimeout(() => setPixCopied(false), 3000);
   };
 
-  const totalCount = lulaCount + flavioCount;
-  const lulaPct = ((lulaCount / totalCount) * 100).toFixed(1);
-  const flavioPct = ((flavioCount / totalCount) * 100).toFixed(1);
-  const diffCount = Math.abs(lulaCount - flavioCount);
+  // Imagem do desenho de acordo com quem o usuário procura
+  const sketchImage =
+    targetGender === "woman"
+      ? "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=900&auto=format&fit=crop&q=80"
+      : "https://images.unsplash.com/photo-1544717305-2782549b5136?w=900&auto=format&fit=crop&q=80";
 
   return (
-    <div className="min-h-screen bg-[#090807] text-white flex flex-col items-center justify-between font-sans selection:bg-amber-400 selection:text-black">
+    <div className="min-h-screen bg-[#080612] text-white flex flex-col items-center justify-between font-sans selection:bg-purple-500 selection:text-white relative overflow-hidden">
+      {/* Luz ambiente cósmica */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[350px] bg-gradient-to-b from-purple-900/25 via-violet-950/15 to-transparent blur-3xl pointer-events-none -z-10" />
+      <div className="absolute top-1/3 -right-20 w-[300px] h-[300px] bg-amber-500/10 blur-3xl pointer-events-none -z-10" />
+
+      {/* Top Banner de Urgência & Prova Social */}
+      <header className="w-full bg-[#120c22] border-b border-purple-500/20 py-2 px-3 text-center text-xs flex items-center justify-center gap-2">
+        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping shrink-0" />
+        <span className="text-purple-200/90 text-[11px] sm:text-xs">
+          <strong>Tina Aldea</strong> • Retratista Psíquica Oficial •{" "}
+          <span className="text-amber-300 font-bold">{livePeople} pessoas</span> consultando seu destino agora
+        </span>
+      </header>
+
       {/* Container Principal Mobile-First */}
-      <main className="w-full max-w-[440px] px-3.5 py-4 flex-1 flex flex-col items-center justify-between min-h-screen">
+      <main className="w-full max-w-[480px] px-3.5 py-4 flex-1 flex flex-col items-center justify-between min-h-screen">
         {/* ========================================================================= */}
-        {/* ABA 1: ESCOLHA DO CANDIDATO COM PLACAR DE DISPUTA AO VIVO                */}
+        {/* ETAPA 1: HERO & APRESENTAÇÃO                                              */}
         {/* ========================================================================= */}
-        {step === "candidate" && (
+        {step === "hero" && (
           <div className="w-full flex-1 flex flex-col items-center justify-between text-center animate-in fade-in duration-300">
             <div className="w-full flex flex-col items-center">
-              {/* Badge de Duelo */}
-              <div className="inline-flex items-center gap-1.5 bg-gradient-to-r from-red-600/30 via-amber-400/20 to-yellow-500/30 border border-amber-400/40 text-amber-300 px-3 py-1 rounded-full text-[11px] font-black mb-2 shadow-lg">
-                <Flame className="w-3.5 h-3.5 text-amber-400 animate-bounce" />
-                <span>DISPUTA AO VIVO DO DIA</span>
+              {/* Badge mística */}
+              <div className="inline-flex items-center gap-1.5 bg-gradient-to-r from-purple-900/40 via-amber-500/20 to-purple-900/40 border border-purple-500/40 text-amber-300 px-3.5 py-1 rounded-full text-[11px] font-black mb-3 shadow-lg">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-spin" style={{ animationDuration: "6s" }} />
+                <span>CANALIZAÇÃO ENERGÉTICA E VIDÊNCIA REAL</span>
               </div>
 
-              {/* Título de Impacto */}
-              <h1 className="text-2xl sm:text-[26px] font-black text-white tracking-tight leading-tight">
-                Qual eleitorado está <br />
-                <span className="text-amber-400">gerando mais fotos?</span>
+              {/* Título Principal */}
+              <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-tight font-cinzel">
+                Descubra o Rosto da Sua <br />
+                <span className="bg-gradient-to-r from-amber-200 via-amber-400 to-amber-200 bg-clip-text text-transparent drop-shadow-sm">
+                  Verdadeira Alma Gêmea
+                </span>
               </h1>
-              <p className="text-xs text-white/70 mt-1 mb-3">
-                Toque no seu líder para apoiar seu lado e não deixar o outro vencer o placar:
+
+              <p className="text-xs sm:text-sm text-purple-200/80 mt-2.5 mb-4 leading-relaxed max-w-[420px]">
+                A vidente e artista psíquica mundialmente reconhecida <strong>Tina Aldea</strong> sintoniza sua vibração cósmica para desenhar à mão o retrato detalhado do seu futuro amor.
               </p>
 
-              {/* Placar Comparativo em Tempo Real */}
-              <div className="w-full bg-neutral-900/95 border border-white/15 rounded-2xl p-3 mb-4 shadow-2xl">
-                <div className="flex items-center justify-between text-xs mb-1.5 font-black">
-                  <div className="flex items-center gap-1.5 text-red-500">
-                    <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
-                    <span>Lula: {lulaCount.toLocaleString("pt-BR")}</span>
-                  </div>
-                  <span className="text-[10px] text-amber-400 font-extrabold uppercase tracking-wider bg-black/60 px-2 py-0.5 rounded border border-amber-400/30">
-                    {diffCount} fotos de diferença!
+              {/* Retrato Hero em Moldura Mística */}
+              <div className="w-full relative rounded-2xl overflow-hidden border-2 border-amber-400/40 shadow-2xl shadow-purple-900/40 bg-black/60 my-2 aspect-[16/10] group">
+                <img
+                  src="https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=900&auto=format&fit=crop&q=80"
+                  alt="Tina Aldea desenhando alma gêmea"
+                  className="w-full h-full object-cover filter brightness-95 group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
+
+                <div className="absolute top-2.5 left-2.5 bg-black/80 backdrop-blur-md text-amber-300 text-[10px] font-black px-2.5 py-1 rounded-md border border-amber-400/40 flex items-center gap-1">
+                  <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
+                  <span>+37.000 Casais Conectados</span>
+                </div>
+
+                <div className="absolute bottom-2.5 left-2.5 right-2.5 bg-black/85 backdrop-blur-md p-2.5 rounded-xl border border-white/10 text-left">
+                  <span className="text-[10px] text-amber-400 font-bold uppercase tracking-wider block">
+                    Por Tina Aldea
                   </span>
-                  <div className="flex items-center gap-1.5 text-yellow-400">
-                    <span>Flávio: {flavioCount.toLocaleString("pt-BR")}</span>
-                    <span className="w-2 h-2 rounded-full bg-yellow-400 animate-ping" />
-                  </div>
-                </div>
-
-                {/* Barra Visual de Duelo */}
-                <div className="w-full h-3 rounded-full bg-neutral-800 overflow-hidden flex shadow-inner border border-white/10">
-                  <div
-                    className="bg-red-600 h-full transition-all duration-700 ease-out"
-                    style={{ width: `${lulaPct}%` }}
-                  />
-                  <div
-                    className="bg-yellow-400 h-full transition-all duration-700 ease-out"
-                    style={{ width: `${flavioPct}%` }}
-                  />
-                </div>
-
-                <div className="flex justify-between items-center text-[11px] text-white/70 mt-1.5 font-bold">
-                  <span className="text-red-400">{lulaPct}% do total</span>
-                  <span className="text-[10px] text-white/50">Disputa voto a voto</span>
-                  <span className="text-yellow-400">{flavioPct}% do total</span>
+                  <p className="text-xs font-semibold text-white/95 leading-tight">
+                    "O destino não comete erros. Quando você vê o rosto certo, sua alma reconhece instantaneamente."
+                  </p>
                 </div>
               </div>
 
-              {/* 2 Cartões Grandes Clicáveis com as Imagens Fornecidas */}
-              <div className="grid grid-cols-2 gap-3 w-full">
-                {/* Opção Lula 13 */}
-                <div className="flex flex-col">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedCandidate(CANDIDATES[0]);
-                      setSelectedScenario(LULA_SCENARIOS[0]);
-                      setStep("scenario");
-                    }}
-                    className="group relative rounded-2xl overflow-hidden border-2 border-red-600/80 bg-neutral-950 aspect-[3/4.4] flex flex-col justify-end text-left transition-all active:scale-95 hover:border-red-500 hover:shadow-2xl hover:shadow-red-600/30 focus:outline-none focus:ring-4 focus:ring-red-500/40"
-                  >
-                    <img
-                      src="/lula-13.jpg"
-                      alt="Lula 13"
-                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
-
-                    <div className="absolute top-2.5 left-2.5 bg-red-600 text-white text-xs font-black px-2.5 py-0.5 rounded-full shadow-lg border border-red-400">
-                      PT • 13
-                    </div>
-
-                    <div className="relative p-2.5 z-10">
-                      <span className="text-[10px] font-bold text-red-400 uppercase tracking-wider block">
-                        Presidente
-                      </span>
-                      <strong className="text-base sm:text-lg font-black text-white leading-tight block">
-                        LULA 13
-                      </strong>
-                      <div className="mt-1.5 w-full py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-black text-xs text-center shadow-md shadow-red-700/50">
-                        ESCOLHER LULA
-                      </div>
-                    </div>
-                  </button>
-
-                  <div className="mt-2 bg-red-950/80 border border-red-500/40 rounded-xl p-2.5 text-center shadow-inner">
-                    <div className="flex items-center justify-between text-[11px] font-extrabold mb-1">
-                      <span className="text-white/80">Fotos geradas:</span>
-                      <span className="text-red-400">{lulaCount.toLocaleString("pt-BR")}</span>
-                    </div>
-                    <div className="w-full bg-red-900/60 h-1.5 rounded-full overflow-hidden mb-1.5">
-                      <div className="bg-red-500 h-full rounded-full" style={{ width: `${lulaPct}%` }} />
-                    </div>
-                    <p className="text-[10px] text-red-200 font-bold leading-tight">
-                      ⚠️ O Flávio 22 está colado na disputa! Crie sua foto agora para manter o Lula na liderança!
-                    </p>
-                  </div>
+              {/* 3 Pilares */}
+              <div className="grid grid-cols-3 gap-2 w-full my-4">
+                <div className="bg-purple-950/40 border border-purple-500/20 p-2.5 rounded-xl text-center">
+                  <Compass className="w-4 h-4 text-amber-400 mx-auto mb-1" />
+                  <span className="text-[10px] text-white/90 font-bold block">100% Preciso</span>
+                  <span className="text-[9px] text-white/50">Canalização astral</span>
                 </div>
-
-                {/* Opção Flávio Bolsonaro 22 */}
-                <div className="flex flex-col">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedCandidate(CANDIDATES[1]);
-                      setSelectedScenario(FLAVIO_SCENARIOS[0]);
-                      setStep("scenario");
-                    }}
-                    className="group relative rounded-2xl overflow-hidden border-2 border-yellow-400/80 bg-neutral-950 aspect-[3/4.4] flex flex-col justify-end text-left transition-all active:scale-95 hover:border-yellow-300 hover:shadow-2xl hover:shadow-yellow-500/30 focus:outline-none focus:ring-4 focus:ring-yellow-400/40"
-                  >
-                    <img
-                      src="/flavio-bolsonaro-22.jpg"
-                      alt="Flávio Bolsonaro 22"
-                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
-
-                    <div className="absolute top-2.5 left-2.5 bg-yellow-400 text-black text-xs font-black px-2.5 py-0.5 rounded-full shadow-lg border border-yellow-300">
-                      PL • 22
-                    </div>
-
-                    <div className="relative p-2.5 z-10">
-                      <span className="text-[10px] font-bold text-yellow-400 uppercase tracking-wider block">
-                        Senador
-                      </span>
-                      <strong className="text-base sm:text-lg font-black text-white leading-tight block">
-                        FLÁVIO 22
-                      </strong>
-                      <div className="mt-1.5 w-full py-2 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-black font-black text-xs text-center shadow-md shadow-yellow-500/50">
-                        ESCOLHER FLÁVIO
-                      </div>
-                    </div>
-                  </button>
-
-                  <div className="mt-2 bg-yellow-950/80 border border-yellow-500/40 rounded-xl p-2.5 text-center shadow-inner">
-                    <div className="flex items-center justify-between text-[11px] font-extrabold mb-1">
-                      <span className="text-white/80">Fotos geradas:</span>
-                      <span className="text-yellow-400">{flavioCount.toLocaleString("pt-BR")}</span>
-                    </div>
-                    <div className="w-full bg-yellow-900/60 h-1.5 rounded-full overflow-hidden mb-1.5">
-                      <div className="bg-yellow-400 h-full rounded-full" style={{ width: `${flavioPct}%` }} />
-                    </div>
-                    <p className="text-[10px] text-yellow-200 font-bold leading-tight">
-                      ⚠️ O Lula 13 está à frente por apenas {diffCount} fotos! Gere a sua foto agora para virar o placar!
-                    </p>
-                  </div>
+                <div className="bg-purple-950/40 border border-purple-500/20 p-2.5 rounded-xl text-center">
+                  <Clock className="w-4 h-4 text-purple-400 mx-auto mb-1" />
+                  <span className="text-[10px] text-white/90 font-bold block">Em 24 Horas</span>
+                  <span className="text-[9px] text-white/50">Direto no WhatsApp</span>
+                </div>
+                <div className="bg-purple-950/40 border border-purple-500/20 p-2.5 rounded-xl text-center">
+                  <ShieldCheck className="w-4 h-4 text-emerald-400 mx-auto mb-1" />
+                  <span className="text-[10px] text-white/90 font-bold block">Garantia Total</span>
+                  <span className="text-[9px] text-white/50">30 dias sem riscos</span>
                 </div>
               </div>
 
-              {/* Prova de Confiança */}
-              <div className="mt-5 p-3 rounded-xl bg-white/5 border border-white/10 text-left w-full flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-amber-400/20 text-amber-400 flex items-center justify-center flex-shrink-0">
-                  <Camera className="w-5 h-5" />
-                </div>
-                <div>
-                  <strong className="text-xs font-bold text-white block">
-                    Gere sua foto e fortaleça seu lado
-                  </strong>
-                  <span className="text-[11px] text-white/60">
-                    Sua foto é produzida em alta definição profissional e conta automaticamente no placar do dia.
-                  </span>
-                </div>
-              </div>
-
-              {/* Seção de Feedbacks / Avaliações dos Dois Lados */}
-              <div className="w-full mt-6 text-left">
-                <div className="flex items-center justify-between mb-2 px-1">
-                  <div>
-                    <h3 className="text-sm font-black text-white flex items-center gap-1.5">
-                      <span>💬</span>
-                      <span>O que os eleitores estão dizendo:</span>
-                    </h3>
-                    <p className="text-[11px] text-white/60">
-                      Depoimentos reais de quem já garantiu a sua montagem
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-1 bg-amber-400/10 border border-amber-400/30 px-2 py-0.5 rounded-full text-[10px] font-bold text-amber-300">
-                    <span>★ 4.9/5</span>
-                  </div>
-                </div>
-
-                {/* Abas para alternar feedbacks de Lula e Flávio */}
-                <div className="grid grid-cols-2 gap-2 mb-3 bg-black/60 p-1 rounded-xl border border-white/10">
-                  <button
-                    type="button"
-                    onClick={() => setReviewTab("lula")}
-                    className={`py-2 px-3 rounded-lg text-xs font-black transition flex items-center justify-center gap-1.5 cursor-pointer ${
-                      reviewTab === "lula"
-                        ? "bg-red-600 text-white shadow-md shadow-red-600/30"
-                        : "text-white/60 hover:text-white"
-                    }`}
-                  >
-                    <span className="w-2 h-2 rounded-full bg-white" />
-                    <span>Eleitores Lula (13)</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setReviewTab("flavio")}
-                    className={`py-2 px-3 rounded-lg text-xs font-black transition flex items-center justify-center gap-1.5 cursor-pointer ${
-                      reviewTab === "flavio"
-                        ? "bg-yellow-400 text-black shadow-md shadow-yellow-500/30"
-                        : "text-white/60 hover:text-white"
-                    }`}
-                  >
-                    <span className="w-2 h-2 rounded-full bg-blue-600" />
-                    <span>Eleitores Flávio (22)</span>
-                  </button>
-                </div>
-
-                {/* Lista de Feedbacks */}
-                <div className="flex flex-col gap-2.5">
-                  {(reviewTab === "lula" ? LULA_REVIEWS : FLAVIO_REVIEWS).map((rev) => (
-                    <div
-                      key={rev.id}
-                      className="bg-neutral-900/90 border border-white/10 rounded-xl p-3 shadow-md"
-                    >
-                      <div className="flex items-start justify-between gap-2 mb-1.5">
-                        <div className="flex items-center gap-2.5">
-                          <img
-                            src={rev.avatar}
-                            alt={rev.name}
-                            className="w-8 h-8 rounded-full object-cover border border-white/20 shrink-0"
-                          />
-                          <div>
-                            <div className="flex items-center gap-1.5">
-                              <strong className="text-xs font-bold text-white block">
-                                {rev.name}
-                              </strong>
-                              {rev.verified && (
-                                <span className="bg-emerald-500/20 text-emerald-400 text-[9px] font-bold px-1.5 py-0.2 rounded border border-emerald-500/30">
-                                  ✓ Verificado
-                                </span>
-                              )}
-                            </div>
-                            <span className="text-[10px] text-white/50 block">
-                              {rev.city} • {rev.time}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="flex text-amber-400 text-[11px] shrink-0">
-                          {"★".repeat(rev.stars)}
-                        </div>
-                      </div>
-
-                      <p className="text-[11px] text-white/80 leading-relaxed italic">
-                        "{rev.text}"
-                      </p>
-
-                      {rev.imagePreview && (
-                        <div className="mt-2.5 flex items-center gap-2.5 bg-black/50 p-2 rounded-lg border border-white/10">
-                          <img
-                            src={rev.imagePreview}
-                            alt="Montagem"
-                            className="w-14 h-11 object-cover rounded border border-white/20 shrink-0"
-                          />
-                          <div className="text-left">
-                            <span className="text-[10px] text-amber-300 font-bold block leading-tight">
-                              Foto em Alta Resolução entregue
-                            </span>
-                            <span className="text-[9px] text-white/50 block">
-                              Enviada no WhatsApp do cliente
-                            </span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
+              {/* Botão Principal de Início do Funil */}
+              <button
+                type="button"
+                onClick={() => {
+                  setStep("quiz");
+                  setQuizStep(1);
+                }}
+                className="w-full py-4 px-4 rounded-xl font-black text-sm sm:text-base tracking-wide bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 shadow-xl shadow-amber-500/25 active:scale-98 transition transform cursor-pointer flex items-center justify-center gap-2 mt-2"
+              >
+                <span>VER O ROSTO DA MINHA ALMA GÊMEA</span>
+                <ChevronRight className="w-5 h-5 text-slate-950" />
+              </button>
+              <p className="text-[10px] text-white/50 mt-2">
+                Levará menos de 60 segundos para sintonizar sua energia
+              </p>
             </div>
 
-            <footer className="mt-5 pt-3 pb-2 text-center text-xs text-white/40 w-full border-t border-white/10">
+            <footer className="mt-6 pt-3 pb-2 text-center text-xs text-white/40 w-full border-t border-white/10">
               <p className="text-[11px]">
-                Placar atualizado a cada minuto • Entrega imediata em alta definição no seu WhatsApp
+                Tina Aldea • Psychic & Soulmate Sketch Artist © {new Date().getFullYear()}
               </p>
             </footer>
           </div>
         )}
 
         {/* ========================================================================= */}
-        {/* ABA 2: ESCOLHA DO CENÁRIO (APENAS AS 2 FOTOS PARA FLÁVIO)                 */}
+        {/* ETAPA 2: QUIZ INTERATIVO MULTI-STEP                                       */}
         {/* ========================================================================= */}
-        {step === "scenario" && (
+        {step === "quiz" && (
           <div className="w-full flex-1 flex flex-col items-center justify-between text-center animate-in fade-in duration-300">
             <div className="w-full flex flex-col items-center">
-              {/* Botão Voltar */}
-              <button
-                onClick={() => setStep("candidate")}
-                className="self-start text-xs text-amber-400 flex items-center gap-1 mb-2 hover:opacity-80 transition font-bold"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                <span>Trocar candidato ({selectedCandidate.name})</span>
-              </button>
+              {/* Barra de Progresso do Quiz */}
+              <div className="w-full flex items-center justify-between text-xs text-purple-300 font-bold mb-1.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (quizStep > 1) setQuizStep((s) => s - 1);
+                    else setStep("hero");
+                  }}
+                  className="flex items-center gap-1 text-[11px] text-amber-400 hover:underline"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                  <span>Voltar</span>
+                </button>
+                <span>Passo {quizStep} de 5</span>
+              </div>
+              <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden mb-5">
+                <div
+                  className="h-full bg-gradient-to-r from-purple-500 to-amber-400 rounded-full transition-all duration-300"
+                  style={{ width: `${(quizStep / 5) * 100}%` }}
+                />
+              </div>
 
-              <h1 className="text-2xl font-black text-white tracking-tight leading-snug">
-                Escolha o estilo da foto <br />
-                com <span className={selectedCandidate.colorTheme.accentText}>{selectedCandidate.name}</span>
-              </h1>
-              <p className="text-xs text-white/70 mt-1 mb-4">
-                Selecione uma das duas montagens oficiais abaixo:
-              </p>
+              {/* PERGUNTA 1: SEU GÊNERO */}
+              {quizStep === 1 && (
+                <div className="w-full flex flex-col items-center animate-in fade-in">
+                  <span className="text-[11px] font-extrabold tracking-wider text-amber-400 uppercase mb-1">
+                    Passo 1 · Polaridade Energética
+                  </span>
+                  <h2 className="text-xl sm:text-2xl font-black text-white font-cinzel mb-2">
+                    Qual é o seu gênero?
+                  </h2>
+                  <p className="text-xs text-purple-200/70 mb-5">
+                    Isso ajuda Tina a calibrar o fluxo de energia receptiva ou magnética.
+                  </p>
 
-              {/* Lista com as 2 opções em proporção completa para exibir todas as mãos */}
-              <div className="flex flex-col gap-4 w-full">
-                {activeScenarios.map((sc) => (
-                  <button
-                    key={sc.id}
-                    onClick={() => {
-                      setSelectedScenario(sc);
-                      setStep("upload");
-                    }}
-                    className={`w-full rounded-2xl overflow-hidden border-2 border-white/20 bg-neutral-950 text-left transition-all active:scale-98 focus:outline-none focus:ring-4 shadow-xl ${
-                      selectedCandidate.id === "lula"
-                        ? "hover:border-red-500 hover:shadow-red-600/20 focus:ring-red-500"
-                        : "hover:border-amber-400 hover:shadow-amber-500/20 focus:ring-amber-400"
-                    }`}
-                  >
-                    {/* Imagem em proporção 1024x853 sem cortes laterais */}
-                    <div className="relative aspect-[1024/853] w-full bg-black overflow-hidden">
-                      <img
-                        src={sc.image}
-                        alt={sc.title}
-                        className="w-full h-full object-contain"
-                      />
-                      <div className="absolute top-2.5 left-2.5 bg-black/80 backdrop-blur-xs text-amber-300 text-[10px] font-black px-2.5 py-0.5 rounded-md border border-amber-400/40">
-                        {sc.tag}
-                      </div>
-                    </div>
-
-                    {/* Barra de título e botão */}
-                    <div className="p-3 bg-neutral-900 flex items-center justify-between gap-3 border-t border-white/10">
-                      <strong className="text-sm font-black text-white block">
-                        {sc.title}
-                      </strong>
-                      <div
-                        className={`px-4 py-2 rounded-xl font-black text-xs text-center shadow-md ${
-                          selectedCandidate.id === "lula"
-                            ? "bg-red-600 hover:bg-red-500 text-white shadow-red-700/50"
-                            : "bg-amber-400 hover:bg-amber-300 text-black shadow-amber-500/50"
+                  <div className="flex flex-col gap-3 w-full">
+                    {[
+                      { val: "woman", label: "Eu sou Mulher", icon: "👩" },
+                      { val: "man", label: "Eu sou Homem", icon: "👨" },
+                      { val: "other", label: "Não-binário / Outro", icon: "✨" },
+                    ].map((opt) => (
+                      <button
+                        key={opt.val}
+                        type="button"
+                        onClick={() => {
+                          setGender(opt.val as Gender);
+                          setQuizStep(2);
+                        }}
+                        className={`w-full py-4 px-4 rounded-xl border text-left flex items-center justify-between text-sm sm:text-base font-bold transition active:scale-98 cursor-pointer ${
+                          gender === opt.val
+                            ? "bg-purple-900/40 border-amber-400 text-white shadow-lg shadow-purple-900/30"
+                            : "bg-neutral-900/80 border-white/15 text-white/80 hover:border-purple-400"
                         }`}
                       >
-                        ESCOLHER
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ========================================================================= */}
-        {/* ABA 3: ENVIO DA SUA FOTO                                                  */}
-        {/* ========================================================================= */}
-        {step === "upload" && (
-          <div className="w-full flex-1 flex flex-col items-center justify-between text-center animate-in fade-in duration-300">
-            <div className="w-full flex flex-col items-center">
-              <button
-                onClick={() => setStep("scenario")}
-                className="self-start text-xs text-amber-400 flex items-center gap-1 mb-2 hover:opacity-80 transition font-bold"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                <span>Voltar às opções de foto</span>
-              </button>
-
-              <h1 className="text-2xl font-black text-white tracking-tight leading-snug">
-                Agora, envie a sua foto
-              </h1>
-              <p className="text-xs text-white/70 mt-1 mb-4">
-                Envie uma foto de rosto ou selfie. Vamos colocar o seu rosto perfeitamente na montagem escolhida (
-                <strong className={selectedCandidate.colorTheme.accentText}>{selectedScenario.title}</strong>).
-              </p>
-
-              {/* Slot de Upload com Preview */}
-              <div className="w-full">
-                <label className="relative aspect-[3/3.8] rounded-2xl border-2 border-dashed border-amber-400/40 bg-amber-400/5 flex flex-col items-center justify-center cursor-pointer overflow-hidden hover:border-amber-400 transition active:scale-98">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handlePhotoUpload}
-                  />
-                  {userPhoto ? (
-                    <div className="relative w-full h-full">
-                      <img src={userPhoto} alt="Sua foto" className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition">
-                        <span className="text-xs font-bold text-white bg-black/70 px-3 py-1.5 rounded-lg">
-                          TROCAR FOTO
+                        <span className="flex items-center gap-3">
+                          <span className="text-2xl">{opt.icon}</span>
+                          <span>{opt.label}</span>
                         </span>
+                        <ChevronRight className="w-4 h-4 text-amber-400" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* PERGUNTA 2: QUEM PROCURA */}
+              {quizStep === 2 && (
+                <div className="w-full flex flex-col items-center animate-in fade-in">
+                  <span className="text-[11px] font-extrabold tracking-wider text-amber-400 uppercase mb-1">
+                    Passo 2 · Sintonia do Coração
+                  </span>
+                  <h2 className="text-xl sm:text-2xl font-black text-white font-cinzel mb-2">
+                    Quem você procura no amor?
+                  </h2>
+                  <p className="text-xs text-purple-200/70 mb-5">
+                    Tina visualizará a essência facial compatível com o seu desejo.
+                  </p>
+
+                  <div className="flex flex-col gap-3 w-full">
+                    {[
+                      { val: "man", label: "Estou em busca de um Homem", icon: "👨" },
+                      { val: "woman", label: "Estou em busca de uma Mulher", icon: "👩" },
+                      { val: "both", label: "Aberto(a) ao Destino", icon: "💞" },
+                    ].map((opt) => (
+                      <button
+                        key={opt.val}
+                        type="button"
+                        onClick={() => {
+                          setTargetGender(opt.val as TargetGender);
+                          setQuizStep(3);
+                        }}
+                        className={`w-full py-4 px-4 rounded-xl border text-left flex items-center justify-between text-sm sm:text-base font-bold transition active:scale-98 cursor-pointer ${
+                          targetGender === opt.val
+                            ? "bg-purple-900/40 border-amber-400 text-white shadow-lg shadow-purple-900/30"
+                            : "bg-neutral-900/80 border-white/15 text-white/80 hover:border-purple-400"
+                        }`}
+                      >
+                        <span className="flex items-center gap-3">
+                          <span className="text-2xl">{opt.icon}</span>
+                          <span>{opt.label}</span>
+                        </span>
+                        <ChevronRight className="w-4 h-4 text-amber-400" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* PERGUNTA 3: NOME E DATA DE NASCIMENTO (SIGNO ZODIACAL AUTOMÁTICO) */}
+              {quizStep === 3 && (
+                <div className="w-full flex flex-col items-center animate-in fade-in">
+                  <span className="text-[11px] font-extrabold tracking-wider text-amber-400 uppercase mb-1">
+                    Passo 3 · Mapa Astral
+                  </span>
+                  <h2 className="text-xl sm:text-2xl font-black text-white font-cinzel mb-2">
+                    Seus dados espirituais
+                  </h2>
+                  <p className="text-xs text-purple-200/70 mb-4">
+                    Seu nome e data ativam a vibração astrológica exata da sua alma gêmea.
+                  </p>
+
+                  <div className="w-full flex flex-col gap-3.5 text-left">
+                    <div>
+                      <label className="text-xs font-bold text-white/80 block mb-1">
+                        Seu primeiro nome:
+                      </label>
+                      <div className="relative">
+                        <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                        <input
+                          type="text"
+                          value={userName}
+                          onChange={(e) => setUserName(e.target.value)}
+                          placeholder="Ex: Beatriz ou Rafael"
+                          className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/5 border border-white/20 text-white placeholder-white/40 text-sm focus:outline-none focus:border-amber-400 transition"
+                        />
                       </div>
                     </div>
-                  ) : (
-                    <div className="flex flex-col items-center p-4">
-                      <div className="w-16 h-16 rounded-full bg-amber-400/10 text-amber-400 flex items-center justify-center text-3xl font-light mb-2">
-                        +
+
+                    <div>
+                      <label className="text-xs font-bold text-white/80 block mb-1">
+                        Sua data de nascimento:
+                      </label>
+                      <div className="grid grid-cols-3 gap-2">
+                        {/* Dia */}
+                        <div>
+                          <select
+                            value={birthDay}
+                            onChange={(e) => setBirthDay(e.target.value)}
+                            className="w-full py-3 px-2 rounded-xl bg-[#161226] border border-white/20 text-white text-xs font-semibold focus:outline-none focus:border-amber-400"
+                          >
+                            {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
+                              <option key={d} value={d}>
+                                Dia {d}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Mês */}
+                        <div>
+                          <select
+                            value={birthMonth}
+                            onChange={(e) => setBirthMonth(e.target.value)}
+                            className="w-full py-3 px-2 rounded-xl bg-[#161226] border border-white/20 text-white text-xs font-semibold focus:outline-none focus:border-amber-400"
+                          >
+                            {[
+                              "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
+                              "Jul", "Ago", "Set", "Out", "Nov", "Dez"
+                            ].map((m, idx) => (
+                              <option key={m} value={idx + 1}>
+                                {m}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Ano */}
+                        <div>
+                          <select
+                            value={birthYear}
+                            onChange={(e) => setBirthYear(e.target.value)}
+                            className="w-full py-3 px-2 rounded-xl bg-[#161226] border border-white/20 text-white text-xs font-semibold focus:outline-none focus:border-amber-400"
+                          >
+                            {Array.from({ length: 70 }, (_, i) => 2006 - i).map((y) => (
+                              <option key={y} value={y}>
+                                {y}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
                       </div>
-                      <span className="text-sm font-bold text-white tracking-wide">
-                        TOQUE PARA ENVIAR SUA FOTO
-                      </span>
-                      <span className="text-xs text-white/50 mt-1">
-                        Selfie comum, foto de frente ou perfil
+                    </div>
+
+                    {/* Card de Validação Astrológica em Tempo Real */}
+                    <div className="bg-gradient-to-r from-purple-950/80 to-amber-950/50 border border-amber-400/30 rounded-xl p-3 flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-2xl">{zodiac.symbol}</span>
+                        <div>
+                          <span className="text-xs font-black text-amber-300 block">
+                            Signo Solar: {zodiac.name}
+                          </span>
+                          <span className="text-[10px] text-white/60">
+                            Elemento {zodiac.element} • Frequência identificada
+                          </span>
+                        </div>
+                      </div>
+                      <span className="text-[10px] bg-amber-400/20 text-amber-300 font-extrabold px-2 py-0.5 rounded border border-amber-400/40">
+                        Ativado
                       </span>
                     </div>
-                  )}
-                </label>
-              </div>
 
-              {/* Dica de Privacidade */}
-              <p className="text-[12px] text-white/60 mt-3 flex items-center gap-1.5 justify-center">
-                <span>🔒</span> Suas fotos são usadas estritamente para criar a sua montagem personalizada.
-              </p>
+                    <button
+                      type="button"
+                      disabled={!userName.trim()}
+                      onClick={() => setQuizStep(4)}
+                      className={`w-full py-3.5 rounded-xl font-black text-sm tracking-wide transition shadow-lg mt-2 cursor-pointer ${
+                        userName.trim()
+                          ? "bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 active:scale-98"
+                          : "bg-white/10 text-white/30 cursor-not-allowed"
+                      }`}
+                    >
+                      CONTINUAR
+                    </button>
+                  </div>
+                </div>
+              )}
 
-              {/* Botão de Avançar */}
-              <button
-                disabled={!userPhoto}
-                onClick={startLoading}
-                className={`w-full mt-5 py-4 rounded-xl font-black text-sm sm:text-base tracking-wide transition shadow-lg ${
-                  userPhoto
-                    ? `${selectedCandidate.colorTheme.btnBg} text-white active:scale-98 animate-pulse`
-                    : "bg-white/10 text-white/30 cursor-not-allowed"
-                }`}
-              >
-                CRIAR MINHA FOTO COM {selectedCandidate.name.toUpperCase()}
-              </button>
+              {/* PERGUNTA 4: STATUS AMOROSO ATUAL */}
+              {quizStep === 4 && (
+                <div className="w-full flex flex-col items-center animate-in fade-in">
+                  <span className="text-[11px] font-extrabold tracking-wider text-amber-400 uppercase mb-1">
+                    Passo 4 · Momento Cósmico
+                  </span>
+                  <h2 className="text-xl sm:text-2xl font-black text-white font-cinzel mb-2">
+                    Como está sua vida amorosa hoje?
+                  </h2>
+                  <p className="text-xs text-purple-200/70 mb-5">
+                    Ajuda Tina a entender o tempo cósmico do seu reencontro de almas.
+                  </p>
+
+                  <div className="flex flex-col gap-2.5 w-full">
+                    {[
+                      { val: "single", label: "Solteira(o) e pronta(o) para o verdadeiro amor", icon: "✨" },
+                      { val: "complicated", label: "Em um relacionamento com dúvidas", icon: "🌪️" },
+                      { val: "separated", label: "Recém-separada(o) querendo recomeçar", icon: "🕊️" },
+                      { val: "curious", label: "Apenas curiosa(o) para ver quem o destino escolheu", icon: "🔮" },
+                    ].map((opt) => (
+                      <button
+                        key={opt.val}
+                        type="button"
+                        onClick={() => {
+                          setLoveStatus(opt.val);
+                          setQuizStep(5);
+                        }}
+                        className={`w-full py-3.5 px-4 rounded-xl border text-left flex items-center justify-between text-xs sm:text-sm font-bold transition active:scale-98 cursor-pointer ${
+                          loveStatus === opt.val
+                            ? "bg-purple-900/40 border-amber-400 text-white shadow-lg shadow-purple-900/30"
+                            : "bg-neutral-900/80 border-white/15 text-white/80 hover:border-purple-400"
+                        }`}
+                      >
+                        <span className="flex items-center gap-2.5">
+                          <span className="text-xl">{opt.icon}</span>
+                          <span>{opt.label}</span>
+                        </span>
+                        <ChevronRight className="w-4 h-4 text-amber-400" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* PERGUNTA 5: ONDE RECEBER O DESENHO (WHATSAPP E E-MAIL) */}
+              {quizStep === 5 && (
+                <div className="w-full flex flex-col items-center animate-in fade-in">
+                  <div className="w-12 h-12 rounded-full bg-amber-400/20 text-amber-400 flex items-center justify-center mb-2">
+                    <Heart className="w-6 h-6 fill-amber-400" />
+                  </div>
+
+                  <span className="text-[11px] font-extrabold tracking-wider text-amber-400 uppercase mb-1">
+                    Último Passo · Canal de Entrega
+                  </span>
+                  <h2 className="text-xl sm:text-2xl font-black text-white font-cinzel mb-1">
+                    Para onde Tina enviará seu desenho?
+                  </h2>
+                  <p className="text-xs text-purple-200/70 mb-4">
+                    Você visualizará a revelação aqui na hora e receberá o arquivo original em alta resolução.
+                  </p>
+
+                  <div className="w-full flex flex-col gap-3 text-left">
+                    <div>
+                      <label className="text-xs font-bold text-white/80 block mb-1">
+                        Seu WhatsApp com DDD:
+                      </label>
+                      <div className="relative">
+                        <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                        <input
+                          type="tel"
+                          value={whatsapp}
+                          onChange={(e) => handlePhoneMask(e.target.value)}
+                          placeholder="(11) 99999-9999"
+                          className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/5 border border-white/20 text-white placeholder-white/40 text-sm focus:outline-none focus:border-amber-400 transition"
+                          autoFocus
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-white/80 block mb-1">
+                        Seu melhor e-mail:
+                      </label>
+                      <div className="relative">
+                        <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                        <input
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="seu@email.com"
+                          className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/5 border border-white/20 text-white placeholder-white/40 text-sm focus:outline-none focus:border-amber-400 transition"
+                        />
+                      </div>
+                    </div>
+
+                    <p className="text-[11px] text-white/50 flex items-center gap-1.5 leading-tight mt-1">
+                      <Lock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                      <span>Seus dados são confidenciais e protegidos por sigilo espiritual e LGPD.</span>
+                    </p>
+
+                    <button
+                      type="button"
+                      disabled={whatsapp.length < 14 || !email.includes("@")}
+                      onClick={startLoadingAnimation}
+                      className={`w-full py-4 rounded-xl font-black text-sm tracking-wide transition shadow-xl mt-3 cursor-pointer ${
+                        whatsapp.length >= 14 && email.includes("@")
+                          ? "bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 text-slate-950 active:scale-98 hover:brightness-110"
+                          : "bg-white/10 text-white/30 cursor-not-allowed"
+                      }`}
+                    >
+                      CANALIZAR E DESENHAR MINHA ALMA GÊMEA ✨
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
 
         {/* ========================================================================= */}
-        {/* ABA 4: LOADING / PROCESSAMENTO EM TEMPO REAL                              */}
+        {/* ETAPA 3: LOADING MÍSTICO COM BARRAS CÓSMICAS                              */}
         {/* ========================================================================= */}
         {step === "loading" && (
-          <div className="w-full flex-1 flex flex-col items-center justify-center text-center animate-in fade-in duration-300 py-6">
-            <div className="w-full flex flex-col items-center">
-              <h1 className="text-xl sm:text-2xl font-black tracking-tight mb-1">
-                Criando sua foto com {selectedCandidate.name}…
-              </h1>
-              <p className="text-xs text-white/70 mb-6">
-                Estamos reconhecendo seu rosto e ajustando a iluminação na montagem
-              </p>
+          <div className="w-full flex-1 flex flex-col items-center justify-center text-center animate-in fade-in duration-300 py-8">
+            {/* Círculo Astral Pulsando */}
+            <div className="relative w-28 h-28 mx-auto mb-6 flex items-center justify-center">
+              <div className="absolute inset-0 rounded-full border-2 border-purple-500/30 animate-spin" style={{ animationDuration: "10s" }} />
+              <div className="absolute inset-2 rounded-full border-2 border-dashed border-amber-400/60 animate-spin" style={{ animationDuration: "6s", animationDirection: "reverse" }} />
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-900 to-amber-950 flex items-center justify-center shadow-2xl shadow-purple-900/50">
+                <Sparkles className="w-10 h-10 text-amber-300 animate-pulse" />
+              </div>
+            </div>
 
-              {/* Dois avatares se aproximando */}
-              <div className="relative flex items-center justify-center gap-4 mb-8">
-                <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-white/20 shadow-xl">
-                  <img src={userPhoto || ""} alt="Você" className="w-full h-full object-cover" />
-                </div>
-                <div className="w-10 h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent relative">
-                  <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-amber-400/60 filter blur-[2px] animate-ping" />
-                </div>
-                <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-amber-400 shadow-xl shadow-amber-400/20">
-                  <img src={selectedScenario.image} alt={selectedCandidate.name} className="w-full h-full object-cover" />
-                </div>
+            <h2 className="text-xl sm:text-2xl font-black text-white font-cinzel mb-1">
+              Conectando com sua Alma Gêmea…
+            </h2>
+            <p className="text-xs text-purple-200/80 mb-6 max-w-[320px]">
+              Tina Aldea está sintonizando sua frequência de {zodiac.name} ({zodiac.symbol}) e traçando os contornos a lápis
+            </p>
+
+            <div className="w-full max-w-[340px] flex flex-col gap-3 text-left">
+              <div className="flex justify-between text-xs font-bold text-white/80">
+                <span>
+                  {loadStage === 1 && "1/3 Sintonizando conexão cósmica..."}
+                  {loadStage === 2 && "2/3 Mapeando traços faciais e olhar..."}
+                  {loadStage === 3 && "3/3 Concluindo o retrato a lápis em alta resolução..."}
+                </span>
+                <span className="text-amber-400 font-mono">{loadProgress}%</span>
+              </div>
+              <div className="w-full h-3 rounded-full bg-white/10 overflow-hidden border border-white/10 shadow-inner">
+                <div
+                  className="h-full bg-gradient-to-r from-purple-600 via-amber-400 to-yellow-300 rounded-full transition-all duration-100 shadow-md"
+                  style={{ width: `${loadProgress}%` }}
+                />
               </div>
 
-              {/* Barras de Progresso */}
-              <div className="w-full flex flex-col gap-3.5 max-w-[340px]">
-                <div className="w-full text-left">
-                  <div className="flex justify-between text-xs font-semibold text-white/80 mb-1">
-                    <span>Reconhecendo traços faciais</span>
-                    <span className="text-amber-400">{bar1}%</span>
-                  </div>
-                  <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
-                    <div className="h-full bg-amber-400 rounded-full transition-all duration-100" style={{ width: `${bar1}%` }} />
-                  </div>
-                </div>
-
-                <div className="w-full text-left">
-                  <div className="flex justify-between text-xs font-semibold text-white/80 mb-1">
-                    <span>Encaixando no estilo ({selectedScenario.title})</span>
-                    <span className="text-amber-400">{bar2}%</span>
-                  </div>
-                  <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
-                    <div className="h-full bg-amber-400 rounded-full transition-all duration-100" style={{ width: `${bar2}%` }} />
-                  </div>
-                </div>
-
-                <div className="w-full text-left">
-                  <div className="flex justify-between text-xs font-semibold text-white/80 mb-1">
-                    <span>Finalizando em alta resolução</span>
-                    <span className="text-amber-400">{bar3}%</span>
-                  </div>
-                  <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-amber-400 to-emerald-400 rounded-full transition-all duration-100" style={{ width: `${bar3}%` }} />
-                  </div>
-                </div>
+              <div className="bg-purple-950/40 border border-purple-500/20 p-2.5 rounded-xl text-left mt-3">
+                <p className="text-[11px] text-purple-200/90 leading-tight">
+                  🔮 <strong>Visão captada:</strong> O destino preparou alguém com traços marcantes e alta compatibilidade energética com você, {userName || "querida(o)"}!
+                </p>
               </div>
             </div>
           </div>
         )}
 
         {/* ========================================================================= */}
-        {/* ABA 5: OFERTA / CHECKOUT IDENTICA AO MODELO                               */}
+        {/* ETAPA 4: ABA DE OFERTA / REVELAÇÃO COM CADEADO E CHECKOUT                   */}
         {/* ========================================================================= */}
         {step === "offer" && (
           <div className="w-full flex-1 flex flex-col items-center justify-start text-center animate-in fade-in duration-300">
-            {/* Faixa Superior 50% OFF */}
-            <div className="w-full bg-[#5a0b12] text-amber-300 py-1.5 px-3 rounded-t-xl text-center text-xs font-black tracking-wide border-b border-red-500/20 shadow-inner">
-              🎁 50% OFF aplicado
+            {/* Faixa Superior 65% OFF */}
+            <div className="w-full bg-gradient-to-r from-purple-950 via-[#4d0b13] to-purple-950 text-amber-300 py-1.5 px-3 rounded-t-xl text-center text-xs font-black tracking-wide border-b border-amber-500/30 shadow-inner">
+              🎁 65% OFF APLICADO · OFERTA DE CANALIZAÇÃO EXCLUSIVA HOJE
             </div>
 
-            {/* Alternador de Candidato na tela de pagamento */}
-            <div className="w-full flex items-center justify-between my-2 px-1">
-              <button
-                type="button"
-                onClick={() => setStep("candidate")}
-                className="text-[11px] text-amber-400 hover:text-amber-300 flex items-center gap-1 font-bold transition cursor-pointer"
-              >
-                <ChevronLeft className="w-3.5 h-3.5" />
-                <span>Início</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  const otherCandidate = selectedCandidate.id === "lula" ? CANDIDATES[1] : CANDIDATES[0];
-                  setSelectedCandidate(otherCandidate);
-                  setSelectedScenario(otherCandidate.id === "flavio" ? FLAVIO_SCENARIOS[0] : LULA_SCENARIOS[0]);
-                }}
-                className="text-[11px] bg-white/10 hover:bg-white/20 text-amber-300 font-bold px-2.5 py-1 rounded-lg border border-white/15 transition cursor-pointer flex items-center gap-1"
-              >
-                <span>Alternar para {selectedCandidate.id === "lula" ? "Flávio 22 💛" : "Lula 13 ❤️"}</span>
-              </button>
-            </div>
-
-            {/* Teaser Borrado da Foto com Cadeado */}
-            <div className="w-full rounded-2xl overflow-hidden relative aspect-[16/10] border border-white/15 my-3 bg-black shadow-2xl">
+            {/* Teaser do Retrato Desenhado com Cadeado Dourado */}
+            <div className="w-full rounded-2xl overflow-hidden relative aspect-[16/11] border-2 border-amber-400/50 my-3 bg-black shadow-2xl shadow-purple-900/40">
               <img
-                src={selectedScenario.image}
-                alt="Prévia da montagem"
-                className="w-full h-full object-cover filter blur-[6px] brightness-75 scale-105"
+                src={sketchImage}
+                alt="Retrato da alma gêmea"
+                className="w-full h-full object-cover filter blur-[9px] brightness-75 scale-105"
               />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-12 h-12 rounded-xl bg-amber-500/20 border-2 border-amber-400/80 backdrop-blur-md flex items-center justify-center shadow-lg shadow-amber-500/30">
-                  <Lock className="w-6 h-6 text-amber-300" />
+              <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center p-4">
+                <div className="w-14 h-14 rounded-2xl bg-amber-500/20 border-2 border-amber-400 backdrop-blur-md flex items-center justify-center shadow-xl shadow-amber-500/40 mb-2 animate-bounce" style={{ animationDuration: "3s" }}>
+                  <Lock className="w-7 h-7 text-amber-300" />
                 </div>
+                <span className="text-xs font-black text-white bg-black/80 px-3 py-1 rounded-full border border-amber-400/50">
+                  RETRATO CONCLUÍDO E BLOQUEADO
+                </span>
+                <span className="text-[10px] text-amber-300 font-semibold mt-1">
+                  Desbloqueie para visualizar em alta resolução sem marcas d'água
+                </span>
               </div>
             </div>
 
-            {/* Headline Principal */}
-            <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight leading-snug px-1">
-              Você está a 1 passo de ver essa lembrança ganhar vida
+            {/* Headline Principal da Oferta */}
+            <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight leading-snug font-cinzel px-1">
+              O Retrato da Sua Alma Gêmea Foi Canalizado com Sucesso!
             </h1>
             <div className="flex items-center justify-center gap-1.5 text-xs text-white/80 mt-1 mb-4">
               <span className="text-amber-400 text-sm">★</span>
               <span className="font-extrabold text-white">4,9/5</span>
               <span className="text-white/40">•</span>
-              <span className="text-amber-300 font-bold">milhares de eleitores</span>
-              <span className="text-white/70">impressionados</span>
+              <span className="text-amber-300 font-bold">Mais de 37.000 pessoas</span>
+              <span className="text-white/70">já encontraram seu amor</span>
             </div>
 
-            {/* Card: FALTA SÓ O PAGAMENTO */}
-            <div className="w-full bg-[#131010] border border-red-950/80 rounded-2xl p-4 shadow-2xl relative mb-5">
+            {/* CARD: FALTA SÓ O PAGAMENTO / TABELA DE VALOR */}
+            <div className="w-full bg-[#110d20] border border-purple-500/30 rounded-2xl p-4 shadow-2xl relative mb-5 text-left">
               <div className="w-full text-center mb-3">
-                <span className="inline-block bg-[#4d0b13] border border-red-600/40 text-amber-300 text-[10px] font-black tracking-widest px-3 py-1 rounded-full uppercase shadow-md">
-                  FALTA SÓ O PAGAMENTO
+                <span className="inline-block bg-gradient-to-r from-purple-900 to-amber-900/60 border border-amber-500/40 text-amber-300 text-[10px] font-black tracking-widest px-3.5 py-1 rounded-full uppercase shadow-md">
+                  FALTA SÓ O DESBLOQUEIO
                 </span>
               </div>
 
               {/* Tabela de Preço */}
               <div className="space-y-1.5 text-xs font-semibold">
                 <div className="flex items-center justify-between text-white/85">
-                  <span>Foto com {selectedCandidate.name} em Alta Definição</span>
-                  <span className="font-mono">R$ 55,80</span>
+                  <span>Desenho Hiper-realista a Lápis da Alma Gêmea</span>
+                  <span className="font-mono text-white/60 line-through">R$ 97,00</span>
                 </div>
-                <div className="flex items-center justify-between text-emerald-400">
-                  <span>Desconto de hoje (50%)</span>
-                  <span className="font-mono font-bold">- R$ 27,90</span>
+                <div className="flex items-center justify-between text-white/85">
+                  <span>Dossiê Psíquico & Mapa de Personalidade</span>
+                  <span className="font-mono text-white/60 line-through">R$ 49,00</span>
                 </div>
-                <div className="flex items-center justify-between text-white/50">
-                  <span className="flex items-center gap-1">
-                    Taxa de serviço
-                    <span className="text-[10px] opacity-70">ⓘ</span>
-                  </span>
+                <div className="flex items-center justify-between text-white/85">
+                  <span>Previsão de Quando e Onde Vocês Vão Se Conhecer</span>
+                  <span className="font-mono text-white/60 line-through">R$ 39,00</span>
+                </div>
+                <div className="flex items-center justify-between text-emerald-400 font-bold">
+                  <span>Desconto Especial de Hoje (65% OFF)</span>
+                  <span className="font-mono">- R$ 157,10</span>
+                </div>
+                <div className="flex items-center justify-between text-white/50 text-[11px]">
+                  <span>Taxa de processamento espiritual</span>
                   <span className="font-mono">R$ 0,00</span>
                 </div>
               </div>
@@ -977,196 +831,221 @@ function PoliticalFunnel() {
 
               {/* Linha Total */}
               <div className="flex items-center justify-between mb-4">
-                <div className="text-left">
-                  <span className="text-base font-black text-white block leading-tight">Total hoje</span>
-                  <span className="text-[10px] text-white/50 block">pagamento único • PIX</span>
+                <div>
+                  <span className="text-base font-black text-white block leading-tight font-cinzel">Total Hoje</span>
+                  <span className="text-[10px] text-purple-300/70 block">pagamento único • via PIX • sem mensalidade</span>
                 </div>
                 <div className="text-2xl sm:text-3xl font-black text-amber-400 tracking-tight font-mono">
                   R$ 27,90
                 </div>
               </div>
 
-              {/* Botão CTA Laranja */}
+              {/* Botão CTA Principal */}
               <button
                 type="button"
-                onClick={() => {
-                  setShowContactModal(true);
-                  if (!whatsapp || !email) {
-                    setModalStage("contact");
-                  }
-                }}
-                className="w-full py-4 px-4 rounded-xl font-black text-sm sm:text-base tracking-wide bg-gradient-to-r from-[#ff6b3d] via-[#ff5722] to-[#e64a19] hover:from-[#ff7b50] hover:to-[#f4511e] text-white shadow-xl shadow-orange-600/30 active:scale-98 transition transform cursor-pointer flex items-center justify-center gap-2"
+                onClick={() => setShowPixModal(true)}
+                className="w-full py-4 px-4 rounded-xl font-black text-sm sm:text-base tracking-wide bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 shadow-xl shadow-amber-500/30 active:scale-98 transition transform cursor-pointer flex items-center justify-center gap-2"
               >
-                <span>QUERO MINHA FOTO OFICIAL</span>
+                <Eye className="w-5 h-5 text-slate-950" />
+                <span>DESBLOQUEAR MEU DESENHO AGORA</span>
               </button>
 
               <p className="text-[11px] text-white/60 mt-2.5 text-center flex items-center justify-center gap-1.5 font-medium">
                 <Lock className="w-3.5 h-3.5 text-amber-400" />
-                <span>Pagamento seguro via PIX • aprovação na hora</span>
+                <span>Pagamento seguro via PIX • Liberação imediata na tela</span>
               </p>
             </div>
 
             {/* O que você recebe */}
             <div className="w-full text-left mb-6 px-1">
-              <h3 className="text-sm font-black text-white mb-3 flex items-center gap-2">
-                <span>✨</span>
-                <span>O que você recebe</span>
+              <h3 className="text-sm font-black text-white mb-3 flex items-center gap-2 font-cinzel">
+                <Sparkles className="w-4 h-4 text-amber-400" />
+                <span>O que está incluído no seu pacote oficial:</span>
               </h3>
 
-              <ul className="space-y-2.5 text-xs text-white/90">
-                <li className="flex items-start gap-2">
-                  <span className="text-amber-400 font-black mt-0.5">✓</span>
-                  <span>
-                    📸 <strong className="text-white">Foto de você ao lado de {selectedCandidate.name}</strong>, em altíssima resolução
-                  </span>
+              <ul className="space-y-3 text-xs text-white/90">
+                <li className="flex items-start gap-2.5 bg-purple-950/20 p-2.5 rounded-xl border border-purple-500/20">
+                  <span className="text-amber-400 font-black mt-0.5 text-base">🎨</span>
+                  <div>
+                    <strong className="text-white block">Desenho Hiper-realista a Lápis</strong>
+                    <span className="text-white/70 text-[11px]">
+                      Retrato nítido em alta definição artística do rosto e olhar da sua alma gêmea, pronto para imprimir ou guardar no celular.
+                    </span>
+                  </div>
                 </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-amber-400 font-black mt-0.5">✓</span>
-                  <span>
-                    🎵 <strong className="text-white">Sem marca d'água</strong> e pronta para postar no Instagram, WhatsApp e redes
-                  </span>
+
+                <li className="flex items-start gap-2.5 bg-purple-950/20 p-2.5 rounded-xl border border-purple-500/20">
+                  <span className="text-amber-400 font-black mt-0.5 text-base">🔮</span>
+                  <div>
+                    <strong className="text-white block">Perfil Psíquico & Guia de Personalidade</strong>
+                    <span className="text-white/70 text-[11px]">
+                      Como essa pessoa fala, seus valores mais profundos, hobbies, tipo de profissão e hábitos no dia a dia.
+                    </span>
+                  </div>
                 </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-amber-400 font-black mt-0.5">✓</span>
-                  <span>
-                    📱 <strong className="text-white">Aparece na sua tela em ~2 minutos</strong> (+ cópia no WhatsApp)
-                  </span>
+
+                <li className="flex items-start gap-2.5 bg-purple-950/20 p-2.5 rounded-xl border border-purple-500/20">
+                  <span className="text-amber-400 font-black mt-0.5 text-base">⏳</span>
+                  <div>
+                    <strong className="text-white block">Quando e Onde Vocês Vão Se Encontrar</strong>
+                    <span className="text-white/70 text-[11px]">
+                      Pistas astrológicas do momento exato em que seus caminhos irão se cruzar e sinais cósmicos para reconhecê-la(o).
+                    </span>
+                  </div>
                 </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-amber-400 font-black mt-0.5">✓</span>
-                  <span>
-                    💳 <strong className="text-white">Pagamento único</strong> — sem mensalidade
-                  </span>
+
+                <li className="flex items-start gap-2.5 bg-purple-950/20 p-2.5 rounded-xl border border-purple-500/20">
+                  <span className="text-amber-400 font-black mt-0.5 text-base">📱</span>
+                  <div>
+                    <strong className="text-white block">Entrega Imediata no WhatsApp e no E-mail</strong>
+                    <span className="text-white/70 text-[11px]">
+                      Aparece na sua tela agora mesmo e enviamos uma cópia sem perda de qualidade no seu WhatsApp e e-mail.
+                    </span>
+                  </div>
                 </li>
               </ul>
             </div>
 
-            {/* Garantia de Emoção / Dinheiro de Volta */}
-            <div className="w-full text-center my-6 px-2 flex flex-col items-center">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-b from-[#22c55e] to-[#15803d] border-2 border-emerald-300 shadow-xl shadow-emerald-500/30 flex items-center justify-center mb-3">
-                <Star className="w-7 h-7 text-white fill-white" />
+            {/* SEÇÃO: QUEM É TINA ALDEA */}
+            <div className="w-full bg-[#130d24] border border-amber-400/30 rounded-2xl p-4 text-left my-4 shadow-xl">
+              <div className="flex items-center gap-3 mb-3">
+                <img
+                  src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=160&auto=format&fit=crop&q=80"
+                  alt="Tina Aldea Médium e Artista"
+                  className="w-14 h-14 rounded-full object-cover border-2 border-amber-400 shrink-0"
+                />
+                <div>
+                  <h4 className="text-sm font-black text-white font-cinzel">Tina Aldea</h4>
+                  <span className="text-[11px] text-amber-300 font-bold block">
+                    Vidente & Retratista de Almas Gêmeas
+                  </span>
+                  <span className="text-[10px] text-white/50 block">
+                    Mais de 15 anos unindo destinos ao redor do mundo
+                  </span>
+                </div>
               </div>
-
-              <h3 className="text-base font-black text-white leading-tight">
-                Emoção garantida <br />
-                ou seu dinheiro de volta
-              </h3>
-              <p className="text-[11px] text-white/70 mt-2 max-w-[320px] leading-relaxed">
-                Se a sua foto não superar suas expectativas, devolvemos 100% do seu dinheiro em até 14 dias.
-              </p>
-              <p className="text-[10px] text-white/50 mt-1">
-                Sem pegadinha e sem mensalidade. É uma compra única.
+              <p className="text-xs text-white/80 leading-relaxed italic border-l-2 border-amber-400 pl-3 my-2">
+                "Desde pequena percebi que quando fechava os olhos e segurava um lápis, minhas mãos desenhavam rostos de pessoas que meus amigos e familiares ainda iriam conhecer anos depois. Transformei esse dom na minha missão de vida: ajudar corações a reencontrarem sua outra metade cósmica."
               </p>
             </div>
 
-            {/* Amado por milhares de brasileiros */}
-            <div className="w-full text-center mt-3 mb-6">
-              <div className="flex items-center justify-center gap-1 text-[11px] text-white/70 mb-1">
-                <span className="text-amber-400">★</span>
-                <span className="font-extrabold text-white">4,9/5</span>
-                <span>• milhares de fotos entregues</span>
+            {/* GARANTIA DE 30 DIAS */}
+            <div className="w-full text-center my-6 px-2 flex flex-col items-center">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-b from-amber-500 to-amber-700 border-2 border-yellow-300 shadow-xl shadow-amber-500/30 flex items-center justify-center mb-3">
+                <ShieldCheck className="w-8 h-8 text-slate-950" />
               </div>
-              <h3 className="text-base font-black text-white mb-3">
-                Amado por milhares de brasileiros 👇
+
+              <h3 className="text-base font-black text-white leading-tight font-cinzel">
+                Garantia Blindada Incondicional de 30 Dias
               </h3>
+              <p className="text-[11px] text-white/70 mt-2 max-w-[320px] leading-relaxed">
+                Se você não sentir uma conexão genuína e profunda com o desenho ou achar que não valeu cada centavo, devolvemos 100% do seu dinheiro. Sem pegadinhas e sem ressentimentos.
+              </p>
+            </div>
 
-              <div className="w-full rounded-2xl overflow-hidden border border-amber-400/30 bg-neutral-900/90 shadow-2xl relative">
-                <div className="relative aspect-[1024/853] w-full bg-black">
-                  <img
-                    src={selectedScenario.image}
-                    alt={`Exemplo com ${selectedCandidate.name}`}
-                    className="w-full h-full object-contain"
-                  />
-                </div>
-
-                <div className="p-3.5 bg-black/85 backdrop-blur-md border-t border-white/10 text-left flex items-start justify-between gap-3">
-                  <div>
-                    <div className="flex text-amber-400 text-xs mb-1">
-                      ★★★★★
-                    </div>
-                    <strong className="text-xs font-bold text-white block">
-                      {selectedCandidate.id === "lula" ? "Carlos Eduardo Mendes" : "Marcos Vinícius Silveira"}
-                    </strong>
-                    <span className="text-[10px] text-white/50 block mb-1">
-                      {selectedCandidate.id === "lula" ? "São Paulo - SP" : "Curitiba - PR"}
-                    </span>
-                    <p className="text-[11px] text-white/80 italic leading-snug">
-                      {selectedCandidate.id === "lula"
-                        ? '"Ficou muito perfeito! Mandei no grupo da família e todo mundo achou que eu realmente estive com o Lula em Brasília. Parabéns pelo trabalho!"'
-                        : '"Sensacional, imagem nítida e muito realista! Todo mundo elogiou no meu WhatsApp parecendo que estive pessoalmente com o Flávio. Recomendo muito!"'}
-                    </p>
-                  </div>
-                  <div className="w-10 h-10 rounded-full overflow-hidden border border-amber-400/50 shrink-0">
-                    <img
-                      src={userPhoto || (selectedCandidate.id === "lula" ? "/lula-13.jpg" : "/flavio-bolsonaro-22.jpg")}
-                      alt="Cliente"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                </div>
+            {/* DEPOIMENTOS REAIS E HISTÓRIAS DE SUCESSO */}
+            <div className="w-full text-left my-4">
+              <div className="text-center mb-3">
+                <span className="text-xs text-amber-400 font-bold">HISTÓRIAS REAIS</span>
+                <h3 className="text-base font-black text-white font-cinzel">
+                  Eles Encontraram Suas Almas Gêmeas 👇
+                </h3>
               </div>
 
-              {/* Mais Feedbacks Reais de Apoiadores do Candidato */}
-              <div className="flex flex-col gap-2.5 mt-3 text-left">
-                {(selectedCandidate.id === "lula" ? LULA_REVIEWS : FLAVIO_REVIEWS)
-                  .slice(1)
-                  .map((rev) => (
-                    <div
-                      key={rev.id}
-                      className="bg-neutral-900/90 border border-white/10 rounded-xl p-3 shadow-md"
-                    >
-                      <div className="flex items-start justify-between gap-2 mb-1.5">
-                        <div className="flex items-center gap-2.5">
-                          <img
-                            src={rev.avatar}
-                            alt={rev.name}
-                            className="w-8 h-8 rounded-full object-cover border border-white/20 shrink-0"
-                          />
-                          <div>
-                            <div className="flex items-center gap-1.5">
-                              <strong className="text-xs font-bold text-white block">
-                                {rev.name}
-                              </strong>
-                              {rev.verified && (
-                                <span className="bg-emerald-500/20 text-emerald-400 text-[9px] font-bold px-1.5 py-0.2 rounded border border-emerald-500/30">
-                                  ✓ Verificado
-                                </span>
-                              )}
-                            </div>
-                            <span className="text-[10px] text-white/50 block">
-                              {rev.city} • {rev.time}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="flex text-amber-400 text-[11px] shrink-0">
-                          {"★".repeat(rev.stars)}
+              <div className="flex flex-col gap-3">
+                {TESTIMONIALS.map((t) => (
+                  <div
+                    key={t.id}
+                    className="bg-neutral-900/90 border border-purple-500/20 rounded-xl p-3.5 shadow-md text-left"
+                  >
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <div className="flex items-center gap-2.5">
+                        <img
+                          src={t.avatar}
+                          alt={t.name}
+                          className="w-9 h-9 rounded-full object-cover border border-amber-400/50 shrink-0"
+                        />
+                        <div>
+                          <strong className="text-xs font-bold text-white block">
+                            {t.name}, {t.age} anos
+                          </strong>
+                          <span className="text-[10px] text-white/50 block">
+                            {t.city} • {t.timeAgo}
+                          </span>
                         </div>
                       </div>
-
-                      <p className="text-[11px] text-white/80 leading-relaxed italic">
-                        "{rev.text}"
-                      </p>
-
-                      {rev.imagePreview && (
-                        <div className="mt-2.5 flex items-center gap-2.5 bg-black/50 p-2 rounded-lg border border-white/10">
-                          <img
-                            src={rev.imagePreview}
-                            alt="Montagem"
-                            className="w-14 h-11 object-cover rounded border border-white/20 shrink-0"
-                          />
-                          <div className="text-left">
-                            <span className="text-[10px] text-amber-300 font-bold block leading-tight">
-                              Montagem oficial entregue
-                            </span>
-                            <span className="text-[9px] text-white/50 block">
-                              Cópia em alta resolução recebida via WhatsApp
-                            </span>
-                          </div>
-                        </div>
-                      )}
+                      <div className="flex text-amber-400 text-xs">
+                        {"★".repeat(t.stars)}
+                      </div>
                     </div>
-                  ))}
+
+                    <p className="text-[11px] text-white/80 leading-relaxed italic mb-2">
+                      "{t.story}"
+                    </p>
+
+                    <div className="flex items-center gap-2.5 bg-black/60 p-2 rounded-lg border border-white/10">
+                      <img
+                        src={t.sketchThumb}
+                        alt="Esboço entregue"
+                        className="w-12 h-12 object-cover rounded border border-white/20 shrink-0"
+                      />
+                      <div>
+                        <span className="text-[10px] text-amber-300 font-bold block">
+                          Retrato Oficial entregue por Tina
+                        </span>
+                        <span className="text-[9px] text-emerald-400 font-semibold block">
+                          ✓ Encontro da vida real confirmado
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
+            </div>
+
+            {/* SEÇÃO FAQ (PERGUNTAS FREQUENTES) */}
+            <div className="w-full text-left my-6">
+              <h3 className="text-sm font-black text-white mb-3 text-center font-cinzel">
+                Perguntas Frequentes
+              </h3>
+              <div className="flex flex-col gap-2">
+                {FAQS.map((faq, idx) => (
+                  <div
+                    key={idx}
+                    className="border border-white/10 rounded-xl overflow-hidden bg-white/5"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
+                      className="w-full p-3 text-left font-bold text-xs text-white flex items-center justify-between gap-2 cursor-pointer hover:bg-white/5 transition"
+                    >
+                      <span>{faq.q}</span>
+                      <ChevronDown
+                        className={`w-4 h-4 text-amber-400 transition-transform ${
+                          openFaq === idx ? "rotate-180" : ""
+                        }`}
+                      />
+                    </button>
+                    {openFaq === idx && (
+                      <div className="p-3 pt-0 text-[11px] text-white/70 leading-relaxed border-t border-white/5 animate-in fade-in">
+                        {faq.a}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Botão Flutuante / Final de Compra */}
+            <div className="w-full pt-2 pb-6">
+              <button
+                type="button"
+                onClick={() => setShowPixModal(true)}
+                className="w-full py-4 px-4 rounded-xl font-black text-sm sm:text-base tracking-wide bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 shadow-xl shadow-amber-500/30 active:scale-98 transition transform cursor-pointer flex items-center justify-center gap-2"
+              >
+                <span>QUERO MEU DESENHO POR R$ 27,90</span>
+                <ChevronRight className="w-5 h-5 text-slate-950" />
+              </button>
             </div>
 
             {/* Rodapé institucional */}
@@ -1177,279 +1056,177 @@ function PoliticalFunnel() {
                 <a href="#" className="hover:underline">Política de Privacidade</a>
               </div>
               <p className="text-[11px] text-white/40">
-                Precisa de ajuda? <span className="text-amber-400 font-bold">contato@cliquepolitico.com.br</span>
+                Precisa de ajuda com seu pedido? <span className="text-amber-400 font-bold">suporte@tinaaldea.com.br</span>
+              </p>
+              <p className="text-[9px] text-white/30 max-w-[360px] leading-tight mt-1">
+                Aviso: Este produto é oferecido com base em tradições de clarividência e arte intuitiva para entretenimento e autoconhecimento pessoal.
               </p>
             </footer>
           </div>
         )}
 
         {/* ========================================================================= */}
-        {/* MODAL POPUP: EMAIL, WHATSAPP E PAGAMENTO PIX                              */}
+        {/* MODAL POPUP: CHECKOUT PIX                                                 */}
         {/* ========================================================================= */}
-        {showContactModal && (
+        {showPixModal && (
           <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3.5 animate-in fade-in duration-200">
-            <div className="w-full max-w-[400px] bg-neutral-950 border border-white/20 rounded-2xl p-5 shadow-2xl relative text-left max-h-[95vh] overflow-y-auto">
-              {/* Botão Fechar */}
+            <div className="w-full max-w-[400px] bg-[#100b1e] border border-amber-400/40 rounded-2xl p-5 shadow-2xl relative text-center max-h-[95vh] overflow-y-auto">
               <button
                 type="button"
-                onClick={() => setShowContactModal(false)}
-                className="absolute top-4 right-4 text-white/60 hover:text-white transition p-1 rounded-full bg-white/10"
+                onClick={() => setShowPixModal(false)}
+                className="absolute top-4 right-4 text-white/60 hover:text-white transition p-1 rounded-full bg-white/10 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
 
-              {modalStage === "contact" ? (
-                <div className="flex flex-col">
-                  <div className="w-11 h-11 rounded-full bg-amber-400/20 text-amber-400 flex items-center justify-center mb-3">
-                    <Phone className="w-5 h-5" />
-                  </div>
+              <div className="inline-flex items-center gap-1.5 bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 px-3 py-1 rounded-full text-xs font-black mb-2">
+                <span>⚡ PIX · APROVAÇÃO INSTANTÂNEA</span>
+              </div>
 
-                  <h3 className="text-xl font-black text-white leading-tight">
-                    Para onde enviamos a sua foto oficial?
-                  </h3>
-                  <p className="text-xs text-white/70 mt-1 mb-4 leading-relaxed">
-                    Você visualiza aqui na tela e ainda recebe uma cópia original sem compressão no seu WhatsApp e e-mail.
-                  </p>
+              <div className="text-3xl font-black text-amber-400 mt-1 font-mono">
+                R$ 27,90
+              </div>
+              <p className="text-[11px] text-white/70 mb-3">
+                Retrato hiper-realista da sua alma gêmea por Tina Aldea
+              </p>
 
-                  <div className="flex flex-col gap-3">
-                    <div>
-                      <label className="text-[11px] font-bold text-white/75 mb-1 block">
-                        Seu WhatsApp com DDD:
-                      </label>
-                      <div className="relative">
-                        <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-                        <input
-                          type="tel"
-                          value={whatsapp}
-                          onChange={(e) => handlePhoneMask(e.target.value)}
-                          placeholder="(11) 99999-9999"
-                          className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/5 border border-white/20 text-white placeholder-white/40 text-sm focus:outline-none focus:border-amber-400 transition font-medium"
-                          autoFocus
-                        />
-                      </div>
-                    </div>
+              {/* Botão Copiar PIX */}
+              <button
+                onClick={handleCopyPix}
+                className={`w-full py-4 px-3 rounded-xl font-black text-sm tracking-wide text-black flex items-center justify-center gap-2 transition cursor-pointer ${
+                  pixCopied
+                    ? "bg-[#8ff0b3]"
+                    : "bg-gradient-to-b from-[#41E877] via-[#25C55B] to-[#17A94B] text-black shadow-lg shadow-green-500/20"
+                }`}
+              >
+                {pixCopied ? (
+                  <>
+                    <Check className="w-5 h-5 text-black" />
+                    <span>CÓDIGO PIX COPIADO! ✓</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-5 h-5" />
+                    <span>COPIAR CÓDIGO PIX</span>
+                  </>
+                )}
+              </button>
 
-                    <div>
-                      <label className="text-[11px] font-bold text-white/75 mb-1 block">
-                        Seu melhor e-mail:
-                      </label>
-                      <div className="relative">
-                        <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-                        <input
-                          type="email"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          placeholder="seu@email.com"
-                          className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/5 border border-white/20 text-white placeholder-white/40 text-sm focus:outline-none focus:border-amber-400 transition font-medium"
-                        />
-                      </div>
-                    </div>
-                  </div>
+              {/* QR Code */}
+              <div className="bg-white p-2.5 rounded-xl my-3 flex flex-col items-center">
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(
+                    pixCodeString
+                  )}`}
+                  alt="QR Code Pix"
+                  className="w-32 h-32"
+                />
+                <span className="text-[10px] text-black/70 font-semibold mt-1">
+                  Aponte a câmera do aplicativo do seu banco
+                </span>
+              </div>
 
-                  <p className="text-[11px] text-white/50 mt-3 flex items-center gap-1.5 leading-tight">
-                    <Lock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                    <span>Seus dados são confidenciais e protegidos pela LGPD.</span>
-                  </p>
-
-                  <button
-                    disabled={whatsapp.length < 14 || !email.includes("@")}
-                    onClick={() => {
-                      setModalStage("pix");
-                      setPixGenerated(true);
-                    }}
-                    className={`w-full mt-4 py-4 rounded-xl font-black text-sm tracking-wide transition shadow-lg ${
-                      whatsapp.length >= 14 && email.includes("@")
-                        ? "bg-gradient-to-r from-emerald-500 to-green-600 text-white active:scale-98 hover:brightness-110 cursor-pointer"
-                        : "bg-white/10 text-white/30 cursor-not-allowed"
-                    }`}
-                  >
-                    CONTINUAR PARA PAGAMENTO PIX
-                  </button>
+              {/* Status pulsando */}
+              <div className="w-full flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl p-2.5 text-left mb-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping shrink-0" />
+                <div className="text-xs leading-tight">
+                  <strong className="text-white block">Aguardando pagamento…</strong>
+                  <span className="text-[10px] text-white/50">Expira em {formatTime(timeLeft)}</span>
                 </div>
-              ) : (
-                /* Modal Stage: PIX */
-                <div className="flex flex-col items-center text-center">
-                  <div className="inline-flex items-center gap-1.5 bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 px-3 py-1 rounded-full text-xs font-black mb-2">
-                    <span>⚡ PIX · APROVAÇÃO INSTANTÂNEA</span>
-                  </div>
+              </div>
 
-                  <div className="text-3xl font-black text-white mt-1 font-mono">
-                    R$ 27,90
-                  </div>
-                  <p className="text-[11px] text-white/60 mb-3">
-                    Montagem oficial com {selectedCandidate.name}
-                  </p>
-
-                  {/* Botão Copiar Código PIX */}
-                  <button
-                    onClick={handleCopyPix}
-                    className={`w-full py-4 px-3 rounded-xl font-black text-sm tracking-wide text-black flex items-center justify-center gap-2 transition cursor-pointer ${
-                      pixCopied
-                        ? "bg-[#8ff0b3]"
-                        : "bg-gradient-to-b from-[#41E877] via-[#25C55B] to-[#17A94B] text-black shadow-lg shadow-green-500/20"
-                    }`}
-                  >
-                    {pixCopied ? (
-                      <>
-                        <Check className="w-5 h-5 text-black" />
-                        <span>CÓDIGO PIX COPIADO! ✓</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-5 h-5" />
-                        <span>COPIAR CÓDIGO PIX</span>
-                      </>
-                    )}
-                  </button>
-
-                  {/* QR Code */}
-                  <div className="bg-white p-2.5 rounded-xl my-3 flex flex-col items-center">
-                    <img
-                      src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(
-                        pixCodeString
-                      )}`}
-                      alt="QR Code Pix"
-                      className="w-32 h-32"
-                    />
-                    <span className="text-[10px] text-black/70 font-semibold mt-1">
-                      Aponte a câmera do aplicativo do seu banco
-                    </span>
-                  </div>
-
-                  {/* Status pulsando */}
-                  <div className="w-full flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl p-2.5 text-left mb-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping shrink-0" />
-                    <div className="text-xs leading-tight">
-                      <strong className="text-white block">Aguardando pagamento…</strong>
-                      <span className="text-[10px] text-white/50">Expira em {formatTime(timeLeft)}</span>
-                    </div>
-                  </div>
-
-                  {/* Simular para testes */}
-                  <button
-                    onClick={() => {
-                      setShowContactModal(false);
-                      handlePaymentConfirmed();
-                    }}
-                    className="text-xs text-amber-400 underline opacity-85 hover:opacity-100 my-1 cursor-pointer"
-                  >
-                    ⚡ Simular confirmação (Ver resultado final)
-                  </button>
-
-                  {/* Voltar para editar contato */}
-                  <button
-                    onClick={() => setModalStage("contact")}
-                    className="text-[11px] text-white/50 hover:text-white underline mt-1 cursor-pointer"
-                  >
-                    ← Alterar WhatsApp ({whatsapp}) ou E-mail
-                  </button>
-                </div>
-              )}
+              {/* Simular para testes */}
+              <button
+                onClick={() => {
+                  setShowPixModal(false);
+                  setStep("delivered");
+                }}
+                className="text-xs text-amber-400 underline opacity-85 hover:opacity-100 my-1 cursor-pointer block mx-auto"
+              >
+                ⚡ Simular confirmação (Ver resultado final)
+              </button>
             </div>
           </div>
         )}
 
         {/* ========================================================================= */}
-        {/* ABA 7: FOTO ENTREGUE / SUCESSO                                            */}
+        {/* ETAPA 5: DESENHO ENTREGUE E REVELADO                                      */}
         {/* ========================================================================= */}
         {step === "delivered" && (
-          <div className="w-full flex-1 flex flex-col items-center justify-between text-center animate-in fade-in duration-300">
-            {!genComplete ? (
-              <div className="w-full flex-1 flex flex-col items-center justify-center py-8">
-                <div className="relative w-28 h-28 rounded-full overflow-hidden border-4 border-amber-400 shadow-2xl mb-4 animate-pulse">
-                  <img src={selectedScenario.image} alt={selectedCandidate.name} className="w-full h-full object-cover" />
-                </div>
-                <h2 className="text-xl font-bold text-white mb-1">
-                  Finalizando sua montagem…
-                </h2>
-                <p className="text-xs text-amber-400 font-semibold mb-6">
-                  ⏱️ leva apenas alguns instantes
-                </p>
+          <div className="w-full flex-1 flex flex-col items-center justify-between text-center animate-in zoom-in-95 duration-500 py-4">
+            <div className="w-full flex flex-col items-center">
+              <span className="text-xs font-bold text-emerald-400 bg-emerald-400/10 px-3 py-1 rounded-full border border-emerald-400/20 mb-2">
+                ✓ Pagamento Confirmado
+              </span>
+              <h1 className="text-2xl sm:text-3xl font-black text-white font-cinzel">
+                Aqui Está a Sua Alma Gêmea!
+              </h1>
+              <p className="text-xs text-purple-200/80 mt-1 mb-4">
+                Enviamos também uma cópia no seu WhatsApp ({whatsapp || "cadastrado"}) e e-mail.
+              </p>
 
-                <ol className="text-left text-xs space-y-2.5 max-w-[260px] mx-auto">
-                  <li className={`flex items-center gap-2 ${genStage >= 1 ? "text-white font-bold" : "text-white/30"}`}>
-                    <span className={`w-2 h-2 rounded-full ${genStage >= 1 ? "bg-amber-400 shadow-[0_0_8px_#fbbf24]" : "bg-white/20"}`} />
-                    Ajustando seu rosto no cenário ({selectedScenario.title})
-                  </li>
-                  <li className={`flex items-center gap-2 ${genStage >= 2 ? "text-white font-bold" : "text-white/30"}`}>
-                    <span className={`w-2 h-2 rounded-full ${genStage >= 2 ? "bg-amber-400 shadow-[0_0_8px_#fbbf24]" : "bg-white/20"}`} />
-                    Equalizando iluminação, sombras e nitidez
-                  </li>
-                  <li className={`flex items-center gap-2 ${genStage >= 3 ? "text-white font-bold" : "text-white/30"}`}>
-                    <span className={`w-2 h-2 rounded-full ${genStage >= 3 ? "bg-amber-400 shadow-[0_0_8px_#fbbf24]" : "bg-white/20"}`} />
-                    Gerando arquivo final em alta resolução
-                  </li>
-                </ol>
+              {/* Retrato sem blur em alta resolução */}
+              <div className="w-full rounded-2xl overflow-hidden border-2 border-amber-400/80 shadow-2xl relative bg-black aspect-[16/11] mb-4">
+                <img
+                  src={sketchImage}
+                  alt="Sua alma gêmea revelada"
+                  className="w-full h-full object-cover"
+                />
               </div>
-            ) : (
-              <div className="w-full flex-1 flex flex-col items-center animate-in zoom-in-95 duration-500">
-                <div className="text-center mb-3">
-                  <span className="text-xs font-bold text-emerald-400 bg-emerald-400/10 px-3 py-1 rounded-full border border-emerald-400/20">
-                    ✓ Pagamento Confirmado
-                  </span>
-                  <h1 className="text-2xl font-black text-white mt-2">
-                    🎉 Sua foto está pronta!
-                  </h1>
-                  <p className="text-xs text-white/70 mt-0.5">
-                    Enviamos uma cópia também no seu WhatsApp 💛
-                  </p>
-                </div>
 
-                {/* Exibição da Montagem sem cortes */}
-                <div className="w-full rounded-2xl overflow-hidden border-2 border-amber-400/50 shadow-2xl relative bg-black aspect-[1024/853] mb-4">
-                  <img
-                    src={selectedScenario.image}
-                    alt="Montagem Pronta"
-                    className="w-full h-full object-contain"
-                  />
-                </div>
-
-                {/* Botões de Ação */}
-                <div className="w-full flex flex-col gap-2.5 mb-6">
-                  <a
-                    href={selectedScenario.image}
-                    download={`minha-foto-com-${selectedCandidate.id}.jpg`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="w-full py-4 rounded-xl font-black text-sm bg-amber-400 hover:bg-amber-300 text-black shadow-lg flex items-center justify-center gap-2 active:scale-98 transition"
-                  >
-                    <Download className="w-4 h-4" />
-                    <span>Baixar Foto em Alta Resolução</span>
-                  </a>
-
-                  <button
-                    onClick={() => {
-                      if (navigator.share) {
-                        navigator.share({
-                          title: `Minha foto com ${selectedCandidate.name}`,
-                          url: window.location.href,
-                        });
-                      } else {
-                        alert("Link copiado para compartilhar!");
-                      }
-                    }}
-                    className="w-full py-3 rounded-xl font-bold text-xs bg-white/10 text-white flex items-center justify-center gap-2 hover:bg-white/15 transition"
-                  >
-                    <Share2 className="w-3.5 h-3.5" />
-                    <span>Compartilhar no WhatsApp</span>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setStep("candidate");
-                      setGenComplete(false);
-                      setPixGenerated(false);
-                      setUserPhoto(null);
-                      setShowContactModal(false);
-                      setModalStage("contact");
-                    }}
-                    className="mt-2 text-xs text-white/50 underline hover:text-white"
-                  >
-                    Criar outra foto com novo candidato ou cenário
-                  </button>
-                </div>
+              {/* Dossiê revelado */}
+              <div className="w-full bg-[#130d24] border border-amber-400/30 rounded-xl p-3.5 text-left mb-4">
+                <h4 className="text-xs font-black text-amber-300 uppercase tracking-wider mb-1">
+                  🔮 Resumo da Leitura Psíquica de Tina Aldea
+                </h4>
+                <ul className="text-xs text-white/80 space-y-1.5">
+                  <li>• <strong>Conexão Astral:</strong> Alta compatibilidade com sua energia de {zodiac.name}.</li>
+                  <li>• <strong>Traços Marcantes:</strong> Olhar acolhedor, sorriso espontâneo e postura protetora.</li>
+                  <li>• <strong>Quando Vocês Vão Se Conhecer:</strong> As cartas apontam um encontro em um local público ou evento social nas próximas semanas.</li>
+                </ul>
               </div>
-            )}
+
+              {/* Botões de Ação */}
+              <div className="w-full flex flex-col gap-2.5 mb-6">
+                <a
+                  href={sketchImage}
+                  download="minha-alma-gemea-tina-aldea.jpg"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-full py-4 rounded-xl font-black text-sm bg-amber-400 hover:bg-amber-300 text-black shadow-lg flex items-center justify-center gap-2 active:scale-98 transition cursor-pointer"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Baixar Retrato em Alta Resolução</span>
+                </a>
+
+                <button
+                  onClick={() => {
+                    if (navigator.share) {
+                      navigator.share({
+                        title: "Minha Alma Gêmea por Tina Aldea",
+                        url: window.location.href,
+                      });
+                    } else {
+                      alert("Link copiado para compartilhar!");
+                    }
+                  }}
+                  className="w-full py-3 rounded-xl font-bold text-xs bg-white/10 text-white flex items-center justify-center gap-2 hover:bg-white/15 transition cursor-pointer"
+                >
+                  <Share2 className="w-3.5 h-3.5" />
+                  <span>Compartilhar no WhatsApp</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setStep("hero");
+                    setQuizStep(1);
+                  }}
+                  className="mt-2 text-xs text-white/50 underline hover:text-white cursor-pointer"
+                >
+                  Fazer nova consulta ou canalização
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </main>

@@ -66,9 +66,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" },
-      { title: "Sua Foto com Lula 13 ou Flávio Bolsonaro 22 — Montagem Personalizada" },
-      { name: "description", content: "Escolha entre Lula 13 e Flávio Bolsonaro 22 e receba sua montagem personalizada em alta resolução para redes sociais e WhatsApp." },
-      { name: "theme-color", content: "#0c0a09" },
+      { title: "Tina Aldea — Psychic & Soulmate Sketch Artist | Descubra Sua Alma Gêmea" },
+      { name: "description", content: "Tina Aldea é médium e artista psíquica mundialmente reconhecida. Responda ao teste rápido e receba o desenho hiper-realista da sua verdadeira alma gêmea em até 24 horas." },
+      { name: "theme-color", content: "#0c0817" },
     ],
     links: [
       {
@@ -86,7 +86,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800;900&family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap",
       },
     ],
   }),
