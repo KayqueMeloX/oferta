@@ -1,0 +1,1 @@
+import{j as t}from"./index-0aH7A4dn.js";import{L as o}from"./Landing-BafsNX_T.js";import{d as r}from"./newSoulmateSketchData-asM23_bf.js";import"./icons-E22g7mgQ.js";import"./emailLinks-DUFy6aZ4.js";/* empty css                */function n(){return t.jsx(o,{data:r})}export{n as default};

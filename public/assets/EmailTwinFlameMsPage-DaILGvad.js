@@ -1,0 +1,1 @@
+import{j as r}from"./index-0aH7A4dn.js";import{L as t}from"./Landing-BafsNX_T.js";import{d as m}from"./twinFlameData-CwbGmPpP.js";import"./icons-E22g7mgQ.js";import"./emailLinks-DUFy6aZ4.js";/* empty css                */function p(){return r.jsx(t,{data:m,forcedInterest:"men"})}export{p as default};

@@ -1,0 +1,1 @@
+function e(n=new Date){const t=n.getHours();return Number.isFinite(t)?t>=5&&t<12?"this morning":t>=12&&t<17?"this afternoon":t>=17&&t<21?"this evening":"tonight":"tonight"}function r(n=new Date){const t=e(n);return t.charAt(0).toUpperCase()+t.slice(1)}export{r as a,e as p};

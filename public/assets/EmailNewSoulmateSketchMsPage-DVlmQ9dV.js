@@ -1,0 +1,1 @@
+import{j as t}from"./index-0aH7A4dn.js";import{L as r}from"./Landing-BafsNX_T.js";import{d as o}from"./newSoulmateSketchData-asM23_bf.js";import"./icons-E22g7mgQ.js";import"./emailLinks-DUFy6aZ4.js";/* empty css                */function p(){return t.jsx(r,{data:o,forcedInterest:"men"})}export{p as default};

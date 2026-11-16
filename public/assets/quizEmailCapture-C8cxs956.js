@@ -1,0 +1,1 @@
+import{a as r}from"./icons-E22g7mgQ.js";function o(e=!0){const[a,c]=r.useState("off");return r.useEffect(()=>{if(!e)return;let u=!0;return fetch("/api/quiz-email-capture").then(t=>t.ok?t.json():null).then(t=>{u&&t&&t.capture==="on"&&c("on")}).catch(()=>{}),()=>{u=!1}},[e]),a}export{o as u};

@@ -1,0 +1,1 @@
+import{j as t}from"./index-0aH7A4dn.js";import{E as o}from"./EmailSketchSalePage-BIOJs8ii.js";import"./icons-E22g7mgQ.js";/* empty css                */import"./proxy-B1cSRc61.js";function p(){return t.jsx(o,{coupon:"TINAEMAIL20"})}export{p as default};

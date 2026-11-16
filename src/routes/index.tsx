@@ -9,9 +9,6 @@ import {
   Phone,
   Mail,
   Download,
-  Share2,
-  ChevronRight,
-  ChevronLeft,
   ShieldCheck,
   Clock,
   Compass,
@@ -24,8 +21,9 @@ import {
   Palette,
   FileText,
   Gift,
-  HelpCircle,
   Award,
+  Zap,
+  ShoppingBag,
 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -33,6 +31,7 @@ export const Route = createFileRoute("/")({
 });
 
 type Lang = "en" | "pt";
+type FunnelView = "landing" | "offer" | "upsell" | "delivered";
 type QuizStep = 1 | 2 | 3 | 4 | 5;
 
 const MONTHS_EN = [
@@ -60,8 +59,18 @@ function getZodiac(day: number, month: number) {
   return { name: "Pisces", symbol: "♓", element: "Water" };
 }
 
+const RECENT_PURCHASES = [
+  { name: "Sarah M.", city: "Austin, TX", time: "just now", product: "Soulmate Sketch + Bonus" },
+  { name: "Emily R.", city: "Denver, CO", time: "1 min ago", product: "Complete Soulmate Vision" },
+  { name: "Jessica T.", city: "Miami, FL", time: "2 min ago", product: "Soulmate Sketch" },
+  { name: "Ana Paula S.", city: "São Paulo, SP", time: "agora mesmo", product: "Desenho da Alma Gêmea" },
+  { name: "Mariana L.", city: "Rio de Janeiro, RJ", time: "2 min atrás", product: "Visão Completa + Bônus" },
+  { name: "Ashley K.", city: "Nashville, TN", time: "3 min ago", product: "Soulmate Sketch" },
+];
+
 function TinaAldeaExactClone() {
   const [lang, setLang] = useState<Lang>("en");
+  const [funnelView, setFunnelView] = useState<FunnelView>("landing");
   const [isQuizOpen, setIsQuizOpen] = useState(false);
   const [quizStep, setQuizStep] = useState<QuizStep>(1);
 
@@ -70,19 +79,24 @@ function TinaAldeaExactClone() {
   const [birthDay, setBirthDay] = useState("15");
   const [birthMonth, setBirthMonth] = useState("6");
   const [birthYear, setBirthYear] = useState("1996");
-  const [ethnicity, setEthnicity] = useState("Any / Destiny Choice");
+  const [ethnicity, setEthnicity] = useState("Any / Leave to Destiny");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [agreeTerms, setAgreeTerms] = useState(true);
 
-  // Post-quiz states
+  // Channeling State
   const [isChanneling, setIsChanneling] = useState(false);
   const [channelProgress, setChannelProgress] = useState(0);
-  const [isOfferUnlocked, setIsOfferUnlocked] = useState(false);
-  const [isDelivered, setIsDelivered] = useState(false);
+
+  // Offer Page Options
+  const [selectedPlan, setSelectedPlan] = useState<"standard" | "complete">("standard");
+  const [addExpressDelivery, setAddExpressDelivery] = useState(false);
   const [pixCopied, setPixCopied] = useState(false);
   const [timeLeft, setTimeLeft] = useState(15 * 60);
+
+  // Social Proof Toast
+  const [currentToast, setCurrentToast] = useState<{ name: string; city: string; time: string; product: string } | null>(null);
 
   // FAQ Accordion
   const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -90,6 +104,7 @@ function TinaAldeaExactClone() {
   // Dynamic counter
   const [clientCount, setClientCount] = useState(43842);
 
+  // Auto increment client count
   useEffect(() => {
     const timer = setInterval(() => {
       setClientCount((prev) => prev + (Math.random() > 0.4 ? 1 : 0));
@@ -97,12 +112,24 @@ function TinaAldeaExactClone() {
     return () => clearInterval(timer);
   }, []);
 
+  // Countdown timer for offer
   useEffect(() => {
-    if (isOfferUnlocked && timeLeft > 0) {
+    if (funnelView === "offer" && timeLeft > 0) {
       const timer = setInterval(() => setTimeLeft((t) => (t > 0 ? t - 1 : 0)), 1000);
       return () => clearInterval(timer);
     }
-  }, [isOfferUnlocked, timeLeft]);
+  }, [funnelView, timeLeft]);
+
+  // Social proof popup rotation
+  useEffect(() => {
+    if (funnelView !== "offer") return;
+    const interval = setInterval(() => {
+      const randomItem = RECENT_PURCHASES[Math.floor(Math.random() * RECENT_PURCHASES.length)];
+      setCurrentToast(randomItem);
+      setTimeout(() => setCurrentToast(null), 4000);
+    }, 12000);
+    return () => clearInterval(interval);
+  }, [funnelView]);
 
   const formatTime = (secs: number) => {
     const m = Math.floor(secs / 60);
@@ -130,7 +157,7 @@ function TinaAldeaExactClone() {
           clearInterval(interval);
           setTimeout(() => {
             setIsChanneling(false);
-            setIsOfferUnlocked(true);
+            setFunnelView("offer");
             window.scrollTo({ top: 0, behavior: "smooth" });
           }, 400);
           return 100;
@@ -140,8 +167,13 @@ function TinaAldeaExactClone() {
     }, 80);
   };
 
-  const priceBrl = 27.9;
-  const pixCode = `00020126580014br.gov.bcb.pix0136tina-aldea-${Date.now().toString(36)}5204000053039865405${priceBrl.toFixed(2)}5802BR5920TINA ALDEA SKETCH6009SAO PAULO62070503***6304`;
+  // Pricing calculations
+  const basePriceBrl = selectedPlan === "standard" ? 27.9 : 47.0;
+  const totalPriceBrl = basePriceBrl + (addExpressDelivery ? 14.9 : 0);
+  const basePriceUsd = selectedPlan === "standard" ? 37 : 67;
+  const totalPriceUsd = basePriceUsd + (addExpressDelivery ? 9.9 : 0);
+
+  const pixCode = `00020126580014br.gov.bcb.pix0136tina-aldea-${Date.now().toString(36)}5204000053039865405${totalPriceBrl.toFixed(2)}5802BR5920TINA ALDEA SKETCH6009SAO PAULO62070503***6304`;
 
   const handleCopyPix = async () => {
     try {
@@ -170,7 +202,7 @@ function TinaAldeaExactClone() {
       {/* ========================================================================= */}
       {/* TOP BAR: THIS IS MY OFFICIAL WEBSITE!                                     */}
       {/* ========================================================================= */}
-      <div className="bg-[#73b4fc] text-white py-2.5 px-4 text-center flex items-center justify-between max-w-6xl mx-auto">
+      <div className="bg-[#73b4fc] text-white py-2.5 px-4 text-center flex items-center justify-between max-w-6xl mx-auto shadow-xs">
         <div className="flex-1 text-center font-semibold text-xs md:text-sm tracking-wide font-opensans">
           {lang === "en" ? (
             <span>🔮 This is my Official Website! Beware of impersonators</span>
@@ -199,7 +231,7 @@ function TinaAldeaExactClone() {
       {/* LOADING DE CANALIZAÇÃO (SE ATIVADO)                                      */}
       {/* ========================================================================= */}
       {isChanneling && (
-        <div className="fixed inset-0 z-50 bg-[#161226]/95 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center text-white">
+        <div className="fixed inset-0 z-50 bg-[#161226]/95 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center text-white animate-in fade-in">
           <div className="relative w-28 h-28 mx-auto mb-6 flex items-center justify-center">
             <div className="absolute inset-0 rounded-full border-2 border-purple-500/30 animate-spin" style={{ animationDuration: "8s" }} />
             <div className="absolute inset-2 rounded-full border-2 border-dashed border-amber-400/70 animate-spin" style={{ animationDuration: "5s", animationDirection: "reverse" }} />
@@ -211,7 +243,7 @@ function TinaAldeaExactClone() {
           <h2 className="text-2xl font-bold font-merriweather mb-2">
             {lang === "en" ? "Channeling Your Soulmate…" : "Canalizando Sua Alma Gêmea…"}
           </h2>
-          <p className="text-sm text-purple-200/80 mb-6 max-w-sm">
+          <p className="text-sm text-purple-200/80 mb-6 max-w-sm font-opensans">
             {lang === "en"
               ? `Tina Aldea is tuning into your ${zodiac.name} (${zodiac.symbol}) energy and sketching the facial contours on paper.`
               : `Tina Aldea está sintonizando sua energia de ${zodiac.name} (${zodiac.symbol}) e desenhando os contornos a lápis no papel.`}
@@ -233,195 +265,440 @@ function TinaAldeaExactClone() {
       )}
 
       {/* ========================================================================= */}
-      {/* TELA DE OFERTA / REVELAÇÃO DO DESENHO                                     */}
+      {/* SOCIAL PROOF TOAST (OFFER VIEW)                                           */}
       {/* ========================================================================= */}
-      {isOfferUnlocked ? (
-        <div className="max-w-2xl mx-auto px-4 py-8 animate-in fade-in duration-300">
-          {!isDelivered ? (
-            <div className="text-center">
-              <div className="bg-[#fff3e0] border border-amber-300 text-amber-900 py-2 px-4 rounded-xl text-xs font-bold mb-4 inline-flex items-center gap-1.5 shadow-sm">
-                <span>🎁 65% OFF applied for {name || "you"}</span>
-                <span>• Expires in <strong className="text-red-600 font-mono text-sm">{formatTime(timeLeft)}</strong></span>
+      {currentToast && funnelView === "offer" && (
+        <div className="fixed bottom-5 left-5 z-40 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-xl shadow-2xl p-3.5 flex items-center gap-3 max-w-xs animate-in slide-in-from-bottom-5 duration-300">
+          <div className="w-9 h-9 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+            <ShoppingBag className="w-4 h-4" />
+          </div>
+          <div className="text-left text-xs leading-tight">
+            <p className="font-bold text-gray-900">
+              {currentToast.name} <span className="font-normal text-gray-500">({currentToast.city})</span>
+            </p>
+            <p className="text-gray-600 font-medium">{currentToast.product}</p>
+            <p className="text-[10px] text-gray-400 mt-0.5">{currentToast.time}</p>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 1. TELA DA OFERTA (SALES / OFFER PAGE)                                   */}
+      {/* ========================================================================= */}
+      {funnelView === "offer" && (
+        <div className="max-w-3xl mx-auto px-4 py-8 animate-in fade-in duration-300">
+          <div className="text-center">
+            {/* Urgency Badge */}
+            <div className="bg-[#fff3e0] border border-amber-300 text-amber-900 py-2.5 px-4 rounded-xl text-xs md:text-sm font-bold mb-5 inline-flex items-center gap-2 shadow-xs">
+              <span>⚠️ {lang === "en" ? `Special 65% OFF Reserved for ${name || "You"}` : `Desconto Especial de 65% Reservado para ${name || "Você"}`}</span>
+              <span>•</span>
+              <span className="text-red-600 font-mono font-black">{formatTime(timeLeft)}</span>
+            </div>
+
+            {/* Blurred Locked Sketch Teaser */}
+            <div className="relative w-full max-w-sm mx-auto aspect-[3/3.8] rounded-2xl overflow-hidden border-4 border-amber-200 shadow-2xl mb-6 bg-neutral-900">
+              <img
+                src={chosenSketch}
+                alt="Soulmate Sketch Locked"
+                className="w-full h-full object-cover filter blur-[12px] scale-105"
+              />
+              <div className="absolute inset-0 bg-black/45 flex flex-col items-center justify-center p-5 text-center">
+                <div className="w-14 h-14 rounded-2xl bg-amber-400 text-black flex items-center justify-center shadow-xl mb-3 animate-bounce">
+                  <Lock className="w-7 h-7" />
+                </div>
+                <span className="text-xs font-black text-white bg-black/80 px-3.5 py-1.5 rounded-full uppercase tracking-wider border border-white/20">
+                  {lang === "en" ? "SKETCH COMPLETED & LOCKED" : "DESENHO CONCLUÍDO E BLOQUEADO"}
+                </span>
+                <p className="text-[11px] text-amber-200 font-medium mt-2 max-w-[220px]">
+                  {lang === "en"
+                    ? "Unlock below to view in ultra-high resolution without watermarks"
+                    : "Desbloqueie abaixo para visualizar em alta resolução sem marcas d'água"}
+                </p>
+              </div>
+            </div>
+
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold font-merriweather text-gray-900 leading-tight mb-2">
+              {lang === "en" ? "Your Personalized Soulmate Sketch Is Almost Ready!" : "Seu Desenho Personalizado da Alma Gêmea Está Quase Pronto!"}
+            </h1>
+            <p className="text-sm md:text-base text-gray-600 mb-8 max-w-xl mx-auto font-opensans">
+              {lang === "en"
+                ? `Tina Aldea has tuned into your ${zodiac.name} astral energy and captured the features, gaze, and aura of your destined partner.`
+                : `Tina Aldea sintonizou sua energia astral de ${zodiac.name} e capturou os traços, o olhar e a aura da pessoa destinada para você.`}
+            </p>
+
+            {/* What's Included Box */}
+            <div className="bg-[#fcfaf7] border border-amber-200/90 rounded-2xl p-6 text-left shadow-lg mb-8">
+              <h3 className="font-bold text-gray-900 text-base md:text-lg font-merriweather mb-4 border-b border-gray-200 pb-2">
+                {lang === "en" ? "Here's Everything You'll Receive:" : "Tudo o Que Você Vai Receber Hoje:"}
+              </h3>
+
+              <div className="space-y-3 text-xs md:text-sm font-medium border-b border-gray-200 pb-4 mb-4">
+                <div className="flex justify-between items-center text-gray-800">
+                  <span className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>{lang === "en" ? "Hand-Drawn High-Res Soulmate Sketch" : "Desenho Psíquico da Alma Gêmea em Alta Resolução"}</span>
+                  </span>
+                  <span className="line-through text-gray-400">$97.00 / R$ 97,00</span>
+                </div>
+                <div className="flex justify-between items-center text-gray-800">
+                  <span className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>{lang === "en" ? "Detailed Psychic Reading & Personality Description" : "Leitura Psíquica Detalhada e Traços de Personalidade"}</span>
+                  </span>
+                  <span className="line-through text-gray-400">$49.00 / R$ 49,00</span>
+                </div>
+                <div className="flex justify-between items-center text-emerald-800">
+                  <span className="flex items-center gap-2">
+                    <Gift className="w-4 h-4 text-amber-500 shrink-0" />
+                    <span>{lang === "en" ? "FREE BONUS 1: Guardian Angel Reading" : "BÔNUS GRÁTIS 1: Leitura do Anjo da Guarda"}</span>
+                  </span>
+                  <span className="font-bold text-emerald-700">{lang === "en" ? "FREE" : "GRÁTIS"}</span>
+                </div>
+                <div className="flex justify-between items-center text-emerald-800">
+                  <span className="flex items-center gap-2">
+                    <Gift className="w-4 h-4 text-amber-500 shrink-0" />
+                    <span>{lang === "en" ? "FREE BONUS 2: How to Attract Your Soulmate Faster eBook" : "BÔNUS GRÁTIS 2: Livro Como Atrair Sua Alma Gêmea Mais Rápido"}</span>
+                  </span>
+                  <span className="font-bold text-emerald-700">{lang === "en" ? "FREE" : "GRÁTIS"}</span>
+                </div>
+                <div className="flex justify-between items-center text-emerald-800">
+                  <span className="flex items-center gap-2">
+                    <Gift className="w-4 h-4 text-amber-500 shrink-0" />
+                    <span>{lang === "en" ? "FREE BONUS 3: Guided Aura Cleansing Masterclass" : "BÔNUS GRÁTIS 3: Masterclass Guiada de Limpeza de Aura"}</span>
+                  </span>
+                  <span className="font-bold text-emerald-700">{lang === "en" ? "FREE" : "GRÁTIS"}</span>
+                </div>
               </div>
 
-              {/* Teaser do Desenho com Blur e Cadeado */}
-              <div className="relative w-full max-w-sm mx-auto aspect-[3/3.8] rounded-2xl overflow-hidden border-4 border-amber-200 shadow-2xl mb-5 bg-neutral-900">
-                <img
-                  src={chosenSketch}
-                  alt="Soulmate Sketch"
-                  className="w-full h-full object-cover filter blur-[10px] scale-105"
-                />
-                <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center p-4">
-                  <div className="w-14 h-14 rounded-2xl bg-amber-400/90 flex items-center justify-center shadow-xl mb-2 animate-bounce">
-                    <Lock className="w-7 h-7 text-black" />
-                  </div>
-                  <span className="text-xs font-black text-white bg-black/75 px-3 py-1 rounded-full uppercase tracking-wider border border-white/20">
-                    SKETCH COMPLETED & LOCKED
-                  </span>
-                  <p className="text-[11px] text-amber-200 font-medium mt-1">
-                    Unlock to view in ultra-high resolution without watermarks
-                  </p>
-                </div>
-              </div>
+              {/* Package Selector */}
+              <div className="space-y-3 mb-6">
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                  {lang === "en" ? "Choose Your Package:" : "Escolha Seu Pacote:"}
+                </p>
 
-              <h1 className="text-2xl md:text-3xl font-bold font-merriweather text-gray-900 leading-tight mb-2">
-                Your Soulmate Sketch Is Complete!
-              </h1>
-              <p className="text-sm text-gray-600 mb-6">
-                Tina Aldea has captured the facial features, the gaze, and the aura of the person destined for you.
-              </p>
-
-              {/* Tabela de Preço / Checkout Box */}
-              <div className="bg-[#fcfaf7] border border-amber-200/80 rounded-2xl p-5 text-left shadow-lg mb-6">
-                <div className="space-y-2 text-xs md:text-sm font-medium border-b border-gray-200 pb-4 mb-4">
-                  <div className="flex justify-between text-gray-700">
-                    <span>High-Resolution Pencil Soulmate Sketch</span>
-                    <span className="line-through text-gray-400">$97.00 / R$ 97,00</span>
+                {/* Option 1: Standard */}
+                <div
+                  onClick={() => setSelectedPlan("standard")}
+                  className={`p-4 rounded-xl border-2 transition-all cursor-pointer flex items-center justify-between ${
+                    selectedPlan === "standard"
+                      ? "border-[#4CAF50] bg-green-50/70 shadow-sm"
+                      : "border-gray-200 bg-white hover:border-gray-300"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedPlan === "standard" ? "border-[#4CAF50] bg-[#4CAF50]" : "border-gray-300"}`}>
+                      {selectedPlan === "standard" && <Check className="w-3 h-3 text-white" />}
+                    </div>
+                    <div>
+                      <span className="font-bold text-gray-900 block text-sm font-merriweather">
+                        {lang === "en" ? "Soulmate Sketch Package" : "Pacote Desenho da Alma Gêmea"}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {lang === "en" ? "Pencil sketch + psychic reading + 3 bonuses" : "Desenho a lápis + leitura psíquica + 3 bônus"}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex justify-between text-gray-700">
-                    <span>Detailed Psychic Reading & Personality Traits</span>
-                    <span className="line-through text-gray-400">$49.00 / R$ 49,00</span>
-                  </div>
-                  <div className="flex justify-between text-gray-700">
-                    <span>Astrological Forecast: When & Where You'll Meet</span>
-                    <span className="line-through text-gray-400">$39.00 / R$ 39,00</span>
-                  </div>
-                  <div className="flex justify-between text-emerald-700 font-bold">
-                    <span>Today's Special Discount (65% OFF)</span>
-                    <span>-$157.10 / -R$ 157,10</span>
+                  <div className="text-right">
+                    <span className="font-black text-gray-900 text-base font-mono">
+                      {lang === "en" ? "$37 USD" : "R$ 27,90"}
+                    </span>
+                    <span className="line-through text-[11px] text-gray-400 block">$147 / R$ 147</span>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <span className="text-base font-bold text-gray-900 block font-merriweather">Total Today</span>
-                    <span className="text-[11px] text-gray-500">One-time payment • Instant delivery • No subscriptions</span>
+                {/* Option 2: Complete with Color */}
+                <div
+                  onClick={() => setSelectedPlan("complete")}
+                  className={`p-4 rounded-xl border-2 transition-all cursor-pointer flex items-center justify-between ${
+                    selectedPlan === "complete"
+                      ? "border-[#4CAF50] bg-green-50/70 shadow-sm"
+                      : "border-gray-200 bg-white hover:border-gray-300"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedPlan === "complete" ? "border-[#4CAF50] bg-[#4CAF50]" : "border-gray-300"}`}>
+                      {selectedPlan === "complete" && <Check className="w-3 h-3 text-white" />}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-bold text-gray-900 text-sm font-merriweather">
+                          {lang === "en" ? "Complete Soulmate Vision" : "Visão Completa da Alma Gêmea"}
+                        </span>
+                        <span className="bg-amber-400 text-black text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase">
+                          {lang === "en" ? "Most Popular" : "Mais Escolhido"}
+                        </span>
+                      </div>
+                      <span className="text-xs text-gray-500">
+                        {lang === "en" ? "Includes Colored Drawing Upgrade (vivid eye color)" : "Inclui Upgrade para Desenho Colorido (cor dos olhos e cabelo)"}
+                      </span>
+                    </div>
                   </div>
-                  <div className="text-2xl md:text-3xl font-black text-emerald-600 font-mono">
-                    R$ 27,90 <span className="text-sm text-gray-500 font-normal">($37 USD)</span>
+                  <div className="text-right">
+                    <span className="font-black text-gray-900 text-base font-mono">
+                      {lang === "en" ? "$67 USD" : "R$ 47,00"}
+                    </span>
+                    <span className="line-through text-[11px] text-gray-400 block">$247 / R$ 247</span>
                   </div>
                 </div>
 
-                {/* PIX Copia e Cola & QR Code */}
-                <div className="bg-white border border-gray-200 rounded-xl p-4 text-center">
-                  <span className="text-xs font-bold text-emerald-600 block mb-2">
-                    ⚡ PAGAMENTO RÁPIDO VIA PIX · APROVAÇÃO INSTANTÂNEA
-                  </span>
-
-                  <button
-                    onClick={handleCopyPix}
-                    className={`w-full py-4 px-3 rounded-xl font-black text-sm tracking-wide text-black flex items-center justify-center gap-2 transition cursor-pointer mb-3 shadow-md ${
-                      pixCopied
-                        ? "bg-[#8ff0b3]"
-                        : "bg-gradient-to-b from-[#41E877] via-[#25C55B] to-[#17A94B] text-black hover:brightness-105"
-                    }`}
-                  >
-                    {pixCopied ? (
-                      <>
-                        <Check className="w-5 h-5 text-black" />
-                        <span>CÓDIGO PIX COPIADO! ✓</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-5 h-5" />
-                        <span>COPIAR CÓDIGO PIX (R$ 27,90)</span>
-                      </>
-                    )}
-                  </button>
-
-                  <div className="bg-white p-2.5 rounded-xl border border-gray-100 inline-block mx-auto">
-                    <img
-                      src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(
-                        pixCode
-                      )}`}
-                      alt="QR Code Pix"
-                      className="w-32 h-32 mx-auto"
-                    />
-                    <span className="text-[10px] text-gray-500 font-semibold mt-1 block">
-                      Aponte a câmera do aplicativo do seu banco
+                {/* Order Bump: Express 6h Delivery */}
+                <label className="flex items-start gap-3 p-3.5 bg-amber-50/70 border border-amber-200 rounded-xl cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={addExpressDelivery}
+                    onChange={(e) => setAddExpressDelivery(e.target.checked)}
+                    className="mt-0.5 w-4 h-4 text-[#4CAF50] rounded border-gray-300"
+                  />
+                  <div className="text-left text-xs leading-relaxed">
+                    <span className="font-bold text-amber-950 block">
+                      ⚡ {lang === "en" ? "Add Express 6-Hour Rush Delivery (+ $9.90 / R$ 14,90)" : "Adicionar Entrega Expressa em 6 Horas (+ R$ 14,90 / $9.90)"}
+                    </span>
+                    <span className="text-gray-600">
+                      {lang === "en"
+                        ? "Move to the top of Tina's priority queue and receive your reading in just 6 hours."
+                        : "Passe para o início da fila de canalização da Tina e receba tudo em apenas 6 horas."}
                     </span>
                   </div>
+                </label>
+              </div>
 
-                  <button
-                    onClick={() => setIsDelivered(true)}
-                    className="text-xs text-amber-700 underline opacity-85 hover:opacity-100 mt-3 cursor-pointer block mx-auto"
-                  >
-                    ⚡ Simular confirmação (Ver resultado final desbloqueado)
-                  </button>
+              {/* Total Display */}
+              <div className="flex items-center justify-between pt-2 border-t border-gray-200">
+                <div>
+                  <span className="text-base font-bold text-gray-900 block font-merriweather">
+                    {lang === "en" ? "Total Today" : "Total Hoje"}
+                  </span>
+                  <span className="text-[11px] text-gray-500">
+                    {lang === "en" ? "One-time payment • Instant delivery • No subscriptions" : "Pagamento único • Entrega no seu WhatsApp/Email • Sem assinaturas"}
+                  </span>
+                </div>
+                <div className="text-2xl md:text-3xl font-black text-emerald-600 font-mono">
+                  {lang === "en" ? `$${totalPriceUsd} USD` : `R$ ${totalPriceBrl.toFixed(2).replace(".", ",")}`}
                 </div>
               </div>
 
-              <button
-                onClick={() => {
-                  setIsOfferUnlocked(false);
-                  setIsDelivered(false);
-                }}
-                className="text-xs text-gray-400 hover:text-gray-600 underline"
-              >
-                ← Back to home page
-              </button>
-            </div>
-          ) : (
-            /* Tela Desbloqueada / Entregue */
-            <div className="text-center animate-in zoom-in-95 duration-500">
-              <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full border border-emerald-300 mb-2 inline-block">
-                ✓ Pagamento Confirmado
-              </span>
-              <h1 className="text-2xl md:text-3xl font-bold font-merriweather text-gray-900 mb-1">
-                Here Is Your Soulmate!
-              </h1>
-              <p className="text-sm text-gray-600 mb-5">
-                Copy sent to your WhatsApp ({whatsapp || "registered"}) and email ({email || "registered"}).
-              </p>
-
-              <div className="w-full max-w-sm mx-auto aspect-[3/3.8] rounded-2xl overflow-hidden border-4 border-amber-300 shadow-2xl mb-5 bg-black">
-                <img
-                  src={chosenSketch}
-                  alt="Your Soulmate"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-
-              <div className="bg-[#fcfaf7] border border-amber-200 rounded-xl p-4 text-left mb-6 max-w-md mx-auto">
-                <h4 className="text-xs font-bold text-amber-800 uppercase tracking-wider mb-2">
-                  🔮 Summary of Tina Aldea's Psychic Reading
-                </h4>
-                <ul className="text-xs text-gray-700 space-y-2">
-                  <li>• <strong>Astral Connection:</strong> Strong compatibility with your {zodiac.name} energy.</li>
-                  <li>• <strong>Distinctive Traits:</strong> Warm welcoming gaze, spontaneous smile, and protective presence.</li>
-                  <li>• <strong>Encounter Circumstances:</strong> The cards point to a serendipitous meeting in a public or social setting in the coming weeks.</li>
-                </ul>
-              </div>
-
-              <div className="max-w-xs mx-auto space-y-2">
-                <a
-                  href={chosenSketch}
-                  download="my-soulmate-tina-aldea.jpg"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="w-full py-4 rounded-xl font-bold text-sm bg-[#4CAF50] hover:bg-[#45a049] text-white shadow-lg flex items-center justify-center gap-2 transition"
-                >
-                  <Download className="w-4 h-4" />
-                  <span>Download High-Resolution Sketch</span>
-                </a>
+              {/* PIX Instant Approval Box */}
+              <div className="bg-white border border-gray-200 rounded-xl p-5 text-center mt-6">
+                <span className="text-xs font-bold text-emerald-700 block mb-3 flex items-center justify-center gap-1.5">
+                  <Zap className="w-4 h-4 fill-emerald-600 text-emerald-600" />
+                  <span>{lang === "en" ? "INSTANT PIX & CARD CHECKOUT · ZERO RISK" : "PAGAMENTO VIA PIX COM APROVAÇÃO IMEDIATA"}</span>
+                </span>
 
                 <button
-                  onClick={() => {
-                    setIsOfferUnlocked(false);
-                    setIsDelivered(false);
-                  }}
-                  className="text-xs text-gray-400 hover:text-gray-600 underline block mx-auto pt-2"
+                  type="button"
+                  onClick={handleCopyPix}
+                  className={`w-full py-4 px-3 rounded-xl font-black text-sm tracking-wide text-black flex items-center justify-center gap-2 transition cursor-pointer mb-4 shadow-md ${
+                    pixCopied
+                      ? "bg-[#8ff0b3]"
+                      : "bg-gradient-to-b from-[#41E877] via-[#25C55B] to-[#17A94B] text-black hover:brightness-105 active:scale-98"
+                  }`}
                 >
-                  Start another reading
+                  {pixCopied ? (
+                    <>
+                      <Check className="w-5 h-5 text-black" />
+                      <span>{lang === "en" ? "PIX CODE COPIED! ✓" : "CÓDIGO PIX COPIADO! ✓"}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-5 h-5" />
+                      <span>{lang === "en" ? `COPY PIX CODE (R$ ${totalPriceBrl.toFixed(2).replace(".", ",")})` : `COPIAR CÓDIGO PIX (R$ ${totalPriceBrl.toFixed(2).replace(".", ",")})`}</span>
+                    </>
+                  )}
+                </button>
+
+                <div className="bg-white p-3 rounded-xl border border-gray-200 inline-block mx-auto mb-3 shadow-xs">
+                  <img
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(
+                      pixCode
+                    )}`}
+                    alt="QR Code Pix"
+                    className="w-36 h-36 mx-auto"
+                  />
+                  <span className="text-[10px] text-gray-500 font-semibold mt-1.5 block">
+                    {lang === "en" ? "Scan with your bank's camera app" : "Abra o app do seu banco e aponte a câmera"}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-center gap-2 text-xs text-gray-500 mb-3">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                  <span>{lang === "en" ? "256-Bit SSL Encrypted & Protected" : "Ambiente Criptografado e Seguro 256-Bit SSL"}</span>
+                </div>
+
+                {/* Instant Simulation button */}
+                <button
+                  type="button"
+                  onClick={() => setFunnelView("upsell")}
+                  className="w-full py-3 px-4 rounded-xl text-xs font-bold text-amber-900 bg-amber-100 hover:bg-amber-200 border border-amber-300 transition cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <span>⚡ {lang === "en" ? "Simulate Payment Confirmation (Proceed to Next Funnel Step)" : "Simular Confirmação de Pagamento (Ir para Próxima Etapa do Funil)"}</span>
+                  <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
             </div>
-          )}
+
+            {/* Back button */}
+            <button
+              onClick={() => setFunnelView("landing")}
+              className="text-xs text-gray-400 hover:text-gray-600 underline font-opensans"
+            >
+              ← {lang === "en" ? "Back to official homepage" : "Voltar à página inicial"}
+            </button>
+          </div>
         </div>
-      ) : (
-        /* ========================================================================= */
-        /* LANDING PAGE EXATA DE TINA ALDEA                                          */
-        /* ========================================================================= */
+      )}
+
+      {/* ========================================================================= */}
+      {/* 2. UPSELL 1: TWIN FLAME SKETCH                                            */}
+      {/* ========================================================================= */}
+      {funnelView === "upsell" && (
+        <div className="max-w-2xl mx-auto px-4 py-8 animate-in fade-in duration-300 text-center">
+          <div className="bg-red-50 border border-red-200 text-red-700 py-2.5 px-4 rounded-xl text-xs font-bold mb-4 inline-flex items-center gap-2">
+            <span>⚠️ {lang === "en" ? "DO NOT CLOSE OR REFRESH THIS PAGE" : "NÃO FECHE NEM ATUALIZE ESTA PÁGINA"}</span>
+          </div>
+
+          <h2 className="text-xs md:text-sm uppercase tracking-[3px] text-gray-500 font-semibold mb-2">
+            {lang === "en" ? "SPECIAL ONE-TIME UPGRADE OFFER" : "OFERTA EXCLUSIVA DE UPGRADE ÚNICO"}
+          </h2>
+          <h1 className="text-2xl md:text-4xl font-bold font-merriweather text-gray-900 leading-tight mb-4">
+            {lang === "en" ? "Would You Also Like Your Twin Flame Sketch?" : "Você Também Gostaria de Ver o Desenho da Sua Chama Gêmea?"}
+          </h1>
+          <p className="text-sm md:text-base text-gray-600 mb-6 max-w-lg mx-auto font-opensans">
+            {lang === "en"
+              ? "A Soulmate is a destined partner who brings comfort and harmony. A Twin Flame is the other half of your energetic mirror soul. Tina Aldea can reveal both connections."
+              : "Uma Alma Gêmea traz aconchego e amor estável. Já a Chama Gêmea é o seu espelho espiritual cósmico. Tina Aldea pode revelar ambas as conexões para você agora mesmo."}
+          </p>
+
+          <div className="relative w-full max-w-xs mx-auto aspect-[3/3.8] rounded-2xl overflow-hidden border-4 border-purple-300 shadow-xl mb-6 bg-black">
+            <img
+              src="/images/squeeze/sketches/sketch2.jpg"
+              alt="Twin Flame Sketch"
+              className="w-full h-full object-cover"
+            />
+          </div>
+
+          <div className="bg-[#fcfaf7] border border-purple-200 rounded-2xl p-5 text-left mb-6 max-w-md mx-auto">
+            <h4 className="font-bold text-gray-900 text-sm font-merriweather mb-2">
+              {lang === "en" ? "Twin Flame Addition Includes:" : "A Adição da Chama Gêmea Inclui:"}
+            </h4>
+            <ul className="text-xs text-gray-700 space-y-2 font-opensans">
+              <li className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-purple-600 shrink-0" />
+                <span>{lang === "en" ? "Second Hand-Drawn Sketch (Twin Flame Energy)" : "Segundo Desenho Feito à Mão (Energia da Chama Gêmea)"}</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-purple-600 shrink-0" />
+                <span>{lang === "en" ? "Twin Flame Soul Separation & Reunion Reading" : "Leitura de Separação e Reencontro de Almas"}</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-purple-600 shrink-0" />
+                <span>{lang === "en" ? "Special 60% OFF One-Time Discount" : "Desconto Único de 60% Aplicado"}</span>
+              </li>
+            </ul>
+          </div>
+
+          <div className="max-w-md mx-auto space-y-3">
+            <button
+              type="button"
+              onClick={() => setFunnelView("delivered")}
+              className="w-full py-4 px-6 bg-[#4CAF50] hover:bg-[#45a049] text-white font-bold text-base rounded-xl shadow-lg flex items-center justify-center gap-2 transition hover:scale-102 cursor-pointer font-opensans"
+            >
+              <Sparkles className="w-5 h-5" />
+              <span>
+                {lang === "en" ? "YES, ADD TWIN FLAME SKETCH (+ $19.90 / R$ 19,90) >" : "SIM, ADICIONAR DESENHO DA CHAMA GÊMEA (+ R$ 19,90) >"}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setFunnelView("delivered")}
+              className="text-xs text-gray-400 hover:text-gray-600 underline cursor-pointer block mx-auto py-2"
+            >
+              {lang === "en" ? "No thanks, continue straight to my Soulmate Sketch →" : "Não obrigado, continuar direto para o meu Desenho da Alma Gêmea →"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 3. TELA DE ENTREGA FINAL (DELIVERED RESULTS)                             */}
+      {/* ========================================================================= */}
+      {funnelView === "delivered" && (
+        <div className="max-w-2xl mx-auto px-4 py-8 animate-in zoom-in-95 duration-500 text-center">
+          <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-3.5 py-1.5 rounded-full border border-emerald-300 mb-3 inline-block shadow-xs">
+            ✓ {lang === "en" ? "Payment Confirmed • Delivery Completed" : "Pagamento Confirmado • Entrega Liberada"}
+          </span>
+          <h1 className="text-2xl md:text-4xl font-bold font-merriweather text-gray-900 mb-2">
+            {lang === "en" ? `Here Is Your Soulmate, ${name || "Dear"}!` : `Aqui Está Sua Alma Gêmea, ${name || "Querida(o)"}!`}
+          </h1>
+          <p className="text-sm text-gray-600 mb-6 font-opensans">
+            {lang === "en"
+              ? `High-resolution copies have been delivered to your WhatsApp (${whatsapp || "registered"}) and email (${email || "registered"}).`
+              : `Cópias em alta resolução foram enviadas para seu WhatsApp (${whatsapp || "cadastrado"}) e e-mail (${email || "cadastrado"}).`}
+          </p>
+
+          <div className="w-full max-w-sm mx-auto aspect-[3/3.8] rounded-2xl overflow-hidden border-4 border-amber-300 shadow-2xl mb-6 bg-black">
+            <img
+              src={chosenSketch}
+              alt="Your Soulmate Sketch"
+              className="w-full h-full object-cover"
+            />
+          </div>
+
+          <div className="bg-[#fcfaf7] border border-amber-200 rounded-xl p-5 text-left mb-6 max-w-md mx-auto shadow-sm">
+            <h4 className="text-xs font-bold text-amber-800 uppercase tracking-wider mb-2.5 font-merriweather">
+              🔮 {lang === "en" ? "Summary of Tina Aldea's Psychic Reading" : "Resumo da Leitura Psíquica de Tina Aldea"}
+            </h4>
+            <ul className="text-xs text-gray-700 space-y-2.5 font-opensans leading-relaxed">
+              <li>
+                • <strong>{lang === "en" ? "Astral Connection:" : "Conexão Astral:"}</strong>{" "}
+                {lang === "en"
+                  ? `Strong spiritual resonance with your ${zodiac.name} (${zodiac.symbol}) energy.`
+                  : `Forte ressonância e harmonia cósmica com sua energia de ${zodiac.name} (${zodiac.symbol}).`}
+              </li>
+              <li>
+                • <strong>{lang === "en" ? "Distinctive Features:" : "Traços Físicos Marcantes:"}</strong>{" "}
+                {lang === "en"
+                  ? "A warm welcoming gaze, gentle smile, expressive brow, and an intensely reassuring presence."
+                  : "Olhar caloroso e marcante, sorriso espontâneo e uma presença reconfortante e protetora."}
+              </li>
+              <li>
+                • <strong>{lang === "en" ? "Meeting Circumstances:" : "Circunstâncias do Encontro:"}</strong>{" "}
+                {lang === "en"
+                  ? "The cards reveal a serendipitous meeting in a public or social setting in the coming weeks."
+                  : "As cartas revelam um encontro fortuito em um local público ou social nas próximas semanas."}
+              </li>
+            </ul>
+          </div>
+
+          <div className="max-w-xs mx-auto space-y-3">
+            <a
+              href={chosenSketch}
+              download="my-soulmate-tina-aldea.jpg"
+              target="_blank"
+              rel="noreferrer"
+              className="w-full py-4 rounded-xl font-bold text-sm bg-[#4CAF50] hover:bg-[#45a049] text-white shadow-lg flex items-center justify-center gap-2 transition hover:scale-102 cursor-pointer font-opensans"
+            >
+              <Download className="w-4 h-4" />
+              <span>{lang === "en" ? "Download High-Resolution Sketch" : "Baixar Desenho em Alta Resolução"}</span>
+            </a>
+
+            <button
+              onClick={() => {
+                setFunnelView("landing");
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+              className="text-xs text-gray-400 hover:text-gray-600 underline block mx-auto pt-2 font-opensans cursor-pointer"
+            >
+              {lang === "en" ? "← Return to home page" : "← Retornar à página inicial"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 4. LANDING PAGE EXATA DE TINA ALDEA (HOMEPAGE VIEW)                      */}
+      {/* ========================================================================= */}
+      {funnelView === "landing" && (
         <main>
           {/* ======================================================================= */}
           {/* HERO SECTION (#FDF8F3)                                                 */}
