@@ -12,113 +12,31 @@ import {
   Share2,
   ChevronRight,
   ChevronLeft,
-  Heart,
   ShieldCheck,
   Clock,
-  Compass,
   X,
   ChevronDown,
-  Calendar,
-  User,
   Eye,
   CheckCircle2,
+  ArrowRight,
+  Heart,
+  Palette,
+  FileText,
+  Gift,
 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
-  component: TinaAldeaSoulmateFunnel,
+  component: TinaAldeaLandingPage,
 });
 
-type Step = "hero" | "quiz" | "loading" | "offer" | "delivered";
-type Gender = "woman" | "man" | "other";
-type TargetGender = "man" | "woman" | "both";
+type QuizStep = 1 | 2 | 3 | 4 | 5;
 
-interface Testimonial {
-  id: string;
-  name: string;
-  age: number;
-  city: string;
-  timeAgo: string;
-  stars: number;
-  story: string;
-  avatar: string;
-  sketchThumb: string;
-}
-
-const TESTIMONIALS: Testimonial[] = [
-  {
-    id: "t1",
-    name: "Juliana Bittencourt",
-    age: 29,
-    city: "Belo Horizonte, MG",
-    timeAgo: "Há 3 dias",
-    stars: 5,
-    story:
-      "Eu estava muito cética, mas quando recebi o desenho no meu WhatsApp fiquei paralisada. Dois meses depois, conheci o Lucas numa cafeteria. Ele tinha EXATAMENTE o mesmo sorriso e o corte de cabelo do desenho da Tina. Hoje estamos noivos!",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=160&auto=format&fit=crop&q=80",
-    sketchThumb: "https://images.unsplash.com/photo-1544717305-2782549b5136?w=200&auto=format&fit=crop&q=80",
-  },
-  {
-    id: "t2",
-    name: "Rodrigo Vasconcelos",
-    age: 34,
-    city: "São Paulo, SP",
-    timeAgo: "Há 1 semana",
-    stars: 5,
-    story:
-      "A precisão da descrição de personalidade me chocou mais ainda que o desenho. A Tina descreveu os hábitos, o jeito doce e a profissão dela. Conheci a Camila no trabalho 3 semanas depois. É surreal a conexão que sentimos.",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=160&auto=format&fit=crop&q=80",
-    sketchThumb: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=200&auto=format&fit=crop&q=80",
-  },
-  {
-    id: "t3",
-    name: "Camila Guimarães",
-    age: 31,
-    city: "Florianópolis, SC",
-    timeAgo: "Há 4 dias",
-    stars: 5,
-    story:
-      "Tinha acabado de sair de uma relação desgastante e não acreditava mais no amor. O desenho da Tina me deu uma paz inexplicável e renovou minhas esperanças. Quando bati o olho no Rafael no aeroporto, reconheci na hora!",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=160&auto=format&fit=crop&q=80",
-    sketchThumb: "https://images.unsplash.com/photo-1544717305-2782549b5136?w=200&auto=format&fit=crop&q=80",
-  },
-  {
-    id: "t4",
-    name: "Marcio Esteves",
-    age: 38,
-    city: "Curitiba, PR",
-    timeAgo: "Há 2 semanas",
-    stars: 5,
-    story:
-      "Entrega rápida de verdade no WhatsApp. A riqueza de detalhes a lápis é uma verdadeira obra de arte. Vale cada centavo pela clareza e emoção que transmite.",
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=160&auto=format&fit=crop&q=80",
-    sketchThumb: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=200&auto=format&fit=crop&q=80",
-  },
+const MONTH_NAMES = [
+  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
 ];
 
-const FAQS = [
-  {
-    q: "Como Tina Aldea consegue desenhar a minha alma gêmea?",
-    a: "Tina nasceu com um dom natural de vidência artística e clarividência. Ao conectar sua data de nascimento, nome e energia astral, ela sintoniza a frequência cósmica da pessoa predestinada a você e canaliza visualmente cada detalhe a lápis em papel no seu ateliê.",
-  },
-  {
-    q: "Em quanto tempo recebo meu desenho e leitura?",
-    a: "Seu desenho hiper-realista em alta resolução e o dossiê psíquico completo são entregues diretamente no seu WhatsApp e e-mail em até 24 horas (geralmente bem antes). Você já pode visualizar a prévia instantaneamente aqui na tela logo após a confirmação.",
-  },
-  {
-    q: "E se eu já conhecer a pessoa do desenho?",
-    a: "Isso acontece com frequência! Muitas pessoas descobrem que sua alma gêmea já é um amigo próximo, alguém do passado ou um conhecido que ainda não haviam enxergado sob essa luz espiritual.",
-  },
-  {
-    q: "O pagamento é único ou assinatura mensal?",
-    a: "É um pagamento 100% ÚNICO de R$ 27,90 via PIX. Sem assinaturas, sem cobranças recorrentes e sem taxas escondidas.",
-  },
-  {
-    q: "E se eu não ficar satisfeita(o)? Tem garantia?",
-    a: "Sim! Você conta com a Garantia Blindada Incondicional de 30 dias de Tina Aldea. Se por qualquer motivo você não se sentir tocada(o) pela precisão ou beleza do seu desenho, basta nos enviar um e-mail que devolvemos 100% do seu dinheiro sem perguntas.",
-  },
-];
-
-function getZodiacSign(day: number, month: number) {
+function getZodiac(day: number, month: number) {
   if ((month === 3 && day >= 21) || (month === 4 && day <= 19)) return { name: "Áries", symbol: "♈", element: "Fogo" };
   if ((month === 4 && day >= 20) || (month === 5 && day <= 20)) return { name: "Touro", symbol: "♉", element: "Terra" };
   if ((month === 5 && day >= 21) || (month === 6 && day <= 20)) return { name: "Gêmeos", symbol: "♊", element: "Ar" };
@@ -133,53 +51,50 @@ function getZodiacSign(day: number, month: number) {
   return { name: "Peixes", symbol: "♓", element: "Água" };
 }
 
-function TinaAldeaSoulmateFunnel() {
-  const [step, setStep] = useState<Step>("hero");
+function TinaAldeaLandingPage() {
+  // Modal Quiz State
+  const [isQuizOpen, setIsQuizOpen] = useState(false);
+  const [quizStep, setQuizStep] = useState<QuizStep>(1);
 
-  // Quiz State
-  const [quizStep, setQuizStep] = useState<number>(1);
-  const [gender, setGender] = useState<Gender>("woman");
-  const [targetGender, setTargetGender] = useState<TargetGender>("man");
-  const [userName, setUserName] = useState<string>("");
-  const [birthDay, setBirthDay] = useState<string>("15");
-  const [birthMonth, setBirthMonth] = useState<string>("6");
-  const [birthYear, setBirthYear] = useState<string>("1996");
-  const [loveStatus, setLoveStatus] = useState<string>("single");
+  // Form State
+  const [interest, setInterest] = useState<"men" | "women" | "both">("men");
+  const [birthDay, setBirthDay] = useState("15");
+  const [birthMonth, setBirthMonth] = useState("6");
+  const [birthYear, setBirthYear] = useState("1996");
+  const [ethnicity, setEthnicity] = useState("Qualquer / Destino");
+  const [userName, setUserName] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
+  const [email, setEmail] = useState("");
+  const [agreeTerms, setAgreeTerms] = useState(true);
 
-  // Contact State
-  const [whatsapp, setWhatsapp] = useState<string>("");
-  const [email, setEmail] = useState<string>("");
+  // Flow State
+  const [isChanneling, setIsChanneling] = useState(false);
+  const [channelProgress, setChannelProgress] = useState(0);
+  const [isOfferUnlocked, setIsOfferUnlocked] = useState(false);
+  const [isDelivered, setIsDelivered] = useState(false);
 
-  // Loading animation state
-  const [loadProgress, setLoadProgress] = useState<number>(0);
-  const [loadStage, setLoadStage] = useState<number>(1);
-
-  // Checkout PIX State
-  const [showPixModal, setShowPixModal] = useState<boolean>(false);
-  const [pixCopied, setPixCopied] = useState<boolean>(false);
-  const [timeLeft, setTimeLeft] = useState<number>(15 * 60);
+  // Checkout State
+  const [pixCopied, setPixCopied] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(15 * 60);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
-  // Live count counter simulation
-  const [livePeople, setLivePeople] = useState<number>(142);
+  // Counter
+  const [clientCount, setClientCount] = useState(43842);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setLivePeople((prev) => {
-        const delta = Math.random() > 0.5 ? 1 : -1;
-        return Math.max(128, Math.min(165, prev + delta));
-      });
-    }, 5000);
-    return () => clearInterval(interval);
+    const timer = setInterval(() => {
+      setClientCount((prev) => prev + (Math.random() > 0.4 ? 1 : 0));
+    }, 4500);
+    return () => clearInterval(timer);
   }, []);
 
-  // Timer regressivo do checkout
+  // Timer checkout
   useEffect(() => {
-    if ((step === "offer" || showPixModal) && timeLeft > 0) {
+    if (isOfferUnlocked && timeLeft > 0) {
       const timer = setInterval(() => setTimeLeft((t) => (t > 0 ? t - 1 : 0)), 1000);
       return () => clearInterval(timer);
     }
-  }, [step, showPixModal, timeLeft]);
+  }, [isOfferUnlocked, timeLeft]);
 
   const formatTime = (secs: number) => {
     const m = Math.floor(secs / 60);
@@ -195,22 +110,26 @@ function TinaAldeaSoulmateFunnel() {
     setWhatsapp(formatted);
   };
 
-  const zodiac = getZodiacSign(parseInt(birthDay) || 1, parseInt(birthMonth) || 1);
+  const currentMonthName = MONTH_NAMES[new Date().getMonth()];
+  const currentYear = new Date().getFullYear();
+  const zodiac = getZodiac(parseInt(birthDay) || 1, parseInt(birthMonth) || 1);
 
-  // Simulação de Loading Místico
-  const startLoadingAnimation = () => {
-    setStep("loading");
-    setLoadProgress(0);
-    setLoadStage(1);
+  // Iniciar Canalização
+  const handleStartChanneling = () => {
+    setIsQuizOpen(false);
+    setIsChanneling(true);
+    setChannelProgress(0);
 
     const interval = setInterval(() => {
-      setLoadProgress((prev) => {
-        const next = prev + 3;
-        if (next >= 35 && next < 70) setLoadStage(2);
-        if (next >= 70 && next < 95) setLoadStage(3);
+      setChannelProgress((prev) => {
+        const next = prev + 4;
         if (next >= 100) {
           clearInterval(interval);
-          setTimeout(() => setStep("offer"), 600);
+          setTimeout(() => {
+            setIsChanneling(false);
+            setIsOfferUnlocked(true);
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }, 500);
           return 100;
         }
         return next;
@@ -218,16 +137,16 @@ function TinaAldeaSoulmateFunnel() {
     }, 80);
   };
 
-  const currentPrice = 27.9;
-  const pixCodeString = `00020126580014br.gov.bcb.pix0136tina-aldea-soulmate-${Date.now().toString(36)}5204000053039865405${currentPrice.toFixed(2)}5802BR5920TINA ALDEA SKETCH6009SAO PAULO62070503***6304`;
+  const priceBrl = 27.9;
+  const pixCode = `00020126580014br.gov.bcb.pix0136tina-aldea-${Date.now().toString(36)}5204000053039865405${priceBrl.toFixed(2)}5802BR5920TINA ALDEA SKETCH6009SAO PAULO62070503***6304`;
 
   const handleCopyPix = async () => {
     try {
       if (navigator?.clipboard?.writeText) {
-        await navigator.clipboard.writeText(pixCodeString);
+        await navigator.clipboard.writeText(pixCode);
       } else {
         const textarea = document.createElement("textarea");
-        textarea.value = pixCodeString;
+        textarea.value = pixCode;
         document.body.appendChild(textarea);
         textarea.select();
         document.execCommand("copy");
@@ -240,960 +159,225 @@ function TinaAldeaSoulmateFunnel() {
     setTimeout(() => setPixCopied(false), 3000);
   };
 
-  // Imagem do desenho de acordo com quem o usuário procura
-  const sketchImage =
-    targetGender === "woman"
-      ? "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=900&auto=format&fit=crop&q=80"
-      : "https://images.unsplash.com/photo-1544717305-2782549b5136?w=900&auto=format&fit=crop&q=80";
+  const chosenSketch = interest === "women" ? "/sketch-1.jpg" : "/sketch-2.jpg";
 
   return (
-    <div className="min-h-screen bg-[#080612] text-white flex flex-col items-center justify-between font-sans selection:bg-purple-500 selection:text-white relative overflow-hidden">
-      {/* Luz ambiente cósmica */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[350px] bg-gradient-to-b from-purple-900/25 via-violet-950/15 to-transparent blur-3xl pointer-events-none -z-10" />
-      <div className="absolute top-1/3 -right-20 w-[300px] h-[300px] bg-amber-500/10 blur-3xl pointer-events-none -z-10" />
+    <div className="min-h-screen bg-white text-gray-900 font-sans selection:bg-[#4CAF50] selection:text-white">
+      {/* ========================================================================= */}
+      {/* 1. TOP NOTICE BAR (IDENTICA AO SITE OFICIAL)                              */}
+      {/* ========================================================================= */}
+      <div className="bg-[#73b4fc] text-white py-2 px-4 text-center">
+        <p className="text-xs md:text-sm font-semibold tracking-wide">
+          🔮 Este é o meu Site Oficial! Cuidado com imitadores e cópias não autorizadas
+        </p>
+      </div>
 
-      {/* Top Banner de Urgência & Prova Social */}
-      <header className="w-full bg-[#120c22] border-b border-purple-500/20 py-2 px-3 text-center text-xs flex items-center justify-center gap-2">
-        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping shrink-0" />
-        <span className="text-purple-200/90 text-[11px] sm:text-xs">
-          <strong>Tina Aldea</strong> • Retratista Psíquica Oficial •{" "}
-          <span className="text-amber-300 font-bold">{livePeople} pessoas</span> consultando seu destino agora
-        </span>
-      </header>
-
-      {/* Container Principal Mobile-First */}
-      <main className="w-full max-w-[480px] px-3.5 py-4 flex-1 flex flex-col items-center justify-between min-h-screen">
-        {/* ========================================================================= */}
-        {/* ETAPA 1: HERO & APRESENTAÇÃO                                              */}
-        {/* ========================================================================= */}
-        {step === "hero" && (
-          <div className="w-full flex-1 flex flex-col items-center justify-between text-center animate-in fade-in duration-300">
-            <div className="w-full flex flex-col items-center">
-              {/* Badge mística */}
-              <div className="inline-flex items-center gap-1.5 bg-gradient-to-r from-purple-900/40 via-amber-500/20 to-purple-900/40 border border-purple-500/40 text-amber-300 px-3.5 py-1 rounded-full text-[11px] font-black mb-3 shadow-lg">
-                <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-spin" style={{ animationDuration: "6s" }} />
-                <span>CANALIZAÇÃO ENERGÉTICA E VIDÊNCIA REAL</span>
-              </div>
-
-              {/* Título Principal */}
-              <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-tight font-cinzel">
-                Descubra o Rosto da Sua <br />
-                <span className="bg-gradient-to-r from-amber-200 via-amber-400 to-amber-200 bg-clip-text text-transparent drop-shadow-sm">
-                  Verdadeira Alma Gêmea
-                </span>
-              </h1>
-
-              <p className="text-xs sm:text-sm text-purple-200/80 mt-2.5 mb-4 leading-relaxed max-w-[420px]">
-                A vidente e artista psíquica mundialmente reconhecida <strong>Tina Aldea</strong> sintoniza sua vibração cósmica para desenhar à mão o retrato detalhado do seu futuro amor.
-              </p>
-
-              {/* Retrato Hero em Moldura Mística */}
-              <div className="w-full relative rounded-2xl overflow-hidden border-2 border-amber-400/40 shadow-2xl shadow-purple-900/40 bg-black/60 my-2 aspect-[16/10] group">
-                <img
-                  src="https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=900&auto=format&fit=crop&q=80"
-                  alt="Tina Aldea desenhando alma gêmea"
-                  className="w-full h-full object-cover filter brightness-95 group-hover:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
-
-                <div className="absolute top-2.5 left-2.5 bg-black/80 backdrop-blur-md text-amber-300 text-[10px] font-black px-2.5 py-1 rounded-md border border-amber-400/40 flex items-center gap-1">
-                  <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
-                  <span>+37.000 Casais Conectados</span>
-                </div>
-
-                <div className="absolute bottom-2.5 left-2.5 right-2.5 bg-black/85 backdrop-blur-md p-2.5 rounded-xl border border-white/10 text-left">
-                  <span className="text-[10px] text-amber-400 font-bold uppercase tracking-wider block">
-                    Por Tina Aldea
-                  </span>
-                  <p className="text-xs font-semibold text-white/95 leading-tight">
-                    "O destino não comete erros. Quando você vê o rosto certo, sua alma reconhece instantaneamente."
-                  </p>
-                </div>
-              </div>
-
-              {/* 3 Pilares */}
-              <div className="grid grid-cols-3 gap-2 w-full my-4">
-                <div className="bg-purple-950/40 border border-purple-500/20 p-2.5 rounded-xl text-center">
-                  <Compass className="w-4 h-4 text-amber-400 mx-auto mb-1" />
-                  <span className="text-[10px] text-white/90 font-bold block">100% Preciso</span>
-                  <span className="text-[9px] text-white/50">Canalização astral</span>
-                </div>
-                <div className="bg-purple-950/40 border border-purple-500/20 p-2.5 rounded-xl text-center">
-                  <Clock className="w-4 h-4 text-purple-400 mx-auto mb-1" />
-                  <span className="text-[10px] text-white/90 font-bold block">Em 24 Horas</span>
-                  <span className="text-[9px] text-white/50">Direto no WhatsApp</span>
-                </div>
-                <div className="bg-purple-950/40 border border-purple-500/20 p-2.5 rounded-xl text-center">
-                  <ShieldCheck className="w-4 h-4 text-emerald-400 mx-auto mb-1" />
-                  <span className="text-[10px] text-white/90 font-bold block">Garantia Total</span>
-                  <span className="text-[9px] text-white/50">30 dias sem riscos</span>
-                </div>
-              </div>
-
-              {/* Botão Principal de Início do Funil */}
-              <button
-                type="button"
-                onClick={() => {
-                  setStep("quiz");
-                  setQuizStep(1);
-                }}
-                className="w-full py-4 px-4 rounded-xl font-black text-sm sm:text-base tracking-wide bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 shadow-xl shadow-amber-500/25 active:scale-98 transition transform cursor-pointer flex items-center justify-center gap-2 mt-2"
-              >
-                <span>VER O ROSTO DA MINHA ALMA GÊMEA</span>
-                <ChevronRight className="w-5 h-5 text-slate-950" />
-              </button>
-              <p className="text-[10px] text-white/50 mt-2">
-                Levará menos de 60 segundos para sintonizar sua energia
-              </p>
-            </div>
-
-            <footer className="mt-6 pt-3 pb-2 text-center text-xs text-white/40 w-full border-t border-white/10">
-              <p className="text-[11px]">
-                Tina Aldea • Psychic & Soulmate Sketch Artist © {new Date().getFullYear()}
-              </p>
-            </footer>
-          </div>
-        )}
-
-        {/* ========================================================================= */}
-        {/* ETAPA 2: QUIZ INTERATIVO MULTI-STEP                                       */}
-        {/* ========================================================================= */}
-        {step === "quiz" && (
-          <div className="w-full flex-1 flex flex-col items-center justify-between text-center animate-in fade-in duration-300">
-            <div className="w-full flex flex-col items-center">
-              {/* Barra de Progresso do Quiz */}
-              <div className="w-full flex items-center justify-between text-xs text-purple-300 font-bold mb-1.5">
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (quizStep > 1) setQuizStep((s) => s - 1);
-                    else setStep("hero");
-                  }}
-                  className="flex items-center gap-1 text-[11px] text-amber-400 hover:underline"
-                >
-                  <ChevronLeft className="w-3.5 h-3.5" />
-                  <span>Voltar</span>
-                </button>
-                <span>Passo {quizStep} de 5</span>
-              </div>
-              <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden mb-5">
-                <div
-                  className="h-full bg-gradient-to-r from-purple-500 to-amber-400 rounded-full transition-all duration-300"
-                  style={{ width: `${(quizStep / 5) * 100}%` }}
-                />
-              </div>
-
-              {/* PERGUNTA 1: SEU GÊNERO */}
-              {quizStep === 1 && (
-                <div className="w-full flex flex-col items-center animate-in fade-in">
-                  <span className="text-[11px] font-extrabold tracking-wider text-amber-400 uppercase mb-1">
-                    Passo 1 · Polaridade Energética
-                  </span>
-                  <h2 className="text-xl sm:text-2xl font-black text-white font-cinzel mb-2">
-                    Qual é o seu gênero?
-                  </h2>
-                  <p className="text-xs text-purple-200/70 mb-5">
-                    Isso ajuda Tina a calibrar o fluxo de energia receptiva ou magnética.
-                  </p>
-
-                  <div className="flex flex-col gap-3 w-full">
-                    {[
-                      { val: "woman", label: "Eu sou Mulher", icon: "👩" },
-                      { val: "man", label: "Eu sou Homem", icon: "👨" },
-                      { val: "other", label: "Não-binário / Outro", icon: "✨" },
-                    ].map((opt) => (
-                      <button
-                        key={opt.val}
-                        type="button"
-                        onClick={() => {
-                          setGender(opt.val as Gender);
-                          setQuizStep(2);
-                        }}
-                        className={`w-full py-4 px-4 rounded-xl border text-left flex items-center justify-between text-sm sm:text-base font-bold transition active:scale-98 cursor-pointer ${
-                          gender === opt.val
-                            ? "bg-purple-900/40 border-amber-400 text-white shadow-lg shadow-purple-900/30"
-                            : "bg-neutral-900/80 border-white/15 text-white/80 hover:border-purple-400"
-                        }`}
-                      >
-                        <span className="flex items-center gap-3">
-                          <span className="text-2xl">{opt.icon}</span>
-                          <span>{opt.label}</span>
-                        </span>
-                        <ChevronRight className="w-4 h-4 text-amber-400" />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* PERGUNTA 2: QUEM PROCURA */}
-              {quizStep === 2 && (
-                <div className="w-full flex flex-col items-center animate-in fade-in">
-                  <span className="text-[11px] font-extrabold tracking-wider text-amber-400 uppercase mb-1">
-                    Passo 2 · Sintonia do Coração
-                  </span>
-                  <h2 className="text-xl sm:text-2xl font-black text-white font-cinzel mb-2">
-                    Quem você procura no amor?
-                  </h2>
-                  <p className="text-xs text-purple-200/70 mb-5">
-                    Tina visualizará a essência facial compatível com o seu desejo.
-                  </p>
-
-                  <div className="flex flex-col gap-3 w-full">
-                    {[
-                      { val: "man", label: "Estou em busca de um Homem", icon: "👨" },
-                      { val: "woman", label: "Estou em busca de uma Mulher", icon: "👩" },
-                      { val: "both", label: "Aberto(a) ao Destino", icon: "💞" },
-                    ].map((opt) => (
-                      <button
-                        key={opt.val}
-                        type="button"
-                        onClick={() => {
-                          setTargetGender(opt.val as TargetGender);
-                          setQuizStep(3);
-                        }}
-                        className={`w-full py-4 px-4 rounded-xl border text-left flex items-center justify-between text-sm sm:text-base font-bold transition active:scale-98 cursor-pointer ${
-                          targetGender === opt.val
-                            ? "bg-purple-900/40 border-amber-400 text-white shadow-lg shadow-purple-900/30"
-                            : "bg-neutral-900/80 border-white/15 text-white/80 hover:border-purple-400"
-                        }`}
-                      >
-                        <span className="flex items-center gap-3">
-                          <span className="text-2xl">{opt.icon}</span>
-                          <span>{opt.label}</span>
-                        </span>
-                        <ChevronRight className="w-4 h-4 text-amber-400" />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* PERGUNTA 3: NOME E DATA DE NASCIMENTO (SIGNO ZODIACAL AUTOMÁTICO) */}
-              {quizStep === 3 && (
-                <div className="w-full flex flex-col items-center animate-in fade-in">
-                  <span className="text-[11px] font-extrabold tracking-wider text-amber-400 uppercase mb-1">
-                    Passo 3 · Mapa Astral
-                  </span>
-                  <h2 className="text-xl sm:text-2xl font-black text-white font-cinzel mb-2">
-                    Seus dados espirituais
-                  </h2>
-                  <p className="text-xs text-purple-200/70 mb-4">
-                    Seu nome e data ativam a vibração astrológica exata da sua alma gêmea.
-                  </p>
-
-                  <div className="w-full flex flex-col gap-3.5 text-left">
-                    <div>
-                      <label className="text-xs font-bold text-white/80 block mb-1">
-                        Seu primeiro nome:
-                      </label>
-                      <div className="relative">
-                        <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-                        <input
-                          type="text"
-                          value={userName}
-                          onChange={(e) => setUserName(e.target.value)}
-                          placeholder="Ex: Beatriz ou Rafael"
-                          className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/5 border border-white/20 text-white placeholder-white/40 text-sm focus:outline-none focus:border-amber-400 transition"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="text-xs font-bold text-white/80 block mb-1">
-                        Sua data de nascimento:
-                      </label>
-                      <div className="grid grid-cols-3 gap-2">
-                        {/* Dia */}
-                        <div>
-                          <select
-                            value={birthDay}
-                            onChange={(e) => setBirthDay(e.target.value)}
-                            className="w-full py-3 px-2 rounded-xl bg-[#161226] border border-white/20 text-white text-xs font-semibold focus:outline-none focus:border-amber-400"
-                          >
-                            {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
-                              <option key={d} value={d}>
-                                Dia {d}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-
-                        {/* Mês */}
-                        <div>
-                          <select
-                            value={birthMonth}
-                            onChange={(e) => setBirthMonth(e.target.value)}
-                            className="w-full py-3 px-2 rounded-xl bg-[#161226] border border-white/20 text-white text-xs font-semibold focus:outline-none focus:border-amber-400"
-                          >
-                            {[
-                              "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
-                              "Jul", "Ago", "Set", "Out", "Nov", "Dez"
-                            ].map((m, idx) => (
-                              <option key={m} value={idx + 1}>
-                                {m}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-
-                        {/* Ano */}
-                        <div>
-                          <select
-                            value={birthYear}
-                            onChange={(e) => setBirthYear(e.target.value)}
-                            className="w-full py-3 px-2 rounded-xl bg-[#161226] border border-white/20 text-white text-xs font-semibold focus:outline-none focus:border-amber-400"
-                          >
-                            {Array.from({ length: 70 }, (_, i) => 2006 - i).map((y) => (
-                              <option key={y} value={y}>
-                                {y}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Card de Validação Astrológica em Tempo Real */}
-                    <div className="bg-gradient-to-r from-purple-950/80 to-amber-950/50 border border-amber-400/30 rounded-xl p-3 flex items-center justify-between">
-                      <div className="flex items-center gap-2.5">
-                        <span className="text-2xl">{zodiac.symbol}</span>
-                        <div>
-                          <span className="text-xs font-black text-amber-300 block">
-                            Signo Solar: {zodiac.name}
-                          </span>
-                          <span className="text-[10px] text-white/60">
-                            Elemento {zodiac.element} • Frequência identificada
-                          </span>
-                        </div>
-                      </div>
-                      <span className="text-[10px] bg-amber-400/20 text-amber-300 font-extrabold px-2 py-0.5 rounded border border-amber-400/40">
-                        Ativado
-                      </span>
-                    </div>
-
-                    <button
-                      type="button"
-                      disabled={!userName.trim()}
-                      onClick={() => setQuizStep(4)}
-                      className={`w-full py-3.5 rounded-xl font-black text-sm tracking-wide transition shadow-lg mt-2 cursor-pointer ${
-                        userName.trim()
-                          ? "bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 active:scale-98"
-                          : "bg-white/10 text-white/30 cursor-not-allowed"
-                      }`}
-                    >
-                      CONTINUAR
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* PERGUNTA 4: STATUS AMOROSO ATUAL */}
-              {quizStep === 4 && (
-                <div className="w-full flex flex-col items-center animate-in fade-in">
-                  <span className="text-[11px] font-extrabold tracking-wider text-amber-400 uppercase mb-1">
-                    Passo 4 · Momento Cósmico
-                  </span>
-                  <h2 className="text-xl sm:text-2xl font-black text-white font-cinzel mb-2">
-                    Como está sua vida amorosa hoje?
-                  </h2>
-                  <p className="text-xs text-purple-200/70 mb-5">
-                    Ajuda Tina a entender o tempo cósmico do seu reencontro de almas.
-                  </p>
-
-                  <div className="flex flex-col gap-2.5 w-full">
-                    {[
-                      { val: "single", label: "Solteira(o) e pronta(o) para o verdadeiro amor", icon: "✨" },
-                      { val: "complicated", label: "Em um relacionamento com dúvidas", icon: "🌪️" },
-                      { val: "separated", label: "Recém-separada(o) querendo recomeçar", icon: "🕊️" },
-                      { val: "curious", label: "Apenas curiosa(o) para ver quem o destino escolheu", icon: "🔮" },
-                    ].map((opt) => (
-                      <button
-                        key={opt.val}
-                        type="button"
-                        onClick={() => {
-                          setLoveStatus(opt.val);
-                          setQuizStep(5);
-                        }}
-                        className={`w-full py-3.5 px-4 rounded-xl border text-left flex items-center justify-between text-xs sm:text-sm font-bold transition active:scale-98 cursor-pointer ${
-                          loveStatus === opt.val
-                            ? "bg-purple-900/40 border-amber-400 text-white shadow-lg shadow-purple-900/30"
-                            : "bg-neutral-900/80 border-white/15 text-white/80 hover:border-purple-400"
-                        }`}
-                      >
-                        <span className="flex items-center gap-2.5">
-                          <span className="text-xl">{opt.icon}</span>
-                          <span>{opt.label}</span>
-                        </span>
-                        <ChevronRight className="w-4 h-4 text-amber-400" />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* PERGUNTA 5: ONDE RECEBER O DESENHO (WHATSAPP E E-MAIL) */}
-              {quizStep === 5 && (
-                <div className="w-full flex flex-col items-center animate-in fade-in">
-                  <div className="w-12 h-12 rounded-full bg-amber-400/20 text-amber-400 flex items-center justify-center mb-2">
-                    <Heart className="w-6 h-6 fill-amber-400" />
-                  </div>
-
-                  <span className="text-[11px] font-extrabold tracking-wider text-amber-400 uppercase mb-1">
-                    Último Passo · Canal de Entrega
-                  </span>
-                  <h2 className="text-xl sm:text-2xl font-black text-white font-cinzel mb-1">
-                    Para onde Tina enviará seu desenho?
-                  </h2>
-                  <p className="text-xs text-purple-200/70 mb-4">
-                    Você visualizará a revelação aqui na hora e receberá o arquivo original em alta resolução.
-                  </p>
-
-                  <div className="w-full flex flex-col gap-3 text-left">
-                    <div>
-                      <label className="text-xs font-bold text-white/80 block mb-1">
-                        Seu WhatsApp com DDD:
-                      </label>
-                      <div className="relative">
-                        <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-                        <input
-                          type="tel"
-                          value={whatsapp}
-                          onChange={(e) => handlePhoneMask(e.target.value)}
-                          placeholder="(11) 99999-9999"
-                          className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/5 border border-white/20 text-white placeholder-white/40 text-sm focus:outline-none focus:border-amber-400 transition"
-                          autoFocus
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="text-xs font-bold text-white/80 block mb-1">
-                        Seu melhor e-mail:
-                      </label>
-                      <div className="relative">
-                        <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-                        <input
-                          type="email"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          placeholder="seu@email.com"
-                          className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/5 border border-white/20 text-white placeholder-white/40 text-sm focus:outline-none focus:border-amber-400 transition"
-                        />
-                      </div>
-                    </div>
-
-                    <p className="text-[11px] text-white/50 flex items-center gap-1.5 leading-tight mt-1">
-                      <Lock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                      <span>Seus dados são confidenciais e protegidos por sigilo espiritual e LGPD.</span>
-                    </p>
-
-                    <button
-                      type="button"
-                      disabled={whatsapp.length < 14 || !email.includes("@")}
-                      onClick={startLoadingAnimation}
-                      className={`w-full py-4 rounded-xl font-black text-sm tracking-wide transition shadow-xl mt-3 cursor-pointer ${
-                        whatsapp.length >= 14 && email.includes("@")
-                          ? "bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 text-slate-950 active:scale-98 hover:brightness-110"
-                          : "bg-white/10 text-white/30 cursor-not-allowed"
-                      }`}
-                    >
-                      CANALIZAR E DESENHAR MINHA ALMA GÊMEA ✨
-                    </button>
-                  </div>
-                </div>
-              )}
+      {/* ========================================================================= */}
+      {/* 2. LOADING MÍSTICO DE CANALIZAÇÃO (SE ATIVADO)                            */}
+      {/* ========================================================================= */}
+      {isChanneling && (
+        <div className="fixed inset-0 z-50 bg-[#161226]/95 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center text-white">
+          <div className="relative w-28 h-28 mx-auto mb-6 flex items-center justify-center">
+            <div className="absolute inset-0 rounded-full border-2 border-purple-500/30 animate-spin" style={{ animationDuration: "8s" }} />
+            <div className="absolute inset-2 rounded-full border-2 border-dashed border-amber-400/70 animate-spin" style={{ animationDuration: "5s", animationDirection: "reverse" }} />
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-900 to-amber-900 flex items-center justify-center shadow-2xl">
+              <Sparkles className="w-9 h-9 text-amber-300 animate-pulse" />
             </div>
           </div>
-        )}
 
-        {/* ========================================================================= */}
-        {/* ETAPA 3: LOADING MÍSTICO COM BARRAS CÓSMICAS                              */}
-        {/* ========================================================================= */}
-        {step === "loading" && (
-          <div className="w-full flex-1 flex flex-col items-center justify-center text-center animate-in fade-in duration-300 py-8">
-            {/* Círculo Astral Pulsando */}
-            <div className="relative w-28 h-28 mx-auto mb-6 flex items-center justify-center">
-              <div className="absolute inset-0 rounded-full border-2 border-purple-500/30 animate-spin" style={{ animationDuration: "10s" }} />
-              <div className="absolute inset-2 rounded-full border-2 border-dashed border-amber-400/60 animate-spin" style={{ animationDuration: "6s", animationDirection: "reverse" }} />
-              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-900 to-amber-950 flex items-center justify-center shadow-2xl shadow-purple-900/50">
-                <Sparkles className="w-10 h-10 text-amber-300 animate-pulse" />
-              </div>
+          <h2 className="text-2xl font-bold font-merriweather mb-2">
+            Canalizando sua Alma Gêmea…
+          </h2>
+          <p className="text-sm text-purple-200/80 mb-6 max-w-sm">
+            Tina Aldea está sintonizando a vibração de {zodiac.name} ({zodiac.symbol}) e desenhando os contornos a lápis no papel.
+          </p>
+
+          <div className="w-full max-w-xs space-y-2">
+            <div className="flex justify-between text-xs font-bold text-amber-300">
+              <span>{channelProgress < 40 ? "Sintonizando energia..." : channelProgress < 80 ? "Traçando feições e olhar..." : "Finalizando o desenho..."}</span>
+              <span>{channelProgress}%</span>
             </div>
-
-            <h2 className="text-xl sm:text-2xl font-black text-white font-cinzel mb-1">
-              Conectando com sua Alma Gêmea…
-            </h2>
-            <p className="text-xs text-purple-200/80 mb-6 max-w-[320px]">
-              Tina Aldea está sintonizando sua frequência de {zodiac.name} ({zodiac.symbol}) e traçando os contornos a lápis
-            </p>
-
-            <div className="w-full max-w-[340px] flex flex-col gap-3 text-left">
-              <div className="flex justify-between text-xs font-bold text-white/80">
-                <span>
-                  {loadStage === 1 && "1/3 Sintonizando conexão cósmica..."}
-                  {loadStage === 2 && "2/3 Mapeando traços faciais e olhar..."}
-                  {loadStage === 3 && "3/3 Concluindo o retrato a lápis em alta resolução..."}
-                </span>
-                <span className="text-amber-400 font-mono">{loadProgress}%</span>
-              </div>
-              <div className="w-full h-3 rounded-full bg-white/10 overflow-hidden border border-white/10 shadow-inner">
-                <div
-                  className="h-full bg-gradient-to-r from-purple-600 via-amber-400 to-yellow-300 rounded-full transition-all duration-100 shadow-md"
-                  style={{ width: `${loadProgress}%` }}
-                />
-              </div>
-
-              <div className="bg-purple-950/40 border border-purple-500/20 p-2.5 rounded-xl text-left mt-3">
-                <p className="text-[11px] text-purple-200/90 leading-tight">
-                  🔮 <strong>Visão captada:</strong> O destino preparou alguém com traços marcantes e alta compatibilidade energética com você, {userName || "querida(o)"}!
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ========================================================================= */}
-        {/* ETAPA 4: ABA DE OFERTA / REVELAÇÃO COM CADEADO E CHECKOUT                   */}
-        {/* ========================================================================= */}
-        {step === "offer" && (
-          <div className="w-full flex-1 flex flex-col items-center justify-start text-center animate-in fade-in duration-300">
-            {/* Faixa Superior 65% OFF */}
-            <div className="w-full bg-gradient-to-r from-purple-950 via-[#4d0b13] to-purple-950 text-amber-300 py-1.5 px-3 rounded-t-xl text-center text-xs font-black tracking-wide border-b border-amber-500/30 shadow-inner">
-              🎁 65% OFF APLICADO · OFERTA DE CANALIZAÇÃO EXCLUSIVA HOJE
-            </div>
-
-            {/* Teaser do Retrato Desenhado com Cadeado Dourado */}
-            <div className="w-full rounded-2xl overflow-hidden relative aspect-[16/11] border-2 border-amber-400/50 my-3 bg-black shadow-2xl shadow-purple-900/40">
-              <img
-                src={sketchImage}
-                alt="Retrato da alma gêmea"
-                className="w-full h-full object-cover filter blur-[9px] brightness-75 scale-105"
+            <div className="w-full h-3 rounded-full bg-white/10 overflow-hidden border border-white/20">
+              <div
+                className="h-full bg-gradient-to-r from-emerald-400 via-amber-400 to-yellow-300 rounded-full transition-all duration-100"
+                style={{ width: `${channelProgress}%` }}
               />
-              <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center p-4">
-                <div className="w-14 h-14 rounded-2xl bg-amber-500/20 border-2 border-amber-400 backdrop-blur-md flex items-center justify-center shadow-xl shadow-amber-500/40 mb-2 animate-bounce" style={{ animationDuration: "3s" }}>
-                  <Lock className="w-7 h-7 text-amber-300" />
-                </div>
-                <span className="text-xs font-black text-white bg-black/80 px-3 py-1 rounded-full border border-amber-400/50">
-                  RETRATO CONCLUÍDO E BLOQUEADO
-                </span>
-                <span className="text-[10px] text-amber-300 font-semibold mt-1">
-                  Desbloqueie para visualizar em alta resolução sem marcas d'água
-                </span>
-              </div>
             </div>
-
-            {/* Headline Principal da Oferta */}
-            <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight leading-snug font-cinzel px-1">
-              O Retrato da Sua Alma Gêmea Foi Canalizado com Sucesso!
-            </h1>
-            <div className="flex items-center justify-center gap-1.5 text-xs text-white/80 mt-1 mb-4">
-              <span className="text-amber-400 text-sm">★</span>
-              <span className="font-extrabold text-white">4,9/5</span>
-              <span className="text-white/40">•</span>
-              <span className="text-amber-300 font-bold">Mais de 37.000 pessoas</span>
-              <span className="text-white/70">já encontraram seu amor</span>
-            </div>
-
-            {/* CARD: FALTA SÓ O PAGAMENTO / TABELA DE VALOR */}
-            <div className="w-full bg-[#110d20] border border-purple-500/30 rounded-2xl p-4 shadow-2xl relative mb-5 text-left">
-              <div className="w-full text-center mb-3">
-                <span className="inline-block bg-gradient-to-r from-purple-900 to-amber-900/60 border border-amber-500/40 text-amber-300 text-[10px] font-black tracking-widest px-3.5 py-1 rounded-full uppercase shadow-md">
-                  FALTA SÓ O DESBLOQUEIO
-                </span>
-              </div>
-
-              {/* Tabela de Preço */}
-              <div className="space-y-1.5 text-xs font-semibold">
-                <div className="flex items-center justify-between text-white/85">
-                  <span>Desenho Hiper-realista a Lápis da Alma Gêmea</span>
-                  <span className="font-mono text-white/60 line-through">R$ 97,00</span>
-                </div>
-                <div className="flex items-center justify-between text-white/85">
-                  <span>Dossiê Psíquico & Mapa de Personalidade</span>
-                  <span className="font-mono text-white/60 line-through">R$ 49,00</span>
-                </div>
-                <div className="flex items-center justify-between text-white/85">
-                  <span>Previsão de Quando e Onde Vocês Vão Se Conhecer</span>
-                  <span className="font-mono text-white/60 line-through">R$ 39,00</span>
-                </div>
-                <div className="flex items-center justify-between text-emerald-400 font-bold">
-                  <span>Desconto Especial de Hoje (65% OFF)</span>
-                  <span className="font-mono">- R$ 157,10</span>
-                </div>
-                <div className="flex items-center justify-between text-white/50 text-[11px]">
-                  <span>Taxa de processamento espiritual</span>
-                  <span className="font-mono">R$ 0,00</span>
-                </div>
-              </div>
-
-              <div className="border-t border-white/10 my-3" />
-
-              {/* Linha Total */}
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <span className="text-base font-black text-white block leading-tight font-cinzel">Total Hoje</span>
-                  <span className="text-[10px] text-purple-300/70 block">pagamento único • via PIX • sem mensalidade</span>
-                </div>
-                <div className="text-2xl sm:text-3xl font-black text-amber-400 tracking-tight font-mono">
-                  R$ 27,90
-                </div>
-              </div>
-
-              {/* Botão CTA Principal */}
-              <button
-                type="button"
-                onClick={() => setShowPixModal(true)}
-                className="w-full py-4 px-4 rounded-xl font-black text-sm sm:text-base tracking-wide bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 shadow-xl shadow-amber-500/30 active:scale-98 transition transform cursor-pointer flex items-center justify-center gap-2"
-              >
-                <Eye className="w-5 h-5 text-slate-950" />
-                <span>DESBLOQUEAR MEU DESENHO AGORA</span>
-              </button>
-
-              <p className="text-[11px] text-white/60 mt-2.5 text-center flex items-center justify-center gap-1.5 font-medium">
-                <Lock className="w-3.5 h-3.5 text-amber-400" />
-                <span>Pagamento seguro via PIX • Liberação imediata na tela</span>
-              </p>
-            </div>
-
-            {/* O que você recebe */}
-            <div className="w-full text-left mb-6 px-1">
-              <h3 className="text-sm font-black text-white mb-3 flex items-center gap-2 font-cinzel">
-                <Sparkles className="w-4 h-4 text-amber-400" />
-                <span>O que está incluído no seu pacote oficial:</span>
-              </h3>
-
-              <ul className="space-y-3 text-xs text-white/90">
-                <li className="flex items-start gap-2.5 bg-purple-950/20 p-2.5 rounded-xl border border-purple-500/20">
-                  <span className="text-amber-400 font-black mt-0.5 text-base">🎨</span>
-                  <div>
-                    <strong className="text-white block">Desenho Hiper-realista a Lápis</strong>
-                    <span className="text-white/70 text-[11px]">
-                      Retrato nítido em alta definição artística do rosto e olhar da sua alma gêmea, pronto para imprimir ou guardar no celular.
-                    </span>
-                  </div>
-                </li>
-
-                <li className="flex items-start gap-2.5 bg-purple-950/20 p-2.5 rounded-xl border border-purple-500/20">
-                  <span className="text-amber-400 font-black mt-0.5 text-base">🔮</span>
-                  <div>
-                    <strong className="text-white block">Perfil Psíquico & Guia de Personalidade</strong>
-                    <span className="text-white/70 text-[11px]">
-                      Como essa pessoa fala, seus valores mais profundos, hobbies, tipo de profissão e hábitos no dia a dia.
-                    </span>
-                  </div>
-                </li>
-
-                <li className="flex items-start gap-2.5 bg-purple-950/20 p-2.5 rounded-xl border border-purple-500/20">
-                  <span className="text-amber-400 font-black mt-0.5 text-base">⏳</span>
-                  <div>
-                    <strong className="text-white block">Quando e Onde Vocês Vão Se Encontrar</strong>
-                    <span className="text-white/70 text-[11px]">
-                      Pistas astrológicas do momento exato em que seus caminhos irão se cruzar e sinais cósmicos para reconhecê-la(o).
-                    </span>
-                  </div>
-                </li>
-
-                <li className="flex items-start gap-2.5 bg-purple-950/20 p-2.5 rounded-xl border border-purple-500/20">
-                  <span className="text-amber-400 font-black mt-0.5 text-base">📱</span>
-                  <div>
-                    <strong className="text-white block">Entrega Imediata no WhatsApp e no E-mail</strong>
-                    <span className="text-white/70 text-[11px]">
-                      Aparece na sua tela agora mesmo e enviamos uma cópia sem perda de qualidade no seu WhatsApp e e-mail.
-                    </span>
-                  </div>
-                </li>
-              </ul>
-            </div>
-
-            {/* SEÇÃO: QUEM É TINA ALDEA */}
-            <div className="w-full bg-[#130d24] border border-amber-400/30 rounded-2xl p-4 text-left my-4 shadow-xl">
-              <div className="flex items-center gap-3 mb-3">
-                <img
-                  src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=160&auto=format&fit=crop&q=80"
-                  alt="Tina Aldea Médium e Artista"
-                  className="w-14 h-14 rounded-full object-cover border-2 border-amber-400 shrink-0"
-                />
-                <div>
-                  <h4 className="text-sm font-black text-white font-cinzel">Tina Aldea</h4>
-                  <span className="text-[11px] text-amber-300 font-bold block">
-                    Vidente & Retratista de Almas Gêmeas
-                  </span>
-                  <span className="text-[10px] text-white/50 block">
-                    Mais de 15 anos unindo destinos ao redor do mundo
-                  </span>
-                </div>
-              </div>
-              <p className="text-xs text-white/80 leading-relaxed italic border-l-2 border-amber-400 pl-3 my-2">
-                "Desde pequena percebi que quando fechava os olhos e segurava um lápis, minhas mãos desenhavam rostos de pessoas que meus amigos e familiares ainda iriam conhecer anos depois. Transformei esse dom na minha missão de vida: ajudar corações a reencontrarem sua outra metade cósmica."
-              </p>
-            </div>
-
-            {/* GARANTIA DE 30 DIAS */}
-            <div className="w-full text-center my-6 px-2 flex flex-col items-center">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-b from-amber-500 to-amber-700 border-2 border-yellow-300 shadow-xl shadow-amber-500/30 flex items-center justify-center mb-3">
-                <ShieldCheck className="w-8 h-8 text-slate-950" />
-              </div>
-
-              <h3 className="text-base font-black text-white leading-tight font-cinzel">
-                Garantia Blindada Incondicional de 30 Dias
-              </h3>
-              <p className="text-[11px] text-white/70 mt-2 max-w-[320px] leading-relaxed">
-                Se você não sentir uma conexão genuína e profunda com o desenho ou achar que não valeu cada centavo, devolvemos 100% do seu dinheiro. Sem pegadinhas e sem ressentimentos.
-              </p>
-            </div>
-
-            {/* DEPOIMENTOS REAIS E HISTÓRIAS DE SUCESSO */}
-            <div className="w-full text-left my-4">
-              <div className="text-center mb-3">
-                <span className="text-xs text-amber-400 font-bold">HISTÓRIAS REAIS</span>
-                <h3 className="text-base font-black text-white font-cinzel">
-                  Eles Encontraram Suas Almas Gêmeas 👇
-                </h3>
-              </div>
-
-              <div className="flex flex-col gap-3">
-                {TESTIMONIALS.map((t) => (
-                  <div
-                    key={t.id}
-                    className="bg-neutral-900/90 border border-purple-500/20 rounded-xl p-3.5 shadow-md text-left"
-                  >
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <div className="flex items-center gap-2.5">
-                        <img
-                          src={t.avatar}
-                          alt={t.name}
-                          className="w-9 h-9 rounded-full object-cover border border-amber-400/50 shrink-0"
-                        />
-                        <div>
-                          <strong className="text-xs font-bold text-white block">
-                            {t.name}, {t.age} anos
-                          </strong>
-                          <span className="text-[10px] text-white/50 block">
-                            {t.city} • {t.timeAgo}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex text-amber-400 text-xs">
-                        {"★".repeat(t.stars)}
-                      </div>
-                    </div>
-
-                    <p className="text-[11px] text-white/80 leading-relaxed italic mb-2">
-                      "{t.story}"
-                    </p>
-
-                    <div className="flex items-center gap-2.5 bg-black/60 p-2 rounded-lg border border-white/10">
-                      <img
-                        src={t.sketchThumb}
-                        alt="Esboço entregue"
-                        className="w-12 h-12 object-cover rounded border border-white/20 shrink-0"
-                      />
-                      <div>
-                        <span className="text-[10px] text-amber-300 font-bold block">
-                          Retrato Oficial entregue por Tina
-                        </span>
-                        <span className="text-[9px] text-emerald-400 font-semibold block">
-                          ✓ Encontro da vida real confirmado
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* SEÇÃO FAQ (PERGUNTAS FREQUENTES) */}
-            <div className="w-full text-left my-6">
-              <h3 className="text-sm font-black text-white mb-3 text-center font-cinzel">
-                Perguntas Frequentes
-              </h3>
-              <div className="flex flex-col gap-2">
-                {FAQS.map((faq, idx) => (
-                  <div
-                    key={idx}
-                    className="border border-white/10 rounded-xl overflow-hidden bg-white/5"
-                  >
-                    <button
-                      type="button"
-                      onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
-                      className="w-full p-3 text-left font-bold text-xs text-white flex items-center justify-between gap-2 cursor-pointer hover:bg-white/5 transition"
-                    >
-                      <span>{faq.q}</span>
-                      <ChevronDown
-                        className={`w-4 h-4 text-amber-400 transition-transform ${
-                          openFaq === idx ? "rotate-180" : ""
-                        }`}
-                      />
-                    </button>
-                    {openFaq === idx && (
-                      <div className="p-3 pt-0 text-[11px] text-white/70 leading-relaxed border-t border-white/5 animate-in fade-in">
-                        {faq.a}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Botão Flutuante / Final de Compra */}
-            <div className="w-full pt-2 pb-6">
-              <button
-                type="button"
-                onClick={() => setShowPixModal(true)}
-                className="w-full py-4 px-4 rounded-xl font-black text-sm sm:text-base tracking-wide bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 shadow-xl shadow-amber-500/30 active:scale-98 transition transform cursor-pointer flex items-center justify-center gap-2"
-              >
-                <span>QUERO MEU DESENHO POR R$ 27,90</span>
-                <ChevronRight className="w-5 h-5 text-slate-950" />
-              </button>
-            </div>
-
-            {/* Rodapé institucional */}
-            <footer className="mt-4 pt-4 pb-6 text-center text-xs text-white/50 w-full border-t border-white/10 flex flex-col items-center gap-2">
-              <div className="flex items-center justify-center gap-4 text-xs text-white/60">
-                <a href="#" className="hover:underline">Termos de Uso</a>
-                <span>•</span>
-                <a href="#" className="hover:underline">Política de Privacidade</a>
-              </div>
-              <p className="text-[11px] text-white/40">
-                Precisa de ajuda com seu pedido? <span className="text-amber-400 font-bold">suporte@tinaaldea.com.br</span>
-              </p>
-              <p className="text-[9px] text-white/30 max-w-[360px] leading-tight mt-1">
-                Aviso: Este produto é oferecido com base em tradições de clarividência e arte intuitiva para entretenimento e autoconhecimento pessoal.
-              </p>
-            </footer>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* ========================================================================= */}
-        {/* MODAL POPUP: CHECKOUT PIX                                                 */}
-        {/* ========================================================================= */}
-        {showPixModal && (
-          <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3.5 animate-in fade-in duration-200">
-            <div className="w-full max-w-[400px] bg-[#100b1e] border border-amber-400/40 rounded-2xl p-5 shadow-2xl relative text-center max-h-[95vh] overflow-y-auto">
-              <button
-                type="button"
-                onClick={() => setShowPixModal(false)}
-                className="absolute top-4 right-4 text-white/60 hover:text-white transition p-1 rounded-full bg-white/10 cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-
-              <div className="inline-flex items-center gap-1.5 bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 px-3 py-1 rounded-full text-xs font-black mb-2">
-                <span>⚡ PIX · APROVAÇÃO INSTANTÂNEA</span>
+      {/* ========================================================================= */}
+      {/* 3. TELA DE REVELAÇÃO / OFERTA APÓS CANALIZAÇÃO                            */}
+      {/* ========================================================================= */}
+      {isOfferUnlocked ? (
+        <div className="max-w-2xl mx-auto px-4 py-8 animate-in fade-in duration-300">
+          {!isDelivered ? (
+            <div className="text-center">
+              {/* Faixa de Desconto */}
+              <div className="bg-[#fff3e0] border border-amber-300 text-amber-900 py-2 px-4 rounded-xl text-xs font-bold mb-4 inline-flex items-center gap-1.5 shadow-sm">
+                <span>🎁 65% OFF aplicado para {userName || "você"}</span>
+                <span>• Expira em <strong className="text-red-600 font-mono text-sm">{formatTime(timeLeft)}</strong></span>
               </div>
 
-              <div className="text-3xl font-black text-amber-400 mt-1 font-mono">
-                R$ 27,90
-              </div>
-              <p className="text-[11px] text-white/70 mb-3">
-                Retrato hiper-realista da sua alma gêmea por Tina Aldea
-              </p>
-
-              {/* Botão Copiar PIX */}
-              <button
-                onClick={handleCopyPix}
-                className={`w-full py-4 px-3 rounded-xl font-black text-sm tracking-wide text-black flex items-center justify-center gap-2 transition cursor-pointer ${
-                  pixCopied
-                    ? "bg-[#8ff0b3]"
-                    : "bg-gradient-to-b from-[#41E877] via-[#25C55B] to-[#17A94B] text-black shadow-lg shadow-green-500/20"
-                }`}
-              >
-                {pixCopied ? (
-                  <>
-                    <Check className="w-5 h-5 text-black" />
-                    <span>CÓDIGO PIX COPIADO! ✓</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-5 h-5" />
-                    <span>COPIAR CÓDIGO PIX</span>
-                  </>
-                )}
-              </button>
-
-              {/* QR Code */}
-              <div className="bg-white p-2.5 rounded-xl my-3 flex flex-col items-center">
+              {/* Teaser do Desenho com Blur e Cadeado */}
+              <div className="relative w-full max-w-sm mx-auto aspect-[3/3.8] rounded-2xl overflow-hidden border-4 border-amber-200 shadow-2xl mb-5 bg-neutral-900">
                 <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(
-                    pixCodeString
-                  )}`}
-                  alt="QR Code Pix"
-                  className="w-32 h-32"
+                  src={chosenSketch}
+                  alt="Esboço da sua alma gêmea"
+                  className="w-full h-full object-cover filter blur-[10px] scale-105"
                 />
-                <span className="text-[10px] text-black/70 font-semibold mt-1">
-                  Aponte a câmera do aplicativo do seu banco
-                </span>
-              </div>
-
-              {/* Status pulsando */}
-              <div className="w-full flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl p-2.5 text-left mb-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping shrink-0" />
-                <div className="text-xs leading-tight">
-                  <strong className="text-white block">Aguardando pagamento…</strong>
-                  <span className="text-[10px] text-white/50">Expira em {formatTime(timeLeft)}</span>
+                <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center p-4">
+                  <div className="w-14 h-14 rounded-2xl bg-amber-400/90 flex items-center justify-center shadow-xl mb-2 animate-bounce">
+                    <Lock className="w-7 h-7 text-black" />
+                  </div>
+                  <span className="text-xs font-black text-white bg-black/75 px-3 py-1 rounded-full uppercase tracking-wider border border-white/20">
+                    DESENHO PRONTO & BLOQUEADO
+                  </span>
+                  <p className="text-[11px] text-amber-200 font-medium mt-1">
+                    Desbloqueie para visualizar em alta definição
+                  </p>
                 </div>
               </div>
 
-              {/* Simular para testes */}
+              <h1 className="text-2xl md:text-3xl font-bold font-merriweather text-gray-900 leading-tight mb-2">
+                O Retrato da Sua Alma Gêmea Foi Concluído!
+              </h1>
+              <p className="text-sm text-gray-600 mb-6">
+                Tina Aldea captou a essência facial, o olhar e a aura da pessoa destinada a você.
+              </p>
+
+              {/* Tabela de Preço / Checkout Box */}
+              <div className="bg-[#fcfaf7] border border-amber-200/80 rounded-2xl p-5 text-left shadow-lg mb-6">
+                <div className="space-y-2 text-xs md:text-sm font-medium border-b border-gray-200 pb-4 mb-4">
+                  <div className="flex justify-between text-gray-700">
+                    <span>Retrato a Lápis em Alta Resolução</span>
+                    <span className="line-through text-gray-400">R$ 97,00</span>
+                  </div>
+                  <div className="flex justify-between text-gray-700">
+                    <span>Leitura Psíquica de Personalidade e Hábitos</span>
+                    <span className="line-through text-gray-400">R$ 49,00</span>
+                  </div>
+                  <div className="flex justify-between text-gray-700">
+                    <span>Previsão de Onde e Quando Vocês Vão Se Conhecer</span>
+                    <span className="line-through text-gray-400">R$ 39,00</span>
+                  </div>
+                  <div className="flex justify-between text-emerald-700 font-bold">
+                    <span>Desconto Especial de Hoje (65% OFF)</span>
+                    <span>- R$ 157,10</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <span className="text-base font-bold text-gray-900 block font-merriweather">Total Hoje</span>
+                    <span className="text-[11px] text-gray-500">Pagamento único via PIX • Sem mensalidade</span>
+                  </div>
+                  <div className="text-2xl md:text-3xl font-black text-emerald-600 font-mono">
+                    R$ 27,90
+                  </div>
+                </div>
+
+                {/* PIX Copia e Cola & QR Code */}
+                <div className="bg-white border border-gray-200 rounded-xl p-4 text-center">
+                  <span className="text-xs font-bold text-emerald-600 block mb-2">
+                    ⚡ PAGAMENTO RÁPIDO VIA PIX · APROVAÇÃO NA HORA
+                  </span>
+
+                  <button
+                    onClick={handleCopyPix}
+                    className={`w-full py-4 px-3 rounded-xl font-black text-sm tracking-wide text-black flex items-center justify-center gap-2 transition cursor-pointer mb-3 shadow-md ${
+                      pixCopied
+                        ? "bg-[#8ff0b3]"
+                        : "bg-gradient-to-b from-[#41E877] via-[#25C55B] to-[#17A94B] text-black hover:brightness-105"
+                    }`}
+                  >
+                    {pixCopied ? (
+                      <>
+                        <Check className="w-5 h-5 text-black" />
+                        <span>CÓDIGO PIX COPIADO! ✓</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-5 h-5" />
+                        <span>COPIAR CÓDIGO PIX</span>
+                      </>
+                    )}
+                  </button>
+
+                  <div className="bg-white p-2.5 rounded-xl border border-gray-100 inline-block mx-auto">
+                    <img
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(
+                        pixCode
+                      )}`}
+                      alt="QR Code Pix"
+                      className="w-32 h-32 mx-auto"
+                    />
+                    <span className="text-[10px] text-gray-500 font-semibold mt-1 block">
+                      Aponte a câmera do aplicativo do seu banco
+                    </span>
+                  </div>
+
+                  {/* Simulação para teste */}
+                  <button
+                    onClick={() => setIsDelivered(true)}
+                    className="text-xs text-amber-700 underline opacity-85 hover:opacity-100 mt-3 cursor-pointer block mx-auto"
+                  >
+                    ⚡ Simular confirmação (Ver resultado final desbloqueado)
+                  </button>
+                </div>
+              </div>
+
+              {/* Botão de Voltar */}
               <button
                 onClick={() => {
-                  setShowPixModal(false);
-                  setStep("delivered");
+                  setIsOfferUnlocked(false);
+                  setIsDelivered(false);
                 }}
-                className="text-xs text-amber-400 underline opacity-85 hover:opacity-100 my-1 cursor-pointer block mx-auto"
+                className="text-xs text-gray-400 hover:text-gray-600 underline"
               >
-                ⚡ Simular confirmação (Ver resultado final)
+                ← Voltar para a página inicial
               </button>
             </div>
-          </div>
-        )}
-
-        {/* ========================================================================= */}
-        {/* ETAPA 5: DESENHO ENTREGUE E REVELADO                                      */}
-        {/* ========================================================================= */}
-        {step === "delivered" && (
-          <div className="w-full flex-1 flex flex-col items-center justify-between text-center animate-in zoom-in-95 duration-500 py-4">
-            <div className="w-full flex flex-col items-center">
-              <span className="text-xs font-bold text-emerald-400 bg-emerald-400/10 px-3 py-1 rounded-full border border-emerald-400/20 mb-2">
+          ) : (
+            /* Tela Desbloqueada / Entregue */
+            <div className="text-center animate-in zoom-in-95 duration-500">
+              <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full border border-emerald-300 mb-2 inline-block">
                 ✓ Pagamento Confirmado
               </span>
-              <h1 className="text-2xl sm:text-3xl font-black text-white font-cinzel">
+              <h1 className="text-2xl md:text-3xl font-bold font-merriweather text-gray-900 mb-1">
                 Aqui Está a Sua Alma Gêmea!
               </h1>
-              <p className="text-xs text-purple-200/80 mt-1 mb-4">
-                Enviamos também uma cópia no seu WhatsApp ({whatsapp || "cadastrado"}) e e-mail.
+              <p className="text-sm text-gray-600 mb-5">
+                Cópia enviada também para seu WhatsApp ({whatsapp || "cadastrado"}) e e-mail.
               </p>
 
-              {/* Retrato sem blur em alta resolução */}
-              <div className="w-full rounded-2xl overflow-hidden border-2 border-amber-400/80 shadow-2xl relative bg-black aspect-[16/11] mb-4">
+              <div className="w-full max-w-sm mx-auto aspect-[3/3.8] rounded-2xl overflow-hidden border-4 border-amber-300 shadow-2xl mb-5 bg-black">
                 <img
-                  src={sketchImage}
+                  src={chosenSketch}
                   alt="Sua alma gêmea revelada"
                   className="w-full h-full object-cover"
                 />
               </div>
 
-              {/* Dossiê revelado */}
-              <div className="w-full bg-[#130d24] border border-amber-400/30 rounded-xl p-3.5 text-left mb-4">
-                <h4 className="text-xs font-black text-amber-300 uppercase tracking-wider mb-1">
+              <div className="bg-[#fcfaf7] border border-amber-200 rounded-xl p-4 text-left mb-6 max-w-md mx-auto">
+                <h4 className="text-xs font-bold text-amber-800 uppercase tracking-wider mb-2">
                   🔮 Resumo da Leitura Psíquica de Tina Aldea
                 </h4>
-                <ul className="text-xs text-white/80 space-y-1.5">
-                  <li>• <strong>Conexão Astral:</strong> Alta compatibilidade com sua energia de {zodiac.name}.</li>
-                  <li>• <strong>Traços Marcantes:</strong> Olhar acolhedor, sorriso espontâneo e postura protetora.</li>
-                  <li>• <strong>Quando Vocês Vão Se Conhecer:</strong> As cartas apontam um encontro em um local público ou evento social nas próximas semanas.</li>
+                <ul className="text-xs text-gray-700 space-y-2">
+                  <li>• <strong>Sintonia Astral:</strong> Alta conexão com a vibração de {zodiac.name}.</li>
+                  <li>• <strong>Traços Marcantes:</strong> Olhar acolhedor, sorriso sincero e energia protetora.</li>
+                  <li>• <strong>Momento do Encontro:</strong> O destino aponta um cruzamento de caminhos em local social nas próximas semanas.</li>
                 </ul>
               </div>
 
-              {/* Botões de Ação */}
-              <div className="w-full flex flex-col gap-2.5 mb-6">
+              <div className="max-w-xs mx-auto space-y-2">
                 <a
-                  href={sketchImage}
+                  href={chosenSketch}
                   download="minha-alma-gemea-tina-aldea.jpg"
                   target="_blank"
                   rel="noreferrer"
-                  className="w-full py-4 rounded-xl font-black text-sm bg-amber-400 hover:bg-amber-300 text-black shadow-lg flex items-center justify-center gap-2 active:scale-98 transition cursor-pointer"
+                  className="w-full py-4 rounded-xl font-bold text-sm bg-[#4CAF50] hover:bg-[#45a049] text-white shadow-lg flex items-center justify-center gap-2 transition"
                 >
                   <Download className="w-4 h-4" />
                   <span>Baixar Retrato em Alta Resolução</span>
@@ -1201,35 +385,731 @@ function TinaAldeaSoulmateFunnel() {
 
                 <button
                   onClick={() => {
-                    if (navigator.share) {
-                      navigator.share({
-                        title: "Minha Alma Gêmea por Tina Aldea",
-                        url: window.location.href,
-                      });
-                    } else {
-                      alert("Link copiado para compartilhar!");
-                    }
+                    setIsOfferUnlocked(false);
+                    setIsDelivered(false);
                   }}
-                  className="w-full py-3 rounded-xl font-bold text-xs bg-white/10 text-white flex items-center justify-center gap-2 hover:bg-white/15 transition cursor-pointer"
+                  className="text-xs text-gray-400 hover:text-gray-600 underline block mx-auto pt-2"
                 >
-                  <Share2 className="w-3.5 h-3.5" />
-                  <span>Compartilhar no WhatsApp</span>
-                </button>
-
-                <button
-                  onClick={() => {
-                    setStep("hero");
-                    setQuizStep(1);
-                  }}
-                  className="mt-2 text-xs text-white/50 underline hover:text-white cursor-pointer"
-                >
-                  Fazer nova consulta ou canalização
+                  Fazer nova consulta
                 </button>
               </div>
             </div>
+          )}
+        </div>
+      ) : (
+        /* ========================================================================= */
+        /* 4. LANDING PAGE PRINCIPAL IDENTICA AO OFICIAL                             */
+        /* ========================================================================= */
+        <main>
+          {/* HERO SECTION (#FDF8F3) */}
+          <section className="bg-[#FDF8F3] pt-6 pb-12 md:pb-16 px-5 text-center">
+            <div className="max-w-2xl mx-auto">
+              {/* Foto da Tina Aldea em Círculo / Moldura */}
+              <div className="mb-6">
+                <img
+                  src="/tina-profile.jpg"
+                  alt="Tina Aldea - Psychic & Soulmate Sketch Artist"
+                  className="w-40 h-40 md:w-44 md:h-44 mx-auto rounded-full object-cover shadow-xl border-4 border-white"
+                />
+              </div>
+
+              {/* Top Badge */}
+              <p className="text-xs md:text-sm uppercase tracking-[3px] text-gray-500 font-semibold mb-3 font-opensans">
+                A ARTISTA PSÍQUICA E RETRATISTA Nº 1 DE ALMAS GÊMEAS
+              </p>
+
+              {/* Main Headline (Merriweather) */}
+              <h1 className="text-2xl md:text-4xl lg:text-[40px] text-gray-900 leading-tight mb-4 font-merriweather">
+                "Conheci Minha Alma Gêmea em Duas Semanas Após Receber o Desenho da Tina Aldea"
+              </h1>
+
+              {/* Subheadline */}
+              <p className="text-base md:text-lg text-gray-600 mb-8 max-w-xl mx-auto font-opensans leading-relaxed">
+                Vou desenhar sua Alma Gêmea Destinada em 24 horas e revelar quando e onde vocês vão se conhecer
+              </p>
+
+              {/* Botão de CTA Verde Oficial (#4CAF50) */}
+              <button
+                type="button"
+                onClick={() => {
+                  setIsQuizOpen(true);
+                  setQuizStep(1);
+                }}
+                className="bg-[#4CAF50] hover:bg-[#45a049] text-white font-bold py-4 px-8 md:px-10 text-base md:text-lg rounded-xl shadow-lg mx-auto flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95 cursor-pointer font-opensans"
+              >
+                <Sparkles className="w-5 h-5" />
+                <span>INICIAR MEU DESENHO DA ALMA GÊMEA &gt;</span>
+              </button>
+
+              {/* Delivery Note */}
+              <p className="text-xs md:text-sm text-gray-500 mt-3 font-opensans">
+                Entregue com Amor e Intuição em 24 Horas
+              </p>
+
+              {/* Avaliação e Prova Social com Avatares */}
+              <div className="mt-8 flex flex-col items-center gap-2">
+                <div className="flex justify-center gap-1 mb-1">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                  ))}
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <div className="flex -space-x-2.5">
+                    <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Cliente" className="w-8 h-8 rounded-full border-2 border-white object-cover shadow-sm" />
+                    <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Cliente" className="w-8 h-8 rounded-full border-2 border-white object-cover shadow-sm" />
+                    <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Cliente" className="w-8 h-8 rounded-full border-2 border-white object-cover shadow-sm" />
+                    <img src="https://randomuser.me/api/portraits/men/75.jpg" alt="Cliente" className="w-8 h-8 rounded-full border-2 border-white object-cover shadow-sm" />
+                    <img src="https://randomuser.me/api/portraits/women/17.jpg" alt="Cliente" className="w-8 h-8 rounded-full border-2 border-white object-cover shadow-sm" />
+                  </div>
+                  <span className="text-sm text-gray-600 font-opensans">
+                    + <strong className="text-gray-900 font-bold">{clientCount.toLocaleString("pt-BR")}</strong> clientes satisfeitas
+                  </span>
+                </div>
+
+                <p className="text-xs text-gray-500 font-opensans">
+                  Amado por milhares de pessoas ao redor do mundo
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {/* SECTION: COMO FUNCIONA (#1A1A2E - DEEP NAVY) */}
+          <section className="py-14 md:py-16 px-5 bg-[#1a1a2e] text-white">
+            <div className="max-w-3xl mx-auto text-center">
+              <h2 className="text-2xl md:text-3xl mb-12 font-merriweather font-bold">
+                Como Funciona
+              </h2>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-6 text-center">
+                {/* Passo 1 */}
+                <div className="flex flex-col items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-[#4CAF50] flex items-center justify-center text-xl font-bold shadow-md">
+                    1
+                  </div>
+                  <h3 className="text-lg font-bold font-merriweather">Responda ao Quiz</h3>
+                  <p className="text-sm text-gray-300 font-opensans leading-relaxed">
+                    Responda a algumas perguntas simples para que eu possa sintonizar a sua energia cósmica.
+                  </p>
+                </div>
+
+                {/* Passo 2 */}
+                <div className="flex flex-col items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-[#4CAF50] flex items-center justify-center text-xl font-bold shadow-md">
+                    2
+                  </div>
+                  <h3 className="text-lg font-bold font-merriweather">Canalizo Sua Alma Gêmea</h3>
+                  <p className="text-sm text-gray-300 font-opensans leading-relaxed">
+                    Usando minhas habilidades psíquicas e visões astrais, sintonizo e desenho quem é sua alma gêmea.
+                  </p>
+                </div>
+
+                {/* Passo 3 */}
+                <div className="flex flex-col items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-[#4CAF50] flex items-center justify-center text-xl font-bold shadow-md">
+                    3
+                  </div>
+                  <h3 className="text-lg font-bold font-merriweather">Entrega em até 24 Horas</h3>
+                  <p className="text-sm text-gray-300 font-opensans leading-relaxed">
+                    Receba seu desenho hiper-realista e leitura detalhada no seu e-mail e WhatsApp.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* SECTION: O QUE MEUS CLIENTES DIZEM (WHITE) */}
+          <section className="py-14 md:py-16 px-5 bg-white">
+            <div className="max-w-3xl mx-auto">
+              <h2 className="text-2xl md:text-3xl text-center text-gray-900 mb-2 font-merriweather font-bold">
+                O Que Meus Clientes Dizem
+              </h2>
+              <p className="text-center text-gray-500 mb-10 text-sm md:text-base font-opensans">
+                Histórias reais de pessoas reais que encontraram a sua alma gêmea
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {[
+                  {
+                    name: "Alexandre & Bruna",
+                    city: "São Paulo, SP",
+                    text: "Recebi o desenho da Tina em julho. No mês seguinte, conheci a Bruna num seminário de trabalho. O formato dos olhos e o queixo eram IDÊNTICOS ao desenho. Ficamos chocados!",
+                    sketchImg: "/sketch-1.jpg",
+                  },
+                  {
+                    name: "Angela & Rodrigo",
+                    city: "Belo Horizonte, MG",
+                    text: "Eu não costumo acreditar muito nessas coisas, mas a riqueza de detalhes na leitura de personalidade me arrepiou. Conheci exatamente a pessoa descrita 3 semanas depois.",
+                    sketchImg: "/sketch-2.jpg",
+                  },
+                  {
+                    name: "Júlia & Rafael",
+                    city: "Curitiba, PR",
+                    text: "O desenho da Tina me deu esperança quando eu já estava desiludida. Quando encontrei o Rafael, senti na hora que era ele. Estamos juntos há 1 ano!",
+                    sketchImg: "/sketch-2.jpg",
+                  },
+                  {
+                    name: "Larissa & Gabriel",
+                    city: "Rio de Janeiro, RJ",
+                    text: "A entrega no WhatsApp foi super rápida. Imprimi o desenho e guardei. Dois meses depois esbarrei com ele na cafeteria perto de casa. Perfeito demais!",
+                    sketchImg: "/sketch-1.jpg",
+                  },
+                ].map((dep, idx) => (
+                  <div key={idx} className="bg-[#fcfaf7] border border-gray-200 rounded-xl p-5 shadow-sm flex flex-col justify-between">
+                    <div>
+                      <div className="flex gap-1 text-yellow-400 mb-2">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} className="w-4 h-4 fill-yellow-400" />
+                        ))}
+                      </div>
+                      <p className="text-sm text-gray-700 font-opensans italic mb-4 leading-relaxed">
+                        "{dep.text}"
+                      </p>
+                    </div>
+
+                    <div className="flex items-center justify-between border-t border-gray-200 pt-3">
+                      <div>
+                        <strong className="text-xs font-bold text-gray-900 block font-merriweather">{dep.name}</strong>
+                        <span className="text-[10px] text-gray-500">{dep.city}</span>
+                      </div>
+                      <img
+                        src={dep.sketchImg}
+                        alt="Desenho entregue"
+                        className="w-10 h-10 rounded-lg object-cover border border-amber-300 shadow-sm"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* SECTION: O QUE VOCÊ RECEBE (#FDF8F3) */}
+          <section className="py-14 md:py-16 px-5 bg-[#FDF8F3]">
+            <div className="max-w-2xl mx-auto">
+              <h2 className="text-2xl md:text-3xl text-center text-gray-900 mb-2 font-merriweather font-bold">
+                O Que Você Recebe
+              </h2>
+              <p className="text-center text-gray-500 mb-10 text-sm md:text-base font-opensans">
+                Sua experiência completa da alma gêmea, entregue diretamente no seu e-mail e WhatsApp
+              </p>
+
+              <div className="space-y-4">
+                {[
+                  {
+                    icon: Palette,
+                    title: "Desenho Psíquico da Alma Gêmea",
+                    desc: "Um retrato detalhado a lápis em altíssima resolução, canalizado através de visão psíquica e intuição cósmica.",
+                  },
+                  {
+                    icon: FileText,
+                    title: "Leitura Psíquica Detalhada",
+                    desc: "Descrição aprofundada da personalidade, traços marcantes, jeito de falar e as circunstâncias de como vocês vão se cruzar.",
+                  },
+                  {
+                    icon: Gift,
+                    title: "Bônus: Guia de Compatibilidade da Alma Gêmea",
+                    desc: "Descubra a conexão energética, pontos fortes e mapa de sinastria entre você e sua alma gêmea.",
+                  },
+                  {
+                    icon: Clock,
+                    title: "Entrega em 24 Horas",
+                    desc: "Receba tudo no seu e-mail e WhatsApp em até 24 horas (opção expressa de 6 horas disponível).",
+                  },
+                ].map((item, i) => (
+                  <div key={i} className="flex gap-4 items-start bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
+                    <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
+                      <item.icon className="w-5 h-5 text-[#4CAF50]" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-gray-900 text-base font-merriweather">{item.title}</h3>
+                      <p className="text-sm text-gray-500 mt-1 font-opensans leading-relaxed">{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="text-center mt-8">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsQuizOpen(true);
+                    setQuizStep(1);
+                  }}
+                  className="bg-[#4CAF50] hover:bg-[#45a049] text-white font-bold py-4 px-10 text-base md:text-lg rounded-xl shadow-lg inline-flex items-center gap-2 transition-all hover:scale-105 active:scale-95 cursor-pointer font-opensans"
+                >
+                  <Sparkles className="w-5 h-5" />
+                  <span>INICIAR MEU DESENHO DA ALMA GÊMEA &gt;</span>
+                </button>
+                <p className="text-xs text-gray-400 mt-3 font-opensans">
+                  Compra Segura — 30 Dias de Garantia Incondicional de Reembolso
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {/* SECTION: MEUS TRABALHOS RECENTES (WHITE) */}
+          <section className="py-14 md:py-16 px-5 bg-white">
+            <div className="max-w-2xl mx-auto text-center">
+              <h3 className="text-2xl md:text-3xl text-gray-900 mb-2 font-merriweather font-bold">
+                Meus Trabalhos Recentes
+              </h3>
+              <p className="text-gray-600 mb-8 text-sm md:text-base font-opensans">
+                Veja abaixo alguns exemplos de desenhos canalizados em {currentMonthName} de {currentYear}:
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-lg mx-auto">
+                <div className="bg-[#fcfaf7] p-3 rounded-2xl border border-gray-200 shadow-md">
+                  <div className="aspect-[3/3.8] rounded-xl overflow-hidden mb-2 bg-neutral-900">
+                    <img
+                      src="/sketch-1.jpg"
+                      alt="Exemplo de desenho 1"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <span className="text-xs font-bold text-gray-700 block font-merriweather">
+                    Retrato Masculino Canalizado
+                  </span>
+                  <span className="text-[10px] text-gray-400 font-opensans">
+                    Entregue em 18 horas
+                  </span>
+                </div>
+
+                <div className="bg-[#fcfaf7] p-3 rounded-2xl border border-gray-200 shadow-md">
+                  <div className="aspect-[3/3.8] rounded-xl overflow-hidden mb-2 bg-neutral-900">
+                    <img
+                      src="/sketch-2.jpg"
+                      alt="Exemplo de desenho 2"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <span className="text-xs font-bold text-gray-700 block font-merriweather">
+                    Retrato Feminino Canalizado
+                  </span>
+                  <span className="text-[10px] text-gray-400 font-opensans">
+                    Entregue em 14 horas
+                  </span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* SECTION: PERGUNTAS FREQUENTES (FAQ) */}
+          <section className="py-14 md:py-16 px-5 bg-[#FDF8F3]">
+            <div className="max-w-2xl mx-auto">
+              <h2 className="text-2xl md:text-3xl text-center text-gray-900 mb-8 font-merriweather font-bold">
+                Perguntas Frequentes
+              </h2>
+
+              <div className="space-y-3">
+                {[
+                  {
+                    q: "Como funciona o Desenho da Alma Gêmea?",
+                    a: "Utilizo leituras intuitivas de energia para sintonizar as frequências associadas a você. Essas energias me guiam na visualização e desenho detalhado da representação da sua alma gêmea em papel, além de uma leitura psíquica profunda sobre quem ela é.",
+                  },
+                  {
+                    q: "Qual é o valor do pacote?",
+                    a: "O pacote completo com o desenho hiper-realista, a leitura psíquica e os bônus está com valor promocional de apenas R$ 27,90 (preço normal R$ 147,00). Pagamento único e sem assinaturas.",
+                  },
+                  {
+                    q: "Por que devo confiar em Tina Aldea?",
+                    a: "Sou Tina Aldea, médium e retratista com um dom natural aperfeiçoado desde a infância, transmitido por gerações em minha família. Mais de 43.000 clientes em todo o mundo já confiaram em minhas leituras para encontrar o amor verdadeiro.",
+                  },
+                  {
+                    q: "Como posso realizar o pagamento?",
+                    a: "Aceitamos PIX com aprovação imediata e cartões. O pagamento é 100% seguro, processado com criptografia bancária e sem cobranças não autorizadas.",
+                  },
+                  {
+                    q: "Em quanto tempo vou receber meu desenho?",
+                    a: "Seu desenho e leitura detalhada serão enviados diretamente para o seu WhatsApp e e-mail em até 24 horas.",
+                  },
+                ].map((faq, idx) => (
+                  <div key={idx} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-xs">
+                    <button
+                      type="button"
+                      onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
+                      className="w-full p-4 text-left font-bold text-sm text-gray-900 flex items-center justify-between gap-3 cursor-pointer hover:bg-gray-50 transition font-merriweather"
+                    >
+                      <span>{faq.q}</span>
+                      <ChevronDown
+                        className={`w-4 h-4 text-gray-400 transition-transform ${openFaq === idx ? "rotate-180" : ""}`}
+                      />
+                    </button>
+                    {openFaq === idx && (
+                      <div className="p-4 pt-0 text-sm text-gray-600 font-opensans leading-relaxed border-t border-gray-100">
+                        {faq.a}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* SECTION: AVALIAÇÃO FINAL 4.9/5 E BOTÃO FINAL */}
+          <section className="py-14 md:py-16 px-5 bg-white text-center">
+            <div className="max-w-md mx-auto">
+              <div className="flex justify-center gap-1 mb-2">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-6 h-6 fill-yellow-400 text-yellow-400" />
+                ))}
+              </div>
+
+              <p className="text-3xl font-extrabold text-gray-900 font-merriweather">
+                4.9 / 5
+              </p>
+              <p className="text-sm text-gray-500 mt-1 mb-8 font-opensans">
+                Baseado em mais de 43.000 clientes satisfeitas
+              </p>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsQuizOpen(true);
+                  setQuizStep(1);
+                }}
+                className="bg-[#4CAF50] hover:bg-[#45a049] text-white font-bold py-5 px-10 text-lg md:text-xl rounded-xl shadow-lg w-full flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95 cursor-pointer font-opensans"
+              >
+                <Sparkles className="w-5 h-5" />
+                <span>INICIAR MEU DESENHO DA ALMA GÊMEA &gt;</span>
+              </button>
+
+              <p className="text-xs text-gray-400 mt-3 font-opensans">
+                Compra Sem Risco — 30 Dias de Garantia de Devolução do Dinheiro
+              </p>
+            </div>
+          </section>
+
+          {/* FOOTER OFICIAL */}
+          <footer className="bg-gray-100 py-10 px-4 text-center text-xs text-gray-500 font-opensans">
+            <div className="mb-4">
+              <h4 className="text-base font-bold text-gray-800 font-merriweather">
+                Tina Aldea
+              </h4>
+              <span className="text-[11px] text-gray-500">
+                Psychic & Soulmate Sketch Artist
+              </span>
+            </div>
+
+            <div className="flex justify-center gap-4 mb-4 flex-wrap text-gray-600">
+              <a href="#" className="hover:text-gray-900">Política de Privacidade</a>
+              <span>•</span>
+              <a href="#" className="hover:text-gray-900">Termos de Uso</a>
+              <span>•</span>
+              <a href="#" className="hover:text-gray-900">Garantia e Reembolso</a>
+            </div>
+
+            <p className="text-[11px] text-gray-400 max-w-md mx-auto leading-relaxed">
+              Aviso Legal: Os serviços de Tina Aldea são baseados em intuição e clarividência artística para fins de entretenimento e reflexão pessoal. Todos os direitos reservados © {currentYear}.
+            </p>
+          </footer>
+        </main>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 5. MODAL POPUP DO QUIZ (IDENTICO AO OFICIAL QUANDO CLICA NO CTA)           */}
+      {/* ========================================================================= */}
+      {isQuizOpen && (
+        <div className="fixed inset-0 z-50 bg-white overflow-y-auto animate-in fade-in duration-200">
+          {/* Header Escuro do Modal (#2D2D2D) */}
+          <div className="bg-[#2D2D2D] text-white p-5 text-center relative">
+            <button
+              onClick={() => setIsQuizOpen(false)}
+              className="absolute top-4 right-4 text-white/70 hover:text-white p-1 rounded-full cursor-pointer"
+            >
+              <X className="w-6 h-6" />
+            </button>
+            <p className="text-xs text-gray-300 uppercase tracking-widest font-opensans font-semibold">
+              Quase Completo...
+            </p>
+            <h3 className="text-base md:text-lg font-bold mt-1.5 leading-snug font-merriweather max-w-md mx-auto">
+              Responda a algumas perguntas simples para que eu possa desenhar sua Alma Gêmea com precisão...
+            </h3>
           </div>
-        )}
-      </main>
+
+          <div className="max-w-md mx-auto px-5 py-6">
+            {/* Barra de Progresso com 5 Segmentos Verdes (#4CAF50) */}
+            <div className="flex gap-1.5 mb-6">
+              {[1, 2, 3, 4, 5].map((st) => (
+                <div
+                  key={st}
+                  className={`h-2 flex-1 rounded-full transition-all duration-300 ${
+                    st <= quizStep ? "bg-[#4CAF50]" : "bg-gray-200"
+                  }`}
+                />
+              ))}
+            </div>
+
+            {/* ETAPA 1 DO QUIZ: INTERESSE */}
+            {quizStep === 1 && (
+              <div className="space-y-4 animate-in fade-in">
+                <h4 className="font-bold text-gray-900 text-lg font-merriweather">
+                  Em quem você tem interesse no amor?
+                </h4>
+                <p className="text-sm text-gray-500 font-opensans">
+                  Toque para selecionar sua preferência afetiva:
+                </p>
+
+                <div className="space-y-3">
+                  {[
+                    { val: "men", label: "Estou em busca de Homens" },
+                    { val: "women", label: "Estou em busca de Mulheres" },
+                    { val: "both", label: "Estou em busca de Ambos / Aberto(a)" },
+                  ].map((opt) => (
+                    <button
+                      key={opt.val}
+                      type="button"
+                      onClick={() => {
+                        setInterest(opt.val as any);
+                        setQuizStep(2);
+                      }}
+                      className={`w-full p-4 text-left border-2 rounded-xl transition-all text-base font-semibold cursor-pointer ${
+                        interest === opt.val
+                          ? "border-[#4CAF50] bg-green-50 text-gray-900 shadow-sm"
+                          : "border-gray-200 hover:border-[#4CAF50] hover:bg-green-50 text-gray-800"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ETAPA 2 DO QUIZ: DATA DE NASCIMENTO */}
+            {quizStep === 2 && (
+              <div className="space-y-4 animate-in fade-in">
+                <h4 className="font-bold text-gray-900 text-lg font-merriweather">
+                  Quando você nasceu?
+                </h4>
+                <p className="text-sm text-gray-500 font-opensans">
+                  Seu mapa astral ajuda a sintonizar a conexão exata:
+                </p>
+
+                <div className="grid grid-cols-3 gap-2">
+                  {/* Dia */}
+                  <div>
+                    <label className="text-[11px] text-gray-500 font-bold block mb-1">Dia</label>
+                    <select
+                      value={birthDay}
+                      onChange={(e) => setBirthDay(e.target.value)}
+                      className="w-full py-3 px-2 rounded-xl border border-gray-300 text-sm font-semibold bg-white text-gray-800 focus:outline-none focus:border-[#4CAF50]"
+                    >
+                      {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
+                        <option key={d} value={d}>
+                          {d}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Mês */}
+                  <div>
+                    <label className="text-[11px] text-gray-500 font-bold block mb-1">Mês</label>
+                    <select
+                      value={birthMonth}
+                      onChange={(e) => setBirthMonth(e.target.value)}
+                      className="w-full py-3 px-2 rounded-xl border border-gray-300 text-sm font-semibold bg-white text-gray-800 focus:outline-none focus:border-[#4CAF50]"
+                    >
+                      {MONTH_NAMES.map((m, idx) => (
+                        <option key={m} value={idx + 1}>
+                          {m}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Ano */}
+                  <div>
+                    <label className="text-[11px] text-gray-500 font-bold block mb-1">Ano</label>
+                    <select
+                      value={birthYear}
+                      onChange={(e) => setBirthYear(e.target.value)}
+                      className="w-full py-3 px-2 rounded-xl border border-gray-300 text-sm font-semibold bg-white text-gray-800 focus:outline-none focus:border-[#4CAF50]"
+                    >
+                      {Array.from({ length: 70 }, (_, i) => 2006 - i).map((y) => (
+                        <option key={y} value={y}>
+                          {y}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Badge Signo Solar */}
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">{zodiac.symbol}</span>
+                    <div>
+                      <span className="text-xs font-bold text-amber-900 block">
+                        Signo: {zodiac.name} ({zodiac.element})
+                      </span>
+                      <span className="text-[10px] text-gray-500">Energia astrológica mapeada</span>
+                    </div>
+                  </div>
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setQuizStep(3)}
+                  className="w-full py-4 bg-[#4CAF50] hover:bg-[#45a049] text-white font-bold rounded-xl text-base shadow-md cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <span>Continuar</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
+            {/* ETAPA 3 DO QUIZ: ETNIA / PREFERÊNCIA */}
+            {quizStep === 3 && (
+              <div className="space-y-4 animate-in fade-in">
+                <h4 className="font-bold text-gray-900 text-lg font-merriweather">
+                  Qual é a ascendência ou etnia da sua preferência?
+                </h4>
+                <p className="text-sm text-gray-500 font-opensans">
+                  Isso ajuda Tina a captar traços fisionômicos mais precisos:
+                </p>
+
+                <div className="space-y-2.5">
+                  {[
+                    "Qualquer / Deixo o Destino Escolher",
+                    "Branca / Europeia",
+                    "Latina / Mista",
+                    "Negra / Afrodescendente",
+                    "Asiática",
+                    "Indígena / Nativa",
+                  ].map((et) => (
+                    <button
+                      key={et}
+                      type="button"
+                      onClick={() => {
+                        setEthnicity(et);
+                        setQuizStep(4);
+                      }}
+                      className={`w-full p-3.5 text-left border rounded-xl transition text-sm font-semibold cursor-pointer ${
+                        ethnicity === et
+                          ? "border-[#4CAF50] bg-green-50 text-gray-900 font-bold"
+                          : "border-gray-200 hover:border-[#4CAF50] hover:bg-green-50 text-gray-700"
+                      }`}
+                    >
+                      {et}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ETAPA 4 DO QUIZ: NOME */}
+            {quizStep === 4 && (
+              <div className="space-y-4 animate-in fade-in">
+                <h4 className="font-bold text-gray-900 text-lg font-merriweather">
+                  Como você se chama?
+                </h4>
+                <p className="text-sm text-gray-500 font-opensans">
+                  Seu primeiro nome é usado para canalizar a vibração nominal:
+                </p>
+
+                <input
+                  type="text"
+                  value={userName}
+                  onChange={(e) => setUserName(e.target.value)}
+                  placeholder="Digite seu nome aqui..."
+                  className="w-full h-14 px-4 rounded-xl border border-gray-300 text-base font-semibold focus:outline-none focus:border-[#4CAF50]"
+                  autoFocus
+                />
+
+                <button
+                  type="button"
+                  disabled={!userName.trim()}
+                  onClick={() => setQuizStep(5)}
+                  className={`w-full py-4 rounded-xl text-base font-bold shadow-md flex items-center justify-center gap-2 cursor-pointer ${
+                    userName.trim()
+                      ? "bg-[#4CAF50] hover:bg-[#45a049] text-white"
+                      : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  <span>Continuar</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
+            {/* ETAPA 5 DO QUIZ: ENTREGA (WHATSAPP E E-MAIL) */}
+            {quizStep === 5 && (
+              <div className="space-y-4 animate-in fade-in">
+                <h4 className="font-bold text-gray-900 text-lg font-merriweather">
+                  Onde Tina deve entregar o seu desenho?
+                </h4>
+                <p className="text-sm text-gray-500 font-opensans">
+                  Você verá a revelação instantaneamente aqui na tela e receberá uma cópia de alta resolução:
+                </p>
+
+                <div className="space-y-3 text-left">
+                  <div>
+                    <label className="text-xs font-bold text-gray-700 block mb-1">
+                      Seu WhatsApp com DDD:
+                    </label>
+                    <div className="relative">
+                      <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <input
+                        type="tel"
+                        value={whatsapp}
+                        onChange={(e) => handlePhoneMask(e.target.value)}
+                        placeholder="(11) 99999-9999"
+                        className="w-full pl-10 pr-4 py-3.5 rounded-xl border border-gray-300 text-sm font-semibold focus:outline-none focus:border-[#4CAF50]"
+                        autoFocus
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-bold text-gray-700 block mb-1">
+                      Seu melhor e-mail:
+                    </label>
+                    <div className="relative">
+                      <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="seu@email.com"
+                        className="w-full pl-10 pr-4 py-3.5 rounded-xl border border-gray-300 text-sm font-semibold focus:outline-none focus:border-[#4CAF50]"
+                      />
+                    </div>
+                  </div>
+
+                  <label className="flex items-start gap-2 pt-1 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={agreeTerms}
+                      onChange={(e) => setAgreeTerms(e.target.checked)}
+                      className="mt-1 w-4 h-4 text-[#4CAF50] rounded border-gray-300"
+                    />
+                    <span className="text-xs text-gray-500 leading-tight">
+                      Confirmo que tenho 18 anos ou mais e concordo em receber o desenho da minha alma gêmea por WhatsApp e e-mail.
+                    </span>
+                  </label>
+                </div>
+
+                <button
+                  type="button"
+                  disabled={whatsapp.length < 14 || !email.includes("@") || !agreeTerms}
+                  onClick={handleStartChanneling}
+                  className={`w-full py-4 rounded-xl text-base font-bold shadow-lg flex items-center justify-center gap-2 cursor-pointer mt-2 ${
+                    whatsapp.length >= 14 && email.includes("@") && agreeTerms
+                      ? "bg-[#4CAF50] hover:bg-[#45a049] text-white active:scale-98"
+                      : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  <Sparkles className="w-5 h-5" />
+                  <span>CANALIZAR MEU DESENHO AGORA &gt;</span>
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

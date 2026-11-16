@@ -65,12 +65,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" },
-      { title: "Tina Aldea — Psychic & Soulmate Sketch Artist | Descubra Sua Alma Gêmea" },
-      { name: "description", content: "Tina Aldea é médium e artista psíquica mundialmente reconhecida. Responda ao teste rápido e receba o desenho hiper-realista da sua verdadeira alma gêmea em até 24 horas." },
-      { name: "theme-color", content: "#0c0817" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" },
+      { title: "Tina Aldea — Psychic & Soulmate Sketch Artist" },
+      { name: "description", content: "Tina Aldea is a psychic and soulmate sketch artist trusted by 43,000+ clients worldwide. Get a hand-drawn sketch and reading of the soul who is meant for you." },
+      { name: "theme-color", content: "#ffffff" },
     ],
     links: [
+      {
+        rel: "icon",
+        type: "image/png",
+        href: "/favicon.png",
+      },
       {
         rel: "stylesheet",
         href: appCss,
@@ -86,7 +91,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800;900&family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700&family=Open+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap",
       },
     ],
   }),
