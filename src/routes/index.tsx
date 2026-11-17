@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Sparkles,
   Star,
@@ -24,6 +24,9 @@ import {
   Award,
   Zap,
   ShoppingBag,
+  MessageCircle,
+  Send,
+  RefreshCw,
 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -31,8 +34,17 @@ export const Route = createFileRoute("/")({
 });
 
 type Lang = "en" | "pt";
-type FunnelView = "landing" | "offer" | "upsell" | "delivered";
-type QuizStep = 1 | 2 | 3 | 4 | 5;
+type ActiveMode = "chat" | "classic";
+type ChatPhase = "landing" | "connecting" | "chat";
+
+interface ChatMessage {
+  id: number;
+  from: "tina" | "user";
+  kind: "text" | "resonance" | "offer";
+  text?: string;
+  sign?: string;
+  target?: number;
+}
 
 const MONTHS_EN = [
   "January", "February", "March", "April", "May", "June",
@@ -59,121 +71,435 @@ function getZodiac(day: number, month: number) {
   return { name: "Pisces", symbol: "♓", element: "Water" };
 }
 
-const RECENT_PURCHASES = [
-  { name: "Sarah M.", city: "Austin, TX", time: "just now", product: "Soulmate Sketch + Bonus" },
-  { name: "Emily R.", city: "Denver, CO", time: "1 min ago", product: "Complete Soulmate Vision" },
-  { name: "Jessica T.", city: "Miami, FL", time: "2 min ago", product: "Soulmate Sketch" },
-  { name: "Ana Paula S.", city: "São Paulo, SP", time: "agora mesmo", product: "Desenho da Alma Gêmea" },
-  { name: "Mariana L.", city: "Rio de Janeiro, RJ", time: "2 min atrás", product: "Visão Completa + Bônus" },
-  { name: "Ashley K.", city: "Nashville, TN", time: "3 min ago", product: "Soulmate Sketch" },
+const CLIENT_TESTIMONIALS_CHAT = [
+  {
+    text: "And like your reading, he happens to be a doctor, he mentors other residents, and he really does have beautiful hands.",
+    tag: "After meeting him"
+  },
+  {
+    text: "THAT IS SO COOL! oh my gosh! That's crazy!! And I imagined it too! That's just great!",
+    tag: "On sketch delivery"
+  },
+  {
+    text: "Well, I feel I met him before somewhere but can't remember. A warm feeling. But we'll see if he will come to find me.",
+    tag: "After her reading"
+  },
+  {
+    text: "I have to say I am somewhat skeptical of the sketch but I guess I have to wait and see.",
+    tag: "First message from a new client"
+  },
+  {
+    text: "This man looked sort of familiar, more than others… he had a little facial hair and glasses on. Never know.",
+    tag: "On sketch delivery"
+  }
 ];
+
+const EMOTION_OPTIONS = [
+  { value: "wrong-people", en: "I keep attracting the wrong people", pt: "Continuo atraindo as pessoas erradas" },
+  { value: "waiting", en: "I feel like I've been waiting forever", pt: "Sinto que estou esperando há uma eternidade" },
+  { value: "confused", en: "I'm confused about someone in my life", pt: "Estou em dúvida sobre alguém na minha vida" },
+  { value: "given-up", en: "I've almost given up on love", pt: "Quase desisti de encontrar o amor" },
+];
+
+const EMOTION_REPLIES: Record<string, { en: string[]; pt: string[] }> = {
+  "wrong-people": {
+    en: [
+      "I hear that more often than you'd believe — but with you it lands differently.",
+      "You give fast, and you forgive faster. That's not weakness, {name}. But it is a pattern. Hold that thought — it matters for what I'm about to look at."
+    ],
+    pt: [
+      "Ouço isso com muita frequência — mas no seu caso a energia bate de forma diferente.",
+      "Você se entrega rápido e perdoa mais rápido ainda. Isso não é fraqueza, {name}. Mas é um padrão cármico. Guarde isso — é crucial para o que vou sintonizar agora."
+    ]
+  },
+  "waiting": {
+    en: [
+      "The waiting is the hardest one. Not because nothing happens — but because you start wondering if it's you.",
+      "It isn't, {name}. Timing and person are two different readings. Let me look at both."
+    ],
+    pt: [
+      "A espera é a parte mais dolorosa. Não porque nada acontece, mas porque você começa a achar que o problema é com você.",
+      "Não é, {name}. O momento certo e a pessoa certa são leituras diferentes. Vou olhar para as duas agora."
+    ]
+  },
+  "confused": {
+    en: [
+      "Someone specific… I thought so. There's a reason your mind keeps circling back to them.",
+      "Confusion usually means the connection is real but the picture is incomplete. That's exactly what a sketch is for, {name}."
+    ],
+    pt: [
+      "Alguém em mente… eu imaginei. Há uma razão energética para sua mente continuar voltando nessa pessoa.",
+      "A dúvida geralmente surge quando a conexão existe, mas o quadro está incompleto. É exatamente para isso que o desenho serve, {name}."
+    ]
+  },
+  "given-up": {
+    en: [
+      "I'm glad you told me that instead of pretending. Almost giving up is not the same as giving up, {name}.",
+      "The people who tell me this are usually closer than they think. Let me see if that's true for you."
+    ],
+    pt: [
+      "Fico feliz que tenha sido sincera(o) comigo em vez de fingir. Quase desistir não é o mesmo que desistir, {name}.",
+      "As pessoas que me dizem isso costumam estar muito mais perto do encontro do que imaginam. Deixe-me ver se isso é verdade para você."
+    ]
+  }
+};
+
+const DESIRE_OPTIONS = [
+  { value: "safe", en: "Safe — someone who finally stays", pt: "Segurança — alguém que finalmente fique" },
+  { value: "seen", en: "Passionate — someone who truly sees me", pt: "Paixão — alguém que verdadeiramente me enxergue" },
+  { value: "peace", en: "Peaceful — no more games, no more guessing", pt: "Paz — sem joguinhos, sem incertezas" }
+];
+
+const DESIRE_REPLIES: Record<string, { en: string; pt: string }> = {
+  safe: {
+    en: "Someone who stays. I'll look for steadiness in the face, {name} — it shows around the eyes.",
+    pt: "Alguém que fique. Vou procurar pela firmeza no rosto, {name} — isso sempre transparece no olhar."
+  },
+  seen: {
+    en: "To be truly seen… that's the rarest one, and the strongest pull. Good.",
+    pt: "Ser verdadeiramente vista(o)… essa é a conexão mais rara e magnética. Muito bom."
+  },
+  peace: {
+    en: "Peace. After what you've carried, {name}, that's not a small ask — it's the right one.",
+    pt: "Paz. Depois de tudo o que você carregou, {name}, não é pedir muito — é pedir o que você merece."
+  }
+};
+
+const ZODIAC_READINGS: Record<string, { en: string; pt: string }> = {
+  Aries: {
+    en: "A fire sign. You don't wait for love — which is exactly why the wrong ones chase you and the right one has to catch you still.",
+    pt: "Signo de fogo. Você não espera parada(o) — e é por isso que os errados correm atrás e o certo precisa encontrar você em paz."
+  },
+  Taurus: {
+    en: "An earth sign. You build slowly and loyally — but once someone is in, you keep the door open long after they've stopped deserving it.",
+    pt: "Signo de terra. Você constrói com lealdade — mas quando alguém entra, você mantém a porta aberta mesmo após deixarem de merecer."
+  },
+  Gemini: {
+    en: "An air sign. Your mind moves faster than your heart admits. You talk yourself out of feelings that were trying to tell you something.",
+    pt: "Signo de ar. Sua mente é ágil. Às vezes você tenta racionalizar sentimentos que o seu coração já havia percebido."
+  },
+  Cancer: {
+    en: "A water sign. You feel everything first and explain it later. Your softness is real — and it's been mistaken for an invitation.",
+    pt: "Signo de água. Você sente tudo primeiro e racionaliza depois. Sua sensibilidade é pura — e já foi mal interpretada no passado."
+  },
+  Leo: {
+    en: "A fire sign. You love loudly and generously — and you've learned to perform 'fine' better than almost anyone.",
+    pt: "Signo de fogo. Você ama com intensidade e generosidade — e aprendeu a fingir que está tudo bem melhor do que qualquer um."
+  },
+  Virgo: {
+    en: "An earth sign. You notice everything. The detail others miss is the exact detail that's been hurting you.",
+    pt: "Signo de terra. Você repara em tudo. O detalhe que os outros não percebem é exatamente o que tem mexido com você."
+  },
+  Libra: {
+    en: "An air sign. You keep the peace so well that no one asks what it costs you. In love, that bill has come due more than once.",
+    pt: "Signo de ar. Você preserva tanto a harmonia que quase ninguém pergunta o quanto isso te custa por dentro."
+  },
+  Scorpio: {
+    en: "A water sign. You don't do halfway. When you attach, it's total — which is why the endings have cut so deep.",
+    pt: "Signo de água. Você não faz nada pela metade. Quando se entrega, é por inteiro — por isso as partidas doeram tanto."
+  },
+  Sagittarius: {
+    en: "A fire sign. Freedom matters to you — but lately you've wondered if you've been running toward something or away from it.",
+    pt: "Signo de fogo. Liberdade é essencial — mas ultimamente você tem se perguntado se estava correndo em direção ou fugindo de algo."
+  },
+  Capricorn: {
+    en: "An earth sign. You hold your life together for everyone. Being held, for once, is the thing you never ask for.",
+    pt: "Signo de terra. Você segura as pontas para todo mundo. Ser cuidada(o), por uma vez, é algo que você raramente pede."
+  },
+  Aquarius: {
+    en: "An air sign. You connect deeply but on your own terms — and most people never get far enough to learn that.",
+    pt: "Signo de ar. Sua conexão é profunda e autêntica — poucos têm a sensibilidade de alcançar sua essência verdadeira."
+  },
+  Pisces: {
+    en: "A water sign. You dream in full color, love included. The world has told you to be realistic. I won't.",
+    pt: "Signo de água. Você sonha com o amor verdadeiro. O mundo pode dizer para você ser realista, mas as cartas mostram sua fé intacta."
+  }
+};
 
 function TinaAldeaExactClone() {
   const [lang, setLang] = useState<Lang>("en");
-  const [funnelView, setFunnelView] = useState<FunnelView>("landing");
-  const [isQuizOpen, setIsQuizOpen] = useState(false);
-  const [quizStep, setQuizStep] = useState<QuizStep>(1);
+  const [activeMode, setActiveMode] = useState<ActiveMode>("chat");
+  const [chatPhase, setChatPhase] = useState<ChatPhase>("landing");
 
-  // Form State
+  // Chat State
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [isTyping, setIsTyping] = useState(false);
+  const [currentInputType, setCurrentInputType] = useState<
+    "none" | "name" | "emotion" | "interest" | "confirm_women" | "desire" | "birthdate" | "ethnicity"
+  >("none");
+  const [textInputValue, setTextInputValue] = useState("");
+  const [chatZodiac, setChatZodiac] = useState<{ name: string; symbol: string; element: string }>({
+    name: "Cancer",
+    symbol: "♋",
+    element: "Water"
+  });
+  const [resonanceTarget, setResonanceTarget] = useState(94);
+  const [resonanceValue, setResonanceValue] = useState(12);
+  const [isOfferUnlocked, setIsOfferUnlocked] = useState(false);
+  const [chatTimeLeft, setChatTimeLeft] = useState(15 * 60);
+
+  // Form captured values
+  const [name, setName] = useState("");
+  const [emotion, setEmotion] = useState("waiting");
   const [interest, setInterest] = useState<"men" | "women" | "both">("men");
   const [birthDay, setBirthDay] = useState("15");
   const [birthMonth, setBirthMonth] = useState("6");
   const [birthYear, setBirthYear] = useState("1996");
-  const [ethnicity, setEthnicity] = useState("Any / Leave to Destiny");
-  const [name, setName] = useState("");
+  const [ethnicity, setEthnicity] = useState("White / Western");
   const [email, setEmail] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
-  const [agreeTerms, setAgreeTerms] = useState(true);
 
-  // Channeling State
-  const [isChanneling, setIsChanneling] = useState(false);
-  const [channelProgress, setChannelProgress] = useState(0);
-
-  // Offer Page Options
-  const [selectedPlan, setSelectedPlan] = useState<"standard" | "complete">("standard");
-  const [addExpressDelivery, setAddExpressDelivery] = useState(false);
+  // Plan Selection & Checkout
+  const [selectedPlan, setSelectedPlan] = useState<"standard" | "complete">("complete");
   const [pixCopied, setPixCopied] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(15 * 60);
+  const [isDelivered, setIsDelivered] = useState(false);
+  const [isUpsellView, setIsUpsellView] = useState(false);
 
-  // Social Proof Toast
-  const [currentToast, setCurrentToast] = useState<{ name: string; city: string; time: string; product: string } | null>(null);
-
-  // FAQ Accordion
+  // Classic Squeeze State
+  const [isClassicQuizOpen, setIsClassicQuizOpen] = useState(false);
+  const [classicQuizStep, setClassicQuizStep] = useState(1);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
-  // Dynamic counter
-  const [clientCount, setClientCount] = useState(43842);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const msgIdCounter = useRef(0);
 
-  // Auto increment client count
+  // Auto scroll chat
   useEffect(() => {
-    const timer = setInterval(() => {
-      setClientCount((prev) => prev + (Math.random() > 0.4 ? 1 : 0));
-    }, 4500);
-    return () => clearInterval(timer);
-  }, []);
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isTyping, currentInputType, isOfferUnlocked]);
 
-  // Countdown timer for offer
+  // Chat countdown timer
   useEffect(() => {
-    if (funnelView === "offer" && timeLeft > 0) {
-      const timer = setInterval(() => setTimeLeft((t) => (t > 0 ? t - 1 : 0)), 1000);
+    if (isOfferUnlocked && chatTimeLeft > 0) {
+      const timer = setInterval(() => setChatTimeLeft((t) => (t > 0 ? t - 1 : 0)), 1000);
       return () => clearInterval(timer);
     }
-  }, [funnelView, timeLeft]);
+  }, [isOfferUnlocked, chatTimeLeft]);
 
-  // Social proof popup rotation
+  // Resonance progress bar animation
   useEffect(() => {
-    if (funnelView !== "offer") return;
-    const interval = setInterval(() => {
-      const randomItem = RECENT_PURCHASES[Math.floor(Math.random() * RECENT_PURCHASES.length)];
-      setCurrentToast(randomItem);
-      setTimeout(() => setCurrentToast(null), 4000);
-    }, 12000);
-    return () => clearInterval(interval);
-  }, [funnelView]);
+    if (resonanceValue < resonanceTarget) {
+      const timer = setTimeout(() => {
+        setResonanceValue((prev) => Math.min(resonanceTarget, prev + 3));
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [resonanceValue, resonanceTarget]);
 
-  const formatTime = (secs: number) => {
+  const addMessage = (from: "tina" | "user", kind: "text" | "resonance" | "offer", text?: string, sign?: string) => {
+    msgIdCounter.current += 1;
+    setMessages((prev) => [
+      ...prev,
+      { id: msgIdCounter.current, from, kind, text, sign, target: resonanceTarget }
+    ]);
+  };
+
+  const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  const tinaSpeak = async (texts: string[]) => {
+    for (const rawText of texts) {
+      const formatted = rawText.replace(/\{name\}/g, name || (lang === "en" ? "love" : "querida(o)"));
+      setIsTyping(true);
+      await sleep(Math.min(2200, 900 + formatted.length * 18));
+      setIsTyping(false);
+      addMessage("tina", "text", formatted);
+      await sleep(350);
+    }
+  };
+
+  const handleStartChat = async () => {
+    setChatPhase("connecting");
+    await sleep(2200);
+    setChatPhase("chat");
+
+    await sleep(400);
+    if (lang === "en") {
+      await tinaSpeak([
+        "Hi love… you found me. 💫",
+        "Something guided you here tonight — I don't believe that's an accident.",
+        "Before I look at anything… what's your first name?"
+      ]);
+    } else {
+      await tinaSpeak([
+        "Olá, amor… você me encontrou. 💫",
+        "Algo guiou você até aqui esta noite — e eu não acredito que isso tenha sido por acaso.",
+        "Antes de sintonizar qualquer energia… como você se chama?"
+      ]);
+    }
+    setCurrentInputType("name");
+  };
+
+  const handleNameSubmit = async () => {
+    if (!textInputValue.trim()) return;
+    const cleanName = textInputValue.trim();
+    setName(cleanName);
+    setTextInputValue("");
+    setCurrentInputType("none");
+    addMessage("user", "text", cleanName);
+
+    if (lang === "en") {
+      await tinaSpeak([
+        `${cleanName}. I like saying it slowly — names carry energy.`,
+        "Now be honest with me, because it changes what I look for. Where is your heart right now?"
+      ]);
+    } else {
+      await tinaSpeak([
+        `${cleanName}. Gosto de pronunciar devagar — os nomes carregam vibrações fortes.`,
+        "Agora seja sincera(o) comigo, pois isso muda a frequência do que vou procurar. Onde está seu coração hoje?"
+      ]);
+    }
+    setCurrentInputType("emotion");
+  };
+
+  const handleEmotionPick = async (pickedVal: string, pickedLabel: string) => {
+    setEmotion(pickedVal);
+    setCurrentInputType("none");
+    addMessage("user", "text", pickedLabel);
+
+    const replies = EMOTION_REPLIES[pickedVal] || EMOTION_REPLIES["waiting"];
+    await tinaSpeak(lang === "en" ? replies.en : replies.pt);
+
+    if (lang === "en") {
+      await tinaSpeak(["When I sketch the face that's coming toward you — who am I looking for?"]);
+    } else {
+      await tinaSpeak(["Quando eu for desenhar o rosto que está vindo em sua direção — quem devo procurar?"]);
+    }
+    setCurrentInputType("interest");
+  };
+
+  const handleInterestPick = async (pickedInterest: "men" | "women" | "both", pickedLabel: string) => {
+    setInterest(pickedInterest);
+    setCurrentInputType("none");
+    addMessage("user", "text", pickedLabel);
+
+    if (pickedInterest === "women") {
+      if (lang === "en") {
+        await tinaSpeak(["Just so I draw the right face: you want me to draw a WOMAN for you?"]);
+      } else {
+        await tinaSpeak(["Apenas para confirmar a energia correta: você deseja que eu desenhe uma MULHER?"]);
+      }
+      setCurrentInputType("confirm_women");
+      return;
+    }
+
+    await proceedToDesire();
+  };
+
+  const proceedToDesire = async () => {
+    if (lang === "en") {
+      await tinaSpeak([
+        "Good. Close your eyes for a second, {name}.",
+        "The love you're waiting for — what does it feel like?"
+      ]);
+    } else {
+      await tinaSpeak([
+        "Ótimo. Feche os olhos por um segundo, {name}.",
+        "O amor que você tanto espera — como ele se parece no seu peito?"
+      ]);
+    }
+    setCurrentInputType("desire");
+  };
+
+  const handleDesirePick = async (desireVal: string, pickedLabel: string) => {
+    setCurrentInputType("none");
+    addMessage("user", "text", pickedLabel);
+
+    const reply = DESIRE_REPLIES[desireVal] || DESIRE_REPLIES.safe;
+    await tinaSpeak([lang === "en" ? reply.en : reply.pt]);
+
+    if (lang === "en") {
+      await tinaSpeak(["Now the most important part. Your date of birth — that's the doorway I read through."]);
+    } else {
+      await tinaSpeak(["Agora a parte mais importante. Sua data de nascimento — esse é o portal astrológico pelo qual eu leio."]);
+    }
+    setCurrentInputType("birthdate");
+  };
+
+  const handleBirthDateSubmit = async () => {
+    setCurrentInputType("none");
+    const d = parseInt(birthDay) || 1;
+    const m = parseInt(birthMonth) || 1;
+    const zodiacObj = getZodiac(d, m);
+    setChatZodiac(zodiacObj);
+
+    const formattedDate = `${birthDay}/${birthMonth}/${birthYear}`;
+    addMessage("user", "text", formattedDate);
+
+    if (lang === "en") {
+      await tinaSpeak(["Give me a moment with this. Don't type anything…"]);
+    } else {
+      await tinaSpeak(["Me dê um momento com isso. Não digite nada…"]);
+    }
+
+    // Trigger resonance card
+    setResonanceValue(15);
+    setResonanceTarget(94);
+    addMessage("tina", "resonance", undefined, zodiacObj.name);
+    await sleep(3500);
+
+    const zReading = ZODIAC_READINGS[zodiacObj.name] || ZODIAC_READINGS.Cancer;
+    if (lang === "en") {
+      await tinaSpeak([
+        `${zodiacObj.name}. I had a feeling, {name}.`,
+        zReading.en,
+        "One more thing, so the face comes through clearly — which background should I attune your sketch to?"
+      ]);
+    } else {
+      await tinaSpeak([
+        `${zodiacObj.name}. Eu tive um pressentimento nítido, {name}.`,
+        zReading.pt,
+        "Mais uma coisa para que o desenho saia com exatidão — a qual ascendência devo sintonizar o seu retrato?"
+      ]);
+    }
+    setCurrentInputType("ethnicity");
+  };
+
+  const handleEthnicityPick = async (ethVal: string, ethLabel: string) => {
+    setEthnicity(ethVal);
+    setCurrentInputType("none");
+    addMessage("user", "text", ethLabel);
+
+    if (lang === "en") {
+      await tinaSpeak([
+        "That's everything I need, {name}. Now stay with me…",
+        "I'm connecting your birth energy to what came through just now. This takes me a moment. 🕯️"
+      ]);
+    } else {
+      await tinaSpeak([
+        "Isso é tudo que eu precisava, {name}. Fique aqui comigo…",
+        "Estou conectando sua vibração natal ao canal cósmico. Isso leva apenas alguns instantes. 🕯️"
+      ]);
+    }
+
+    setIsTyping(true);
+    await sleep(4000);
+    setIsTyping(false);
+
+    if (lang === "en") {
+      await tinaSpeak([
+        "{name}… it's done. I have what I need.",
+        "What I'm seeing around you is honest — and a little surprising. I'd rather show you than describe it in a rushed chat message.",
+        "Here's what I'll do: I'll personally hand-draw the face I connected to, and with the Complete Vision I'll write out your full reading too. I've placed your session under your name — I hold it while this chat stays open."
+      ]);
+    } else {
+      await tinaSpeak([
+        "{name}… está pronto. Eu recebi a visão.",
+        "O que vi ao redor da sua aura é muito real — e revelador. Eu prefiro desenhar e mostrar a você do que tentar resumir em uma mensagem rápida.",
+        "Aqui está o que farei: vou desenhar pessoalmente à mão o rosto exato que se conectou a você, e na Visão Completa escreverei toda a leitura detalhada. Reservei o seu atendimento pelo tempo que este chat estiver aberto."
+      ]);
+    }
+
+    setIsOfferUnlocked(true);
+  };
+
+  const formatSecs = (secs: number) => {
     const m = Math.floor(secs / 60);
     const s = secs % 60;
     return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
 
-  const handlePhoneMask = (val: string) => {
-    const raw = val.replace(/\D/g, "").slice(0, 11);
-    let formatted = raw;
-    if (raw.length > 2) formatted = `(${raw.slice(0, 2)}) ${raw.slice(2)}`;
-    if (raw.length > 7) formatted = `(${raw.slice(0, 2)}) ${raw.slice(2, 7)}-${raw.slice(7)}`;
-    setWhatsapp(formatted);
-  };
-
-  const startChanneling = () => {
-    setIsQuizOpen(false);
-    setIsChanneling(true);
-    setChannelProgress(0);
-
-    const interval = setInterval(() => {
-      setChannelProgress((prev) => {
-        const next = prev + 5;
-        if (next >= 100) {
-          clearInterval(interval);
-          setTimeout(() => {
-            setIsChanneling(false);
-            setFunnelView("offer");
-            window.scrollTo({ top: 0, behavior: "smooth" });
-          }, 400);
-          return 100;
-        }
-        return next;
-      });
-    }, 80);
-  };
-
-  // Pricing calculations
-  const basePriceBrl = selectedPlan === "standard" ? 27.9 : 47.0;
-  const totalPriceBrl = basePriceBrl + (addExpressDelivery ? 14.9 : 0);
-  const basePriceUsd = selectedPlan === "standard" ? 37 : 67;
-  const totalPriceUsd = basePriceUsd + (addExpressDelivery ? 9.9 : 0);
-
-  const pixCode = `00020126580014br.gov.bcb.pix0136tina-aldea-${Date.now().toString(36)}5204000053039865405${totalPriceBrl.toFixed(2)}5802BR5920TINA ALDEA SKETCH6009SAO PAULO62070503***6304`;
+  const priceBrl = selectedPlan === "complete" ? 47.0 : 27.9;
+  const pixCode = `00020126580014br.gov.bcb.pix0136tina-aldea-${Date.now().toString(36)}5204000053039865405${priceBrl.toFixed(2)}5802BR5920TINA ALDEA SKETCH6009SAO PAULO62070503***6304`;
 
   const handleCopyPix = async () => {
     try {
@@ -193,520 +519,720 @@ function TinaAldeaExactClone() {
   };
 
   const chosenSketch = interest === "women" ? "/images/squeeze/sketches/sketch4.jpg" : "/images/squeeze/sketches/sketch3.jpg";
-  const currentMonth = lang === "en" ? MONTHS_EN[new Date().getMonth()] : MONTHS_PT[new Date().getMonth()];
-  const currentYear = new Date().getFullYear();
-  const zodiac = getZodiac(parseInt(birthDay) || 1, parseInt(birthMonth) || 1);
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 font-sans selection:bg-[#4CAF50] selection:text-white overflow-x-hidden">
+    <div className="min-h-screen bg-[#faf8ff] text-gray-900 font-sans selection:bg-purple-600 selection:text-white">
       {/* ========================================================================= */}
-      {/* TOP BAR: THIS IS MY OFFICIAL WEBSITE!                                     */}
+      {/* 1. TOP HEADER & MODE SWITCHER                                            */}
       {/* ========================================================================= */}
-      <div className="bg-[#73b4fc] text-white py-2.5 px-4 text-center flex items-center justify-between max-w-6xl mx-auto shadow-xs">
-        <div className="flex-1 text-center font-semibold text-xs md:text-sm tracking-wide font-opensans">
-          {lang === "en" ? (
-            <span>🔮 This is my Official Website! Beware of impersonators</span>
-          ) : (
-            <span>🔮 Este é o meu Site Oficial! Cuidado com imitadores e golpes</span>
+      <header className="bg-[#1a0533] text-white py-2 px-4 shadow-md sticky top-0 z-50">
+        <div className="max-w-4xl mx-auto flex flex-wrap items-center justify-between gap-2 text-xs">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="font-semibold tracking-wide">
+              {lang === "en" ? "Official Website of Tina Aldea — Beware of imitations" : "Site Oficial de Tina Aldea — Cuidado com imitações"}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Mode Switcher */}
+            <div className="flex items-center bg-white/10 rounded-lg p-0.5">
+              <button
+                onClick={() => setActiveMode("chat")}
+                className={`px-2.5 py-1 rounded-md font-bold text-[11px] transition cursor-pointer flex items-center gap-1 ${
+                  activeMode === "chat" ? "bg-purple-600 text-white shadow-xs" : "text-white/70 hover:text-white"
+                }`}
+              >
+                <MessageCircle className="w-3.5 h-3.5" />
+                <span>Chat Tina</span>
+              </button>
+              <button
+                onClick={() => setActiveMode("classic")}
+                className={`px-2.5 py-1 rounded-md font-bold text-[11px] transition cursor-pointer flex items-center gap-1 ${
+                  activeMode === "classic" ? "bg-purple-600 text-white shadow-xs" : "text-white/70 hover:text-white"
+                }`}
+              >
+                <FileText className="w-3.5 h-3.5" />
+                <span>{lang === "en" ? "Classic Page" : "Página Padrão"}</span>
+              </button>
+            </div>
+
+            {/* Language Toggle */}
+            <div className="flex items-center bg-white/15 rounded-md px-1.5 py-0.5 font-bold text-[11px]">
+              <button
+                onClick={() => setLang("en")}
+                className={`px-1 rounded ${lang === "en" ? "bg-white text-purple-900" : "text-white/80"}`}
+              >
+                EN
+              </button>
+              <span className="mx-0.5 opacity-50">/</span>
+              <button
+                onClick={() => setLang("pt")}
+                className={`px-1 rounded ${lang === "pt" ? "bg-white text-purple-900" : "text-white/80"}`}
+              >
+                PT
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* ========================================================================= */}
+      {/* 2. CHAT EXPERIENCE (MODO CHAT OFICIAL TINA ALDEA)                         */}
+      {/* ========================================================================= */}
+      {activeMode === "chat" && (
+        <div>
+          {/* FASE 1: LANDING DO CHAT */}
+          {chatPhase === "landing" && (
+            <div className="max-w-md mx-auto px-4 pt-8 pb-16 text-center animate-in fade-in duration-300">
+              {/* Avatar com Badge Online */}
+              <div className="relative inline-block mb-4">
+                <img
+                  src="/images/misc/tina-circle.jpg"
+                  alt="Tina Aldea"
+                  className="w-28 h-28 rounded-full object-cover border-4 border-white shadow-xl mx-auto ring-4 ring-purple-100"
+                />
+                <span className="absolute bottom-1 right-1 w-5 h-5 rounded-full bg-emerald-500 border-[3px] border-white shadow-xs" />
+              </div>
+
+              {/* Status Badge */}
+              <div className="inline-flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold px-3 py-1 rounded-full mb-3">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span>{lang === "en" ? "Tina is available right now" : "Tina está online agora"}</span>
+              </div>
+
+              <h1 className="text-2xl font-bold font-merriweather text-gray-900">
+                Tina Aldea
+              </h1>
+              <p className="text-sm text-purple-700 font-semibold mt-0.5 font-opensans">
+                {lang === "en" ? "Psychic Soulmate Sketch Artist" : "Artista Psíquica e Retratista de Almas Gêmeas"}
+              </p>
+
+              {/* Stars & Social Proof */}
+              <div className="flex items-center justify-center gap-1 mt-3">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
+                ))}
+                <span className="text-xs text-gray-600 font-medium ml-1">
+                  {lang === "en" ? "Trusted by 6,000+ women" : "Mais de 43.000 clientes satisfeitas"}
+                </span>
+              </div>
+
+              {/* Main Hook */}
+              <h2 className="text-2xl md:text-3xl font-bold font-merriweather text-gray-900 mt-6 leading-snug">
+                {lang === "en" ? (
+                  <>
+                    "I Met My Soulmate in <span className="text-purple-700">Two Weeks</span> After I Got My Sketch"
+                  </>
+                ) : (
+                  <>
+                    "Conheci Minha Alma Gêmea em <span className="text-purple-700">Duas Semanas</span> Após Receber o Desenho"
+                  </>
+                )}
+              </h2>
+
+              <p className="text-sm md:text-base text-gray-600 mt-3 leading-relaxed font-opensans">
+                {lang === "en"
+                  ? "Chat privately with Tina right now. She reads your birth energy live — then hand-draws the face of the person coming toward you."
+                  : "Converse em particular com Tina agora mesmo. Ela sintoniza sua energia de nascimento ao vivo — e desenha à mão o rosto da pessoa destinada a você."}
+              </p>
+
+              {/* CTA Button */}
+              <button
+                onClick={handleStartChat}
+                className="mt-6 w-full py-4 rounded-2xl text-white text-lg font-bold shadow-xl transition-all duration-200 hover:brightness-105 active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2"
+                style={{ background: "linear-gradient(135deg, #7c3aed, #a855f7)" }}
+              >
+                <Sparkles className="w-5 h-5 text-amber-300" />
+                <span>{lang === "en" ? "Begin My Chat Reading →" : "Iniciar Minha Leitura no Chat →"}</span>
+              </button>
+
+              <p className="text-xs text-gray-500 mt-2.5 flex items-center justify-center gap-1.5 font-opensans">
+                <Lock className="w-3.5 h-3.5 text-gray-400" />
+                <span>{lang === "en" ? "Private • Takes about 2 minutes • No card needed to start" : "Privado • Leva cerca de 2 minutos • Grátis para iniciar"}</span>
+              </p>
+
+              {/* Limited Slot Scarcity */}
+              <div className="mt-4 flex items-center justify-center gap-2 bg-amber-50 border border-amber-200 text-amber-900 text-xs font-semibold px-4 py-2.5 rounded-xl shadow-xs">
+                <span className="relative flex w-2.5 h-2.5 shrink-0">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full w-2.5 h-2.5 bg-amber-500" />
+                </span>
+                <span>
+                  {lang === "en"
+                    ? "Tina hand-draws a limited number of sketches daily — one slot is still open today, and it's yours."
+                    : "Tina desenha um número limitado de esboços por dia — uma vaga continua aberta hoje para você."}
+                </span>
+              </div>
+
+              {/* Studio Sketches Horizontal Scroll */}
+              <div className="mt-8 text-left">
+                <p className="text-center text-xs uppercase tracking-widest text-gray-500 font-bold mb-3 font-opensans">
+                  {lang === "en" ? "Recent sketches from her studio" : "Desenhos recentes de seu ateliê"}
+                </p>
+                <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 snap-x snap-mandatory" style={{ scrollbarWidth: "none" }}>
+                  {[
+                    "/images/squeeze/sketches/sketch3.jpg",
+                    "/images/squeeze/sketches/sketch4.jpg",
+                    "/images/squeeze/sketches/sketch2025.jpg",
+                    "/images/squeeze/sketches/sketch2.jpg"
+                  ].map((src, idx) => (
+                    <img
+                      key={idx}
+                      src={src}
+                      alt="Soulmate Sketch"
+                      className="w-[70%] sm:w-[60%] flex-shrink-0 snap-center rounded-2xl shadow-md border border-gray-200 object-cover"
+                    />
+                  ))}
+                </div>
+                <p className="text-center text-xs text-gray-400 mt-2">
+                  {lang === "en"
+                    ? "Every sketch is hand-drawn and signed by Tina. Yours will be drawn only for you."
+                    : "Cada desenho é feito à mão e assinado por Tina. O seu será canalizado com exclusividade."}
+                </p>
+              </div>
+
+              {/* Client Chat Messages Quotes */}
+              <div className="mt-8 text-left">
+                <p className="text-center text-xs uppercase tracking-widest text-gray-500 font-bold mb-3">
+                  {lang === "en" ? "Real messages from her clients" : "Mensagens reais de clientes"}
+                </p>
+                <div className="space-y-3">
+                  {CLIENT_TESTIMONIALS_CHAT.map((item, idx) => (
+                    <div key={idx} className="flex flex-col">
+                      <div className="self-start max-w-[90%] bg-white border border-gray-200 rounded-2xl rounded-bl-md px-4 py-3 shadow-xs">
+                        <p className="text-sm text-gray-800 leading-relaxed font-opensans">
+                          "{item.text}"
+                        </p>
+                      </div>
+                      <span className="text-[11px] text-gray-400 mt-1 ml-2 font-medium">
+                        {item.tag}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* FASE 2: TELA DE CONEXÃO ANIMADA */}
+          {chatPhase === "connecting" && (
+            <div className="h-[92vh] flex items-center justify-center px-4 bg-gradient-to-b from-[#1a0533] to-[#141c3f] animate-in fade-in">
+              <div className="w-full max-w-sm bg-white rounded-3xl shadow-2xl px-6 py-10 text-center">
+                <div className="relative inline-block mb-4">
+                  <span className="absolute -inset-2 rounded-full border-2 border-purple-400 animate-ping opacity-60" />
+                  <img
+                    src="/images/misc/tina-circle.jpg"
+                    alt="Tina Aldea"
+                    className="relative w-24 h-24 rounded-full object-cover border-4 border-purple-100 mx-auto"
+                  />
+                </div>
+                <h2 className="text-2xl font-bold font-merriweather text-gray-900">
+                  Tina Aldea
+                </h2>
+                <p className="text-xs text-purple-700 font-semibold mt-0.5">
+                  {lang === "en" ? "Psychic Soulmate Sketch Artist" : "Artista Psíquica e Retratista"}
+                </p>
+
+                <p className="text-base font-bold text-gray-900 mt-6 animate-pulse">
+                  {lang === "en" ? "Opening your private session…" : "Iniciando sua sessão privada…"}
+                </p>
+                <p className="text-xs italic text-gray-500 mt-1">
+                  {lang === "en" ? "Please don't leave — Tina has been told you're here." : "Por favor, aguarde — Tina já foi avisada da sua presença."}
+                </p>
+
+                <div className="flex justify-center gap-1.5 mt-6">
+                  {[0, 1, 2].map((i) => (
+                    <span
+                      key={i}
+                      className="w-2.5 h-2.5 rounded-full bg-purple-600 animate-bounce"
+                      style={{ animationDelay: `${i * 0.18}s` }}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* FASE 3: CHAT AO VIVO ATIVO */}
+          {chatPhase === "chat" && (
+            <div className="h-[92vh] flex justify-center bg-[#f4f0fb] md:bg-gradient-to-b md:from-[#1a0533] md:to-[#141c3f] md:py-4">
+              <div className="w-full h-full md:max-w-[480px] flex flex-col bg-[#f4f0fb] md:rounded-3xl md:shadow-2xl md:overflow-hidden md:border md:border-white/10">
+                {/* Chat Top Bar */}
+                <div className="flex items-center gap-3 px-4 py-3 bg-white border-b border-gray-200 shadow-xs z-10">
+                  <div className="relative shrink-0">
+                    <img
+                      src="/images/misc/tina-circle.jpg"
+                      alt="Tina Aldea"
+                      className="w-11 h-11 rounded-full object-cover ring-2 ring-purple-300"
+                    />
+                    <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-gray-900 text-sm font-merriweather truncate">
+                      Tina Aldea
+                    </p>
+                    <p className="text-[11px] font-semibold text-purple-700 truncate">
+                      {lang === "en" ? "3rd Gen Psychic · Sketch Artist" : "Médium de 3ª Geração · Artista Retratista"}
+                    </p>
+                  </div>
+                  <span className="shrink-0 inline-flex items-center gap-1 bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    ONLINE
+                  </span>
+                </div>
+
+                {/* Messages Body */}
+                <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+                  {messages.map((msg) => (
+                    <div key={msg.id}>
+                      {/* Resonance Card */}
+                      {msg.kind === "resonance" ? (
+                        <div className="w-full max-w-[94%] mx-auto rounded-2xl bg-white border border-purple-200 shadow-md overflow-hidden animate-in zoom-in-95 my-2">
+                          <div className="h-1 bg-gradient-to-r from-purple-500 via-fuchsia-500 to-pink-400" />
+                          <div className="p-4 text-center">
+                            <div className="w-12 h-12 mx-auto rounded-2xl bg-gradient-to-br from-purple-600 to-fuchsia-600 shadow-md flex items-center justify-center text-white text-2xl font-bold mb-2">
+                              {chatZodiac.symbol}
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-900 font-merriweather">
+                              {msg.sign}
+                            </h3>
+                            <p className="text-xs text-gray-500">
+                              {lang === "en" ? "Birth Signal • Astral Resonance" : "Sinal Astral • Ressonância Cósmica"}
+                            </p>
+
+                            <div className="mt-3 h-2 rounded-full bg-purple-100 overflow-hidden">
+                              <div
+                                className="h-full rounded-full transition-all duration-300"
+                                style={{
+                                  width: `${resonanceValue}%`,
+                                  background: "linear-gradient(90deg, #a855f7, #ec4899)"
+                                }}
+                              />
+                            </div>
+                            <div className="flex justify-between items-center text-[10px] text-gray-400 mt-1 font-semibold">
+                              <span>{resonanceValue < 50 ? (lang === "en" ? "Reading energy…" : "Lendo vibração natal…") : (lang === "en" ? "Locking resonance…" : "Sintonizando alma gêmea…")}</span>
+                              <span>{resonanceValue}%</span>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        /* Text Messages */
+                        <div className={`flex ${msg.from === "user" ? "justify-end" : "justify-start"}`}>
+                          <div
+                            className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed shadow-xs ${
+                              msg.from === "user"
+                                ? "bg-purple-600 text-white rounded-br-xs"
+                                : "bg-white text-gray-800 rounded-bl-xs border border-gray-150"
+                            }`}
+                          >
+                            {msg.text}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+
+                  {/* Typing Dots */}
+                  {isTyping && (
+                    <div className="flex justify-start">
+                      <div className="bg-white border border-gray-150 rounded-2xl rounded-bl-xs px-4 py-2.5 shadow-xs flex items-center gap-1.5">
+                        {[0, 1, 2].map((i) => (
+                          <span
+                            key={i}
+                            className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-bounce"
+                            style={{ animationDelay: `${i * 0.15}s` }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Offer in Chat Stream */}
+                  {isOfferUnlocked && (
+                    <div className="space-y-4 pt-2 animate-in fade-in duration-500">
+                      {/* Urgency Badge */}
+                      <div className="flex justify-center">
+                        <div className="inline-flex items-center gap-2 text-xs font-bold px-3 py-1.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300 shadow-xs">
+                          <Clock className="w-3.5 h-3.5 text-amber-700" />
+                          <span>
+                            {lang === "en" ? `Your reading is reserved for ${formatSecs(chatTimeLeft)}` : `Sua sessão está reservada por ${formatSecs(chatTimeLeft)}`}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Locked Blurred Sketch Teaser */}
+                      <div className="relative w-full max-w-[260px] mx-auto aspect-[3/3.8] rounded-2xl overflow-hidden border-3 border-purple-300 shadow-lg bg-black">
+                        <img
+                          src={chosenSketch}
+                          alt="Locked Sketch"
+                          className="w-full h-full object-cover filter blur-[10px] scale-105"
+                        />
+                        <div className="absolute inset-0 bg-black/45 flex flex-col items-center justify-center p-3 text-center">
+                          <div className="w-10 h-10 rounded-xl bg-amber-400 text-black flex items-center justify-center shadow-md mb-2 animate-bounce">
+                            <Lock className="w-5 h-5" />
+                          </div>
+                          <span className="text-[10px] font-black text-white bg-black/75 px-2.5 py-1 rounded-full uppercase tracking-wider">
+                            SKETCH COMPLETED
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Card 1: Complete Soulmate Vision (Best Value) */}
+                      <div
+                        onClick={() => setSelectedPlan("complete")}
+                        className={`bg-white rounded-2xl border-2 transition-all cursor-pointer overflow-hidden shadow-md ${
+                          selectedPlan === "complete" ? "border-purple-600 ring-2 ring-purple-200" : "border-gray-200"
+                        }`}
+                      >
+                        <div className="bg-purple-600 text-white text-center text-[11px] font-bold uppercase tracking-wider py-1">
+                          {lang === "en" ? "Most Chosen • Best Value" : "Mais Escolhido • Melhor Opção"}
+                        </div>
+                        <div className="p-4">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <p className="font-bold text-gray-900 text-base font-merriweather">
+                                {lang === "en" ? "Complete Soulmate Vision" : "Visão Completa da Alma Gêmea"}
+                              </p>
+                              <span className="text-xs text-purple-700 font-semibold block">
+                                {lang === "en" ? "Colored Drawing + Written Reading" : "Desenho Colorido + Leitura Escrita"}
+                              </span>
+                            </div>
+                            <div className="text-right">
+                              <span className="text-xl font-bold text-gray-900 font-mono">
+                                {lang === "en" ? "$67 USD" : "R$ 47,00"}
+                              </span>
+                              <span className="line-through text-[11px] text-gray-400 block">$247 / R$ 247</span>
+                            </div>
+                          </div>
+                          <ul className="text-xs text-gray-600 mt-3 space-y-1">
+                            <li className="flex items-center gap-1.5">
+                              <Check className="w-3.5 h-3.5 text-purple-600 shrink-0" />
+                              <span>{lang === "en" ? "Hand-drawn sketch in vivid color (eye & hair color)" : "Desenho feito à mão em cores vivas (cor dos olhos e cabelo)"}</span>
+                            </li>
+                            <li className="flex items-center gap-1.5">
+                              <Check className="w-3.5 h-3.5 text-purple-600 shrink-0" />
+                              <span>{lang === "en" ? "Full written soulmate reading & personality profile" : "Leitura psíquica completa e perfil de personalidade"}</span>
+                            </li>
+                            <li className="flex items-center gap-1.5">
+                              <Check className="w-3.5 h-3.5 text-purple-600 shrink-0" />
+                              <span>{lang === "en" ? "Priority queue — delivery within 6 hours" : "Fila prioritária — entrega em até 6 horas"}</span>
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+
+                      {/* Card 2: Basic Soulmate Sketch */}
+                      <div
+                        onClick={() => setSelectedPlan("standard")}
+                        className={`bg-white rounded-2xl border transition-all cursor-pointer p-4 shadow-xs ${
+                          selectedPlan === "standard" ? "border-purple-600 ring-2 ring-purple-200" : "border-gray-200"
+                        }`}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="font-bold text-gray-700 text-sm font-merriweather">
+                              {lang === "en" ? "Soulmate Sketch (Basic)" : "Desenho da Alma Gêmea (Básico)"}
+                            </p>
+                            <span className="text-xs text-gray-400 block">
+                              {lang === "en" ? "Black & white pencil sketch" : "Esboço a lápis preto e branco"}
+                            </span>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-lg font-bold text-gray-800 font-mono">
+                              {lang === "en" ? "$37 USD" : "R$ 27,90"}
+                            </span>
+                            <span className="line-through text-[11px] text-gray-400 block">$147 / R$ 147</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Embedded PIX Checkout Box */}
+                      <div className="bg-white rounded-2xl border border-gray-200 p-4 text-center shadow-md">
+                        <span className="text-xs font-bold text-emerald-700 block mb-2">
+                          ⚡ {lang === "en" ? "INSTANT PIX APPROVAL" : "PAGAMENTO RÁPIDO VIA PIX"}
+                        </span>
+
+                        <button
+                          type="button"
+                          onClick={handleCopyPix}
+                          className={`w-full py-3.5 px-3 rounded-xl font-bold text-sm text-black flex items-center justify-center gap-2 transition cursor-pointer mb-3 shadow-md ${
+                            pixCopied
+                              ? "bg-[#8ff0b3]"
+                              : "bg-gradient-to-b from-[#41E877] via-[#25C55B] to-[#17A94B] text-black hover:brightness-105"
+                          }`}
+                        >
+                          {pixCopied ? (
+                            <>
+                              <Check className="w-4 h-4 text-black" />
+                              <span>{lang === "en" ? "PIX CODE COPIED! ✓" : "CÓDIGO PIX COPIADO! ✓"}</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="w-4 h-4" />
+                              <span>{lang === "en" ? `COPY PIX CODE (${priceBrl.toFixed(2).replace(".", ",")} BRL)` : `COPIAR CÓDIGO PIX (R$ ${priceBrl.toFixed(2).replace(".", ",")})`}</span>
+                            </>
+                          )}
+                        </button>
+
+                        <div className="bg-white p-2 border border-gray-200 rounded-xl inline-block mx-auto mb-2">
+                          <img
+                            src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(
+                              pixCode
+                            )}`}
+                            alt="QR Code Pix"
+                            className="w-32 h-32 mx-auto"
+                          />
+                        </div>
+                        <p className="text-[10px] text-gray-400">
+                          {lang === "en" ? "Point camera in your banking app" : "Abra seu banco e aponte a câmera"}
+                        </p>
+
+                        <button
+                          type="button"
+                          onClick={() => setIsDelivered(true)}
+                          className="text-xs text-purple-700 underline opacity-85 hover:opacity-100 mt-3 cursor-pointer block mx-auto"
+                        >
+                          ⚡ {lang === "en" ? "Simulate payment confirmation" : "Simular confirmação e desbloquear desenho"}
+                        </button>
+                      </div>
+
+                      {/* Delivered View if confirmed */}
+                      {isDelivered && (
+                        <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 text-center animate-in zoom-in-95">
+                          <span className="text-xs font-bold text-emerald-800 bg-emerald-200 px-3 py-1 rounded-full inline-block mb-3">
+                            ✓ {lang === "en" ? "Payment Approved" : "Pagamento Confirmado"}
+                          </span>
+                          <h4 className="text-lg font-bold font-merriweather text-gray-900 mb-1">
+                            {lang === "en" ? `Here is your Soulmate, ${name}!` : `Aqui está sua Alma Gêmea, ${name}!`}
+                          </h4>
+                          <div className="w-full max-w-[240px] mx-auto aspect-[3/3.8] rounded-xl overflow-hidden border-2 border-emerald-400 shadow-lg my-3">
+                            <img src={chosenSketch} alt="Your Soulmate" className="w-full h-full object-cover" />
+                          </div>
+                          <a
+                            href={chosenSketch}
+                            download="soulmate-tina-aldea.jpg"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="w-full py-3 bg-[#4CAF50] hover:bg-[#45a049] text-white font-bold text-xs rounded-xl shadow-md flex items-center justify-center gap-2"
+                          >
+                            <Download className="w-4 h-4" />
+                            <span>{lang === "en" ? "Download High-Res Sketch" : "Baixar Desenho em Alta Resolução"}</span>
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div ref={messagesEndRef} />
+                </div>
+
+                {/* Input Area (Dynamic Based on Current Step) */}
+                <div className="bg-white border-t border-gray-200 p-3 shadow-md">
+                  {/* Name Input */}
+                  {currentInputType === "name" && (
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={textInputValue}
+                        onChange={(e) => setTextInputValue(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && handleNameSubmit()}
+                        placeholder={lang === "en" ? "Type your first name…" : "Digite seu primeiro nome…"}
+                        className="flex-1 px-4 py-3 rounded-xl border border-gray-300 text-sm focus:outline-none focus:border-purple-600"
+                        autoFocus
+                      />
+                      <button
+                        onClick={handleNameSubmit}
+                        disabled={!textInputValue.trim()}
+                        className="px-4 py-3 rounded-xl bg-purple-600 hover:bg-purple-700 disabled:opacity-40 text-white font-bold cursor-pointer"
+                      >
+                        <Send className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Emotion Choices */}
+                  {currentInputType === "emotion" && (
+                    <div className="space-y-2">
+                      <p className="text-[11px] font-semibold text-gray-500 text-center mb-1">
+                        {lang === "en" ? "Tap to choose your feeling:" : "Toque para escolher como você se sente:"}
+                      </p>
+                      <div className="grid grid-cols-1 gap-1.5">
+                        {EMOTION_OPTIONS.map((opt) => (
+                          <button
+                            key={opt.value}
+                            onClick={() => handleEmotionPick(opt.value, lang === "en" ? opt.en : opt.pt)}
+                            className="w-full p-2.5 rounded-xl border border-purple-200 bg-purple-50/50 hover:bg-purple-100/70 text-left text-xs font-semibold text-gray-800 transition cursor-pointer"
+                          >
+                            {lang === "en" ? opt.en : opt.pt}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Interest Choices */}
+                  {currentInputType === "interest" && (
+                    <div className="space-y-2">
+                      <p className="text-[11px] font-semibold text-gray-500 text-center mb-1">
+                        {lang === "en" ? "Select your preference:" : "Selecione sua preferência:"}
+                      </p>
+                      <div className="grid grid-cols-3 gap-2">
+                        {[
+                          { val: "men", en: "I like men", pt: "Homens" },
+                          { val: "women", en: "I like women", pt: "Mulheres" },
+                          { val: "both", en: "Open to both", pt: "Ambos" },
+                        ].map((opt) => (
+                          <button
+                            key={opt.val}
+                            onClick={() => handleInterestPick(opt.val as any, lang === "en" ? opt.en : opt.pt)}
+                            className="p-3 rounded-xl border border-purple-300 bg-purple-50 hover:bg-purple-100 text-xs font-bold text-gray-800 transition text-center cursor-pointer"
+                          >
+                            {lang === "en" ? opt.en : opt.pt}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Women Confirmation */}
+                  {currentInputType === "confirm_women" && (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={proceedToDesire}
+                        className="flex-1 py-3 rounded-xl bg-purple-600 text-white font-bold text-xs"
+                      >
+                        {lang === "en" ? "Yes, a woman" : "Sim, uma mulher"}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setInterest("men");
+                          proceedToDesire();
+                        }}
+                        className="flex-1 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold text-xs"
+                      >
+                        {lang === "en" ? "No, I meant a man" : "Não, eu quis dizer homem"}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Desire Choices */}
+                  {currentInputType === "desire" && (
+                    <div className="space-y-1.5">
+                      <p className="text-[11px] font-semibold text-gray-500 text-center mb-1">
+                        {lang === "en" ? "What feeling are you longing for?" : "Que tipo de conexão você busca?"}
+                      </p>
+                      {DESIRE_OPTIONS.map((opt) => (
+                        <button
+                          key={opt.value}
+                          onClick={() => handleDesirePick(opt.value, lang === "en" ? opt.en : opt.pt)}
+                          className="w-full p-2.5 rounded-xl border border-purple-200 bg-purple-50 hover:bg-purple-100 text-left text-xs font-semibold text-gray-800 transition cursor-pointer"
+                        >
+                          {lang === "en" ? opt.en : opt.pt}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Birthdate Selector */}
+                  {currentInputType === "birthdate" && (
+                    <div className="space-y-2">
+                      <p className="text-[11px] font-semibold text-gray-500 text-center">
+                        {lang === "en" ? "Select your birth date:" : "Selecione sua data de nascimento:"}
+                      </p>
+                      <div className="grid grid-cols-3 gap-2">
+                        <select
+                          value={birthDay}
+                          onChange={(e) => setBirthDay(e.target.value)}
+                          className="py-2.5 px-2 rounded-xl border border-gray-300 text-xs bg-white"
+                        >
+                          {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
+                            <option key={d} value={d}>{d}</option>
+                          ))}
+                        </select>
+                        <select
+                          value={birthMonth}
+                          onChange={(e) => setBirthMonth(e.target.value)}
+                          className="py-2.5 px-2 rounded-xl border border-gray-300 text-xs bg-white"
+                        >
+                          {(lang === "en" ? MONTHS_EN : MONTHS_PT).map((m, idx) => (
+                            <option key={m} value={idx + 1}>{m}</option>
+                          ))}
+                        </select>
+                        <select
+                          value={birthYear}
+                          onChange={(e) => setBirthYear(e.target.value)}
+                          className="py-2.5 px-2 rounded-xl border border-gray-300 text-xs bg-white"
+                        >
+                          {Array.from({ length: 70 }, (_, i) => 2006 - i).map((y) => (
+                            <option key={y} value={y}>{y}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <button
+                        onClick={handleBirthDateSubmit}
+                        className="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow cursor-pointer"
+                      >
+                        {lang === "en" ? "This is my date of birth →" : "Essa é minha data de nascimento →"}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Ethnicity Choices */}
+                  {currentInputType === "ethnicity" && (
+                    <div className="space-y-1.5">
+                      <p className="text-[11px] font-semibold text-gray-500 text-center mb-1">
+                        {lang === "en" ? "Select ethnic background:" : "Selecione ascendência ou preferência:"}
+                      </p>
+                      {[
+                        { en: "White / Western", pt: "Branca / Ocidental" },
+                        { en: "Hispanic / Latino", pt: "Hispânica / Latina" },
+                        { en: "Black / African", pt: "Negra / Afrodescendente" },
+                        { en: "Asian", pt: "Asiática" },
+                        { en: "Any / Leave to Destiny", pt: "Qualquer / Deixar ao Destino" },
+                      ].map((eth) => (
+                        <button
+                          key={eth.en}
+                          onClick={() => handleEthnicityPick(eth.en, lang === "en" ? eth.en : eth.pt)}
+                          className="w-full p-2.5 rounded-xl border border-purple-200 bg-purple-50 hover:bg-purple-100 text-left text-xs font-semibold text-gray-800 transition cursor-pointer"
+                        >
+                          {lang === "en" ? eth.en : eth.pt}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Idle indicator when no input is active */}
+                  {currentInputType === "none" && !isOfferUnlocked && (
+                    <div className="text-center py-2 text-xs text-gray-400 italic">
+                      {isTyping
+                        ? (lang === "en" ? "Tina is typing…" : "Tina está digitando…")
+                        : (lang === "en" ? "Private session active" : "Sessão privada ativa")}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           )}
         </div>
-        <div className="flex items-center gap-1.5 shrink-0 bg-white/20 rounded-full px-2 py-0.5 text-[11px] font-bold">
-          <button
-            onClick={() => setLang("en")}
-            className={`px-1.5 py-0.5 rounded cursor-pointer ${lang === "en" ? "bg-white text-blue-700 font-black shadow-xs" : "text-white/80"}`}
-          >
-            EN
-          </button>
-          <span>/</span>
-          <button
-            onClick={() => setLang("pt")}
-            className={`px-1.5 py-0.5 rounded cursor-pointer ${lang === "pt" ? "bg-white text-blue-700 font-black shadow-xs" : "text-white/80"}`}
-          >
-            PT
-          </button>
-        </div>
-      </div>
-
-      {/* ========================================================================= */}
-      {/* LOADING DE CANALIZAÇÃO (SE ATIVADO)                                      */}
-      {/* ========================================================================= */}
-      {isChanneling && (
-        <div className="fixed inset-0 z-50 bg-[#161226]/95 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center text-white animate-in fade-in">
-          <div className="relative w-28 h-28 mx-auto mb-6 flex items-center justify-center">
-            <div className="absolute inset-0 rounded-full border-2 border-purple-500/30 animate-spin" style={{ animationDuration: "8s" }} />
-            <div className="absolute inset-2 rounded-full border-2 border-dashed border-amber-400/70 animate-spin" style={{ animationDuration: "5s", animationDirection: "reverse" }} />
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-900 to-amber-900 flex items-center justify-center shadow-2xl">
-              <Sparkles className="w-9 h-9 text-amber-300 animate-pulse" />
-            </div>
-          </div>
-
-          <h2 className="text-2xl font-bold font-merriweather mb-2">
-            {lang === "en" ? "Channeling Your Soulmate…" : "Canalizando Sua Alma Gêmea…"}
-          </h2>
-          <p className="text-sm text-purple-200/80 mb-6 max-w-sm font-opensans">
-            {lang === "en"
-              ? `Tina Aldea is tuning into your ${zodiac.name} (${zodiac.symbol}) energy and sketching the facial contours on paper.`
-              : `Tina Aldea está sintonizando sua energia de ${zodiac.name} (${zodiac.symbol}) e desenhando os contornos a lápis no papel.`}
-          </p>
-
-          <div className="w-full max-w-xs space-y-2">
-            <div className="flex justify-between text-xs font-bold text-amber-300">
-              <span>{channelProgress < 40 ? (lang === "en" ? "Tuning energy..." : "Sintonizando energia...") : channelProgress < 80 ? (lang === "en" ? "Visualizing eyes & smile..." : "Mapeando olhar e sorriso...") : (lang === "en" ? "Completing sketch..." : "Finalizando o desenho...")}</span>
-              <span>{channelProgress}%</span>
-            </div>
-            <div className="w-full h-3 rounded-full bg-white/10 overflow-hidden border border-white/20">
-              <div
-                className="h-full bg-gradient-to-r from-emerald-400 via-amber-400 to-yellow-300 rounded-full transition-all duration-100"
-                style={{ width: `${channelProgress}%` }}
-              />
-            </div>
-          </div>
-        </div>
       )}
 
       {/* ========================================================================= */}
-      {/* SOCIAL PROOF TOAST (OFFER VIEW)                                           */}
+      {/* 3. CLASSIC SALES LANDING PAGE (CASO DESEJE ALTERNAR)                      */}
       {/* ========================================================================= */}
-      {currentToast && funnelView === "offer" && (
-        <div className="fixed bottom-5 left-5 z-40 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-xl shadow-2xl p-3.5 flex items-center gap-3 max-w-xs animate-in slide-in-from-bottom-5 duration-300">
-          <div className="w-9 h-9 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
-            <ShoppingBag className="w-4 h-4" />
-          </div>
-          <div className="text-left text-xs leading-tight">
-            <p className="font-bold text-gray-900">
-              {currentToast.name} <span className="font-normal text-gray-500">({currentToast.city})</span>
-            </p>
-            <p className="text-gray-600 font-medium">{currentToast.product}</p>
-            <p className="text-[10px] text-gray-400 mt-0.5">{currentToast.time}</p>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* 1. TELA DA OFERTA (SALES / OFFER PAGE)                                   */}
-      {/* ========================================================================= */}
-      {funnelView === "offer" && (
-        <div className="max-w-3xl mx-auto px-4 py-8 animate-in fade-in duration-300">
-          <div className="text-center">
-            {/* Urgency Badge */}
-            <div className="bg-[#fff3e0] border border-amber-300 text-amber-900 py-2.5 px-4 rounded-xl text-xs md:text-sm font-bold mb-5 inline-flex items-center gap-2 shadow-xs">
-              <span>⚠️ {lang === "en" ? `Special 65% OFF Reserved for ${name || "You"}` : `Desconto Especial de 65% Reservado para ${name || "Você"}`}</span>
-              <span>•</span>
-              <span className="text-red-600 font-mono font-black">{formatTime(timeLeft)}</span>
-            </div>
-
-            {/* Blurred Locked Sketch Teaser */}
-            <div className="relative w-full max-w-sm mx-auto aspect-[3/3.8] rounded-2xl overflow-hidden border-4 border-amber-200 shadow-2xl mb-6 bg-neutral-900">
-              <img
-                src={chosenSketch}
-                alt="Soulmate Sketch Locked"
-                className="w-full h-full object-cover filter blur-[12px] scale-105"
-              />
-              <div className="absolute inset-0 bg-black/45 flex flex-col items-center justify-center p-5 text-center">
-                <div className="w-14 h-14 rounded-2xl bg-amber-400 text-black flex items-center justify-center shadow-xl mb-3 animate-bounce">
-                  <Lock className="w-7 h-7" />
-                </div>
-                <span className="text-xs font-black text-white bg-black/80 px-3.5 py-1.5 rounded-full uppercase tracking-wider border border-white/20">
-                  {lang === "en" ? "SKETCH COMPLETED & LOCKED" : "DESENHO CONCLUÍDO E BLOQUEADO"}
-                </span>
-                <p className="text-[11px] text-amber-200 font-medium mt-2 max-w-[220px]">
-                  {lang === "en"
-                    ? "Unlock below to view in ultra-high resolution without watermarks"
-                    : "Desbloqueie abaixo para visualizar em alta resolução sem marcas d'água"}
-                </p>
-              </div>
-            </div>
-
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold font-merriweather text-gray-900 leading-tight mb-2">
-              {lang === "en" ? "Your Personalized Soulmate Sketch Is Almost Ready!" : "Seu Desenho Personalizado da Alma Gêmea Está Quase Pronto!"}
-            </h1>
-            <p className="text-sm md:text-base text-gray-600 mb-8 max-w-xl mx-auto font-opensans">
-              {lang === "en"
-                ? `Tina Aldea has tuned into your ${zodiac.name} astral energy and captured the features, gaze, and aura of your destined partner.`
-                : `Tina Aldea sintonizou sua energia astral de ${zodiac.name} e capturou os traços, o olhar e a aura da pessoa destinada para você.`}
-            </p>
-
-            {/* What's Included Box */}
-            <div className="bg-[#fcfaf7] border border-amber-200/90 rounded-2xl p-6 text-left shadow-lg mb-8">
-              <h3 className="font-bold text-gray-900 text-base md:text-lg font-merriweather mb-4 border-b border-gray-200 pb-2">
-                {lang === "en" ? "Here's Everything You'll Receive:" : "Tudo o Que Você Vai Receber Hoje:"}
-              </h3>
-
-              <div className="space-y-3 text-xs md:text-sm font-medium border-b border-gray-200 pb-4 mb-4">
-                <div className="flex justify-between items-center text-gray-800">
-                  <span className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>{lang === "en" ? "Hand-Drawn High-Res Soulmate Sketch" : "Desenho Psíquico da Alma Gêmea em Alta Resolução"}</span>
-                  </span>
-                  <span className="line-through text-gray-400">$97.00 / R$ 97,00</span>
-                </div>
-                <div className="flex justify-between items-center text-gray-800">
-                  <span className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>{lang === "en" ? "Detailed Psychic Reading & Personality Description" : "Leitura Psíquica Detalhada e Traços de Personalidade"}</span>
-                  </span>
-                  <span className="line-through text-gray-400">$49.00 / R$ 49,00</span>
-                </div>
-                <div className="flex justify-between items-center text-emerald-800">
-                  <span className="flex items-center gap-2">
-                    <Gift className="w-4 h-4 text-amber-500 shrink-0" />
-                    <span>{lang === "en" ? "FREE BONUS 1: Guardian Angel Reading" : "BÔNUS GRÁTIS 1: Leitura do Anjo da Guarda"}</span>
-                  </span>
-                  <span className="font-bold text-emerald-700">{lang === "en" ? "FREE" : "GRÁTIS"}</span>
-                </div>
-                <div className="flex justify-between items-center text-emerald-800">
-                  <span className="flex items-center gap-2">
-                    <Gift className="w-4 h-4 text-amber-500 shrink-0" />
-                    <span>{lang === "en" ? "FREE BONUS 2: How to Attract Your Soulmate Faster eBook" : "BÔNUS GRÁTIS 2: Livro Como Atrair Sua Alma Gêmea Mais Rápido"}</span>
-                  </span>
-                  <span className="font-bold text-emerald-700">{lang === "en" ? "FREE" : "GRÁTIS"}</span>
-                </div>
-                <div className="flex justify-between items-center text-emerald-800">
-                  <span className="flex items-center gap-2">
-                    <Gift className="w-4 h-4 text-amber-500 shrink-0" />
-                    <span>{lang === "en" ? "FREE BONUS 3: Guided Aura Cleansing Masterclass" : "BÔNUS GRÁTIS 3: Masterclass Guiada de Limpeza de Aura"}</span>
-                  </span>
-                  <span className="font-bold text-emerald-700">{lang === "en" ? "FREE" : "GRÁTIS"}</span>
-                </div>
-              </div>
-
-              {/* Package Selector */}
-              <div className="space-y-3 mb-6">
-                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                  {lang === "en" ? "Choose Your Package:" : "Escolha Seu Pacote:"}
-                </p>
-
-                {/* Option 1: Standard */}
-                <div
-                  onClick={() => setSelectedPlan("standard")}
-                  className={`p-4 rounded-xl border-2 transition-all cursor-pointer flex items-center justify-between ${
-                    selectedPlan === "standard"
-                      ? "border-[#4CAF50] bg-green-50/70 shadow-sm"
-                      : "border-gray-200 bg-white hover:border-gray-300"
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedPlan === "standard" ? "border-[#4CAF50] bg-[#4CAF50]" : "border-gray-300"}`}>
-                      {selectedPlan === "standard" && <Check className="w-3 h-3 text-white" />}
-                    </div>
-                    <div>
-                      <span className="font-bold text-gray-900 block text-sm font-merriweather">
-                        {lang === "en" ? "Soulmate Sketch Package" : "Pacote Desenho da Alma Gêmea"}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        {lang === "en" ? "Pencil sketch + psychic reading + 3 bonuses" : "Desenho a lápis + leitura psíquica + 3 bônus"}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <span className="font-black text-gray-900 text-base font-mono">
-                      {lang === "en" ? "$37 USD" : "R$ 27,90"}
-                    </span>
-                    <span className="line-through text-[11px] text-gray-400 block">$147 / R$ 147</span>
-                  </div>
-                </div>
-
-                {/* Option 2: Complete with Color */}
-                <div
-                  onClick={() => setSelectedPlan("complete")}
-                  className={`p-4 rounded-xl border-2 transition-all cursor-pointer flex items-center justify-between ${
-                    selectedPlan === "complete"
-                      ? "border-[#4CAF50] bg-green-50/70 shadow-sm"
-                      : "border-gray-200 bg-white hover:border-gray-300"
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedPlan === "complete" ? "border-[#4CAF50] bg-[#4CAF50]" : "border-gray-300"}`}>
-                      {selectedPlan === "complete" && <Check className="w-3 h-3 text-white" />}
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-bold text-gray-900 text-sm font-merriweather">
-                          {lang === "en" ? "Complete Soulmate Vision" : "Visão Completa da Alma Gêmea"}
-                        </span>
-                        <span className="bg-amber-400 text-black text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase">
-                          {lang === "en" ? "Most Popular" : "Mais Escolhido"}
-                        </span>
-                      </div>
-                      <span className="text-xs text-gray-500">
-                        {lang === "en" ? "Includes Colored Drawing Upgrade (vivid eye color)" : "Inclui Upgrade para Desenho Colorido (cor dos olhos e cabelo)"}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <span className="font-black text-gray-900 text-base font-mono">
-                      {lang === "en" ? "$67 USD" : "R$ 47,00"}
-                    </span>
-                    <span className="line-through text-[11px] text-gray-400 block">$247 / R$ 247</span>
-                  </div>
-                </div>
-
-                {/* Order Bump: Express 6h Delivery */}
-                <label className="flex items-start gap-3 p-3.5 bg-amber-50/70 border border-amber-200 rounded-xl cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={addExpressDelivery}
-                    onChange={(e) => setAddExpressDelivery(e.target.checked)}
-                    className="mt-0.5 w-4 h-4 text-[#4CAF50] rounded border-gray-300"
-                  />
-                  <div className="text-left text-xs leading-relaxed">
-                    <span className="font-bold text-amber-950 block">
-                      ⚡ {lang === "en" ? "Add Express 6-Hour Rush Delivery (+ $9.90 / R$ 14,90)" : "Adicionar Entrega Expressa em 6 Horas (+ R$ 14,90 / $9.90)"}
-                    </span>
-                    <span className="text-gray-600">
-                      {lang === "en"
-                        ? "Move to the top of Tina's priority queue and receive your reading in just 6 hours."
-                        : "Passe para o início da fila de canalização da Tina e receba tudo em apenas 6 horas."}
-                    </span>
-                  </div>
-                </label>
-              </div>
-
-              {/* Total Display */}
-              <div className="flex items-center justify-between pt-2 border-t border-gray-200">
-                <div>
-                  <span className="text-base font-bold text-gray-900 block font-merriweather">
-                    {lang === "en" ? "Total Today" : "Total Hoje"}
-                  </span>
-                  <span className="text-[11px] text-gray-500">
-                    {lang === "en" ? "One-time payment • Instant delivery • No subscriptions" : "Pagamento único • Entrega no seu WhatsApp/Email • Sem assinaturas"}
-                  </span>
-                </div>
-                <div className="text-2xl md:text-3xl font-black text-emerald-600 font-mono">
-                  {lang === "en" ? `$${totalPriceUsd} USD` : `R$ ${totalPriceBrl.toFixed(2).replace(".", ",")}`}
-                </div>
-              </div>
-
-              {/* PIX Instant Approval Box */}
-              <div className="bg-white border border-gray-200 rounded-xl p-5 text-center mt-6">
-                <span className="text-xs font-bold text-emerald-700 block mb-3 flex items-center justify-center gap-1.5">
-                  <Zap className="w-4 h-4 fill-emerald-600 text-emerald-600" />
-                  <span>{lang === "en" ? "INSTANT PIX & CARD CHECKOUT · ZERO RISK" : "PAGAMENTO VIA PIX COM APROVAÇÃO IMEDIATA"}</span>
-                </span>
-
-                <button
-                  type="button"
-                  onClick={handleCopyPix}
-                  className={`w-full py-4 px-3 rounded-xl font-black text-sm tracking-wide text-black flex items-center justify-center gap-2 transition cursor-pointer mb-4 shadow-md ${
-                    pixCopied
-                      ? "bg-[#8ff0b3]"
-                      : "bg-gradient-to-b from-[#41E877] via-[#25C55B] to-[#17A94B] text-black hover:brightness-105 active:scale-98"
-                  }`}
-                >
-                  {pixCopied ? (
-                    <>
-                      <Check className="w-5 h-5 text-black" />
-                      <span>{lang === "en" ? "PIX CODE COPIED! ✓" : "CÓDIGO PIX COPIADO! ✓"}</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-5 h-5" />
-                      <span>{lang === "en" ? `COPY PIX CODE (R$ ${totalPriceBrl.toFixed(2).replace(".", ",")})` : `COPIAR CÓDIGO PIX (R$ ${totalPriceBrl.toFixed(2).replace(".", ",")})`}</span>
-                    </>
-                  )}
-                </button>
-
-                <div className="bg-white p-3 rounded-xl border border-gray-200 inline-block mx-auto mb-3 shadow-xs">
-                  <img
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(
-                      pixCode
-                    )}`}
-                    alt="QR Code Pix"
-                    className="w-36 h-36 mx-auto"
-                  />
-                  <span className="text-[10px] text-gray-500 font-semibold mt-1.5 block">
-                    {lang === "en" ? "Scan with your bank's camera app" : "Abra o app do seu banco e aponte a câmera"}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-center gap-2 text-xs text-gray-500 mb-3">
-                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                  <span>{lang === "en" ? "256-Bit SSL Encrypted & Protected" : "Ambiente Criptografado e Seguro 256-Bit SSL"}</span>
-                </div>
-
-                {/* Instant Simulation button */}
-                <button
-                  type="button"
-                  onClick={() => setFunnelView("upsell")}
-                  className="w-full py-3 px-4 rounded-xl text-xs font-bold text-amber-900 bg-amber-100 hover:bg-amber-200 border border-amber-300 transition cursor-pointer flex items-center justify-center gap-2"
-                >
-                  <span>⚡ {lang === "en" ? "Simulate Payment Confirmation (Proceed to Next Funnel Step)" : "Simular Confirmação de Pagamento (Ir para Próxima Etapa do Funil)"}</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-
-            {/* Back button */}
-            <button
-              onClick={() => setFunnelView("landing")}
-              className="text-xs text-gray-400 hover:text-gray-600 underline font-opensans"
-            >
-              ← {lang === "en" ? "Back to official homepage" : "Voltar à página inicial"}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* 2. UPSELL 1: TWIN FLAME SKETCH                                            */}
-      {/* ========================================================================= */}
-      {funnelView === "upsell" && (
-        <div className="max-w-2xl mx-auto px-4 py-8 animate-in fade-in duration-300 text-center">
-          <div className="bg-red-50 border border-red-200 text-red-700 py-2.5 px-4 rounded-xl text-xs font-bold mb-4 inline-flex items-center gap-2">
-            <span>⚠️ {lang === "en" ? "DO NOT CLOSE OR REFRESH THIS PAGE" : "NÃO FECHE NEM ATUALIZE ESTA PÁGINA"}</span>
-          </div>
-
-          <h2 className="text-xs md:text-sm uppercase tracking-[3px] text-gray-500 font-semibold mb-2">
-            {lang === "en" ? "SPECIAL ONE-TIME UPGRADE OFFER" : "OFERTA EXCLUSIVA DE UPGRADE ÚNICO"}
-          </h2>
-          <h1 className="text-2xl md:text-4xl font-bold font-merriweather text-gray-900 leading-tight mb-4">
-            {lang === "en" ? "Would You Also Like Your Twin Flame Sketch?" : "Você Também Gostaria de Ver o Desenho da Sua Chama Gêmea?"}
-          </h1>
-          <p className="text-sm md:text-base text-gray-600 mb-6 max-w-lg mx-auto font-opensans">
-            {lang === "en"
-              ? "A Soulmate is a destined partner who brings comfort and harmony. A Twin Flame is the other half of your energetic mirror soul. Tina Aldea can reveal both connections."
-              : "Uma Alma Gêmea traz aconchego e amor estável. Já a Chama Gêmea é o seu espelho espiritual cósmico. Tina Aldea pode revelar ambas as conexões para você agora mesmo."}
-          </p>
-
-          <div className="relative w-full max-w-xs mx-auto aspect-[3/3.8] rounded-2xl overflow-hidden border-4 border-purple-300 shadow-xl mb-6 bg-black">
-            <img
-              src="/images/squeeze/sketches/sketch2.jpg"
-              alt="Twin Flame Sketch"
-              className="w-full h-full object-cover"
-            />
-          </div>
-
-          <div className="bg-[#fcfaf7] border border-purple-200 rounded-2xl p-5 text-left mb-6 max-w-md mx-auto">
-            <h4 className="font-bold text-gray-900 text-sm font-merriweather mb-2">
-              {lang === "en" ? "Twin Flame Addition Includes:" : "A Adição da Chama Gêmea Inclui:"}
-            </h4>
-            <ul className="text-xs text-gray-700 space-y-2 font-opensans">
-              <li className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-purple-600 shrink-0" />
-                <span>{lang === "en" ? "Second Hand-Drawn Sketch (Twin Flame Energy)" : "Segundo Desenho Feito à Mão (Energia da Chama Gêmea)"}</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-purple-600 shrink-0" />
-                <span>{lang === "en" ? "Twin Flame Soul Separation & Reunion Reading" : "Leitura de Separação e Reencontro de Almas"}</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-purple-600 shrink-0" />
-                <span>{lang === "en" ? "Special 60% OFF One-Time Discount" : "Desconto Único de 60% Aplicado"}</span>
-              </li>
-            </ul>
-          </div>
-
-          <div className="max-w-md mx-auto space-y-3">
-            <button
-              type="button"
-              onClick={() => setFunnelView("delivered")}
-              className="w-full py-4 px-6 bg-[#4CAF50] hover:bg-[#45a049] text-white font-bold text-base rounded-xl shadow-lg flex items-center justify-center gap-2 transition hover:scale-102 cursor-pointer font-opensans"
-            >
-              <Sparkles className="w-5 h-5" />
-              <span>
-                {lang === "en" ? "YES, ADD TWIN FLAME SKETCH (+ $19.90 / R$ 19,90) >" : "SIM, ADICIONAR DESENHO DA CHAMA GÊMEA (+ R$ 19,90) >"}
-              </span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setFunnelView("delivered")}
-              className="text-xs text-gray-400 hover:text-gray-600 underline cursor-pointer block mx-auto py-2"
-            >
-              {lang === "en" ? "No thanks, continue straight to my Soulmate Sketch →" : "Não obrigado, continuar direto para o meu Desenho da Alma Gêmea →"}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* 3. TELA DE ENTREGA FINAL (DELIVERED RESULTS)                             */}
-      {/* ========================================================================= */}
-      {funnelView === "delivered" && (
-        <div className="max-w-2xl mx-auto px-4 py-8 animate-in zoom-in-95 duration-500 text-center">
-          <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-3.5 py-1.5 rounded-full border border-emerald-300 mb-3 inline-block shadow-xs">
-            ✓ {lang === "en" ? "Payment Confirmed • Delivery Completed" : "Pagamento Confirmado • Entrega Liberada"}
-          </span>
-          <h1 className="text-2xl md:text-4xl font-bold font-merriweather text-gray-900 mb-2">
-            {lang === "en" ? `Here Is Your Soulmate, ${name || "Dear"}!` : `Aqui Está Sua Alma Gêmea, ${name || "Querida(o)"}!`}
-          </h1>
-          <p className="text-sm text-gray-600 mb-6 font-opensans">
-            {lang === "en"
-              ? `High-resolution copies have been delivered to your WhatsApp (${whatsapp || "registered"}) and email (${email || "registered"}).`
-              : `Cópias em alta resolução foram enviadas para seu WhatsApp (${whatsapp || "cadastrado"}) e e-mail (${email || "cadastrado"}).`}
-          </p>
-
-          <div className="w-full max-w-sm mx-auto aspect-[3/3.8] rounded-2xl overflow-hidden border-4 border-amber-300 shadow-2xl mb-6 bg-black">
-            <img
-              src={chosenSketch}
-              alt="Your Soulmate Sketch"
-              className="w-full h-full object-cover"
-            />
-          </div>
-
-          <div className="bg-[#fcfaf7] border border-amber-200 rounded-xl p-5 text-left mb-6 max-w-md mx-auto shadow-sm">
-            <h4 className="text-xs font-bold text-amber-800 uppercase tracking-wider mb-2.5 font-merriweather">
-              🔮 {lang === "en" ? "Summary of Tina Aldea's Psychic Reading" : "Resumo da Leitura Psíquica de Tina Aldea"}
-            </h4>
-            <ul className="text-xs text-gray-700 space-y-2.5 font-opensans leading-relaxed">
-              <li>
-                • <strong>{lang === "en" ? "Astral Connection:" : "Conexão Astral:"}</strong>{" "}
-                {lang === "en"
-                  ? `Strong spiritual resonance with your ${zodiac.name} (${zodiac.symbol}) energy.`
-                  : `Forte ressonância e harmonia cósmica com sua energia de ${zodiac.name} (${zodiac.symbol}).`}
-              </li>
-              <li>
-                • <strong>{lang === "en" ? "Distinctive Features:" : "Traços Físicos Marcantes:"}</strong>{" "}
-                {lang === "en"
-                  ? "A warm welcoming gaze, gentle smile, expressive brow, and an intensely reassuring presence."
-                  : "Olhar caloroso e marcante, sorriso espontâneo e uma presença reconfortante e protetora."}
-              </li>
-              <li>
-                • <strong>{lang === "en" ? "Meeting Circumstances:" : "Circunstâncias do Encontro:"}</strong>{" "}
-                {lang === "en"
-                  ? "The cards reveal a serendipitous meeting in a public or social setting in the coming weeks."
-                  : "As cartas revelam um encontro fortuito em um local público ou social nas próximas semanas."}
-              </li>
-            </ul>
-          </div>
-
-          <div className="max-w-xs mx-auto space-y-3">
-            <a
-              href={chosenSketch}
-              download="my-soulmate-tina-aldea.jpg"
-              target="_blank"
-              rel="noreferrer"
-              className="w-full py-4 rounded-xl font-bold text-sm bg-[#4CAF50] hover:bg-[#45a049] text-white shadow-lg flex items-center justify-center gap-2 transition hover:scale-102 cursor-pointer font-opensans"
-            >
-              <Download className="w-4 h-4" />
-              <span>{lang === "en" ? "Download High-Resolution Sketch" : "Baixar Desenho em Alta Resolução"}</span>
-            </a>
-
-            <button
-              onClick={() => {
-                setFunnelView("landing");
-                window.scrollTo({ top: 0, behavior: "smooth" });
-              }}
-              className="text-xs text-gray-400 hover:text-gray-600 underline block mx-auto pt-2 font-opensans cursor-pointer"
-            >
-              {lang === "en" ? "← Return to home page" : "← Retornar à página inicial"}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* 4. LANDING PAGE EXATA DE TINA ALDEA (HOMEPAGE VIEW)                      */}
-      {/* ========================================================================= */}
-      {funnelView === "landing" && (
+      {activeMode === "classic" && (
         <main>
-          {/* ======================================================================= */}
-          {/* HERO SECTION (#FDF8F3)                                                 */}
-          {/* ======================================================================= */}
-          <section className="bg-[#FDF8F3] pt-4 pb-12 md:pb-16 px-5 text-center">
+          {/* Top Blue Banner */}
+          <div className="bg-[#73b4fc] text-white py-2 px-4 text-center font-semibold text-xs md:text-sm font-opensans">
+            {lang === "en"
+              ? "🔮 This is my Official Website! Beware of impersonators"
+              : "🔮 Este é o meu Site Oficial! Cuidado com imitadores e golpes"}
+          </div>
+
+          {/* Hero Section */}
+          <section className="bg-[#FDF8F3] pt-6 pb-12 md:pb-16 px-5 text-center">
             <div className="max-w-2xl mx-auto">
-              {/* Imagem Oficial do Hero (main-hero.jpg) */}
-              <div className="mb-8">
+              <div className="mb-6">
                 <img
                   src="/images/squeeze/main-hero.jpg"
                   alt="Tina Aldea Soulmate Sketch"
@@ -714,869 +1240,115 @@ function TinaAldeaExactClone() {
                 />
               </div>
 
-              {/* Top Badge */}
-              <p
-                className="text-xs md:text-sm uppercase tracking-[3px] text-gray-500 font-semibold mb-4"
-                style={{ fontFamily: "'Open Sans', sans-serif" }}
-              >
-                {lang === "en" ? "THE #1 SOULMATE SKETCH PSYCHIC ARTIST" : "A ARTISTA PSÍQUICA E RETRATISTA Nº 1 DE ALMAS GÊMEAS"}
+              <p className="text-xs uppercase tracking-[3px] text-gray-500 font-semibold mb-3 font-opensans">
+                {lang === "en" ? "THE #1 SOULMATE SKETCH PSYCHIC ARTIST" : "A ARTISTA PSÍQUICA Nº 1 DE ALMAS GÊMEAS"}
               </p>
 
-              {/* H1 Headline (Merriweather) */}
-              <h1 className="text-2xl md:text-4xl lg:text-[42px] text-gray-900 leading-tight mb-5 font-merriweather">
+              <h1 className="text-2xl md:text-4xl text-gray-900 leading-tight mb-4 font-merriweather">
                 {lang === "en"
                   ? '"I Met My Soulmate in Two Weeks After I Got My Sketch from Tina Aldea"'
                   : '"Conheci Minha Alma Gêmea em Duas Semanas Após Receber o Desenho da Tina Aldea"'}
               </h1>
 
-              {/* Subheadline */}
-              <p
-                className="text-base md:text-lg text-gray-600 mb-8 max-w-xl mx-auto"
-                style={{ fontFamily: "'Open Sans', sans-serif" }}
-              >
+              <p className="text-base text-gray-600 mb-8 max-w-xl mx-auto font-opensans">
                 {lang === "en"
                   ? "I will draw your Destined Soulmate in 24 hours and tell you when and where you'll meet"
                   : "Vou desenhar sua Alma Gêmea Destinada em 24 horas e revelar quando e onde vocês vão se conhecer"}
               </p>
 
-              {/* Botão de Ação Verde Oficial (#4CAF50) */}
-              <button
-                type="button"
-                onClick={() => {
-                  setIsQuizOpen(true);
-                  setQuizStep(1);
-                }}
-                className="bg-[#4CAF50] hover:bg-[#45a049] text-white font-bold py-4 px-10 text-lg rounded-xl shadow-lg mx-auto flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95 cursor-pointer"
-                style={{ fontFamily: "'Open Sans', sans-serif" }}
-              >
-                <Sparkles className="w-5 h-5" />
-                <span>{lang === "en" ? "Start My Soulmate Sketch" : "Iniciar Meu Desenho da Alma Gêmea"}</span>
-              </button>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveMode("chat");
+                    handleStartChat();
+                  }}
+                  className="w-full sm:w-auto bg-purple-700 hover:bg-purple-800 text-white font-bold py-4 px-8 text-base rounded-xl shadow-lg flex items-center justify-center gap-2 transition hover:scale-105 cursor-pointer font-opensans"
+                >
+                  <MessageCircle className="w-5 h-5 text-amber-300" />
+                  <span>{lang === "en" ? "Start Private Chat With Tina →" : "Iniciar Chat Privado com Tina →"}</span>
+                </button>
 
-              {/* Delivery Note */}
-              <p
-                className="text-sm text-gray-500 mt-4"
-                style={{ fontFamily: "'Open Sans', sans-serif" }}
-              >
-                {lang === "en" ? "Delivered with Love & Intuition in 24 Hours" : "Entregue com Amor e Intuição em 24 Horas"}
-              </p>
-
-              {/* Social Proof com Estrelas e Avatares */}
-              <div className="mt-8 flex flex-col items-center gap-2">
-                <div className="flex justify-center gap-0.5 mb-1">
-                  {[...Array(5)].map((_, l) => (
-                    <Star key={l} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                  ))}
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <div className="flex -space-x-2.5">
-                    <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="" className="w-9 h-9 rounded-full border-2 border-white object-cover shadow-sm" />
-                    <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="" className="w-9 h-9 rounded-full border-2 border-white object-cover shadow-sm" />
-                    <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="" className="w-9 h-9 rounded-full border-2 border-white object-cover shadow-sm" />
-                    <img src="https://randomuser.me/api/portraits/men/75.jpg" alt="" className="w-9 h-9 rounded-full border-2 border-white object-cover shadow-sm" />
-                    <img src="https://randomuser.me/api/portraits/women/17.jpg" alt="" className="w-9 h-9 rounded-full border-2 border-white object-cover shadow-sm" />
-                  </div>
-                  <span className="text-sm text-gray-600 font-opensans">
-                    + <span className="font-bold text-gray-800 text-base">{clientCount.toLocaleString()}</span>
-                  </span>
-                </div>
-
-                <p className="text-sm text-gray-500 font-opensans">
-                  {lang === "en"
-                    ? `Loved by ${clientCount.toLocaleString()}+ happy clients`
-                    : `Amado por mais de ${clientCount.toLocaleString()} clientes satisfeitas`}
-                </p>
+                <button
+                  type="button"
+                  onClick={() => setIsClassicQuizOpen(true)}
+                  className="w-full sm:w-auto bg-[#4CAF50] hover:bg-[#45a049] text-white font-bold py-4 px-8 text-base rounded-xl shadow-lg flex items-center justify-center gap-2 transition hover:scale-105 cursor-pointer font-opensans"
+                >
+                  <Sparkles className="w-5 h-5" />
+                  <span>{lang === "en" ? "Standard Quiz →" : "Quiz Rápido →"}</span>
+                </button>
               </div>
 
-              {/* AS SEEN ON Media Badges */}
-              <div className="mt-10 pt-6 border-t border-gray-200/60">
-                <p
-                  className="text-xs uppercase tracking-[4px] text-gray-400 font-semibold mb-4"
-                  style={{ fontFamily: "'Open Sans', sans-serif" }}
-                >
-                  AS SEEN ON
-                </p>
-                <div className="flex justify-center items-center gap-8 md:gap-12 opacity-60 grayscale hover:grayscale-0 transition">
-                  <span className="font-bold text-lg md:text-xl text-gray-400 font-merriweather">CBS</span>
-                  <span className="font-bold text-lg md:text-xl text-gray-400 font-merriweather">NBC</span>
-                  <span className="font-bold text-lg md:text-xl text-gray-400 font-merriweather">FOX</span>
-                  <span className="font-bold text-lg md:text-xl text-gray-400 font-merriweather">USA TODAY</span>
+              {/* Social Proof */}
+              <div className="mt-8 flex flex-col items-center gap-1.5">
+                <div className="flex justify-center gap-0.5">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                  ))}
                 </div>
+                <p className="text-sm text-gray-600 font-opensans">
+                  {lang === "en" ? "Loved by 43,000+ happy clients" : "Amado por mais de 43.000 clientes"}
+                </p>
               </div>
             </div>
           </section>
 
-          {/* ======================================================================= */}
-          {/* HOW IT WORKS SECTION (#2D2D2D)                                          */}
-          {/* ======================================================================= */}
-          <section className="bg-[#2D2D2D] text-white py-14 md:py-16 px-5">
+          {/* How It Works (#2D2D2D) */}
+          <section className="bg-[#2D2D2D] text-white py-14 px-5">
             <div className="max-w-3xl mx-auto">
-              <h2 className="text-2xl md:text-3xl text-center mb-12 font-merriweather">
+              <h2 className="text-2xl md:text-3xl text-center mb-10 font-merriweather">
                 {lang === "en" ? "How It Works" : "Como Funciona"}
               </h2>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-6 text-center">
-                {/* Step 1 */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
                 <div className="flex flex-col items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-[#4CAF50] flex items-center justify-center text-xl font-bold">
-                    1
-                  </div>
-                  <h3 className="text-lg font-semibold font-merriweather">
-                    {lang === "en" ? "Take the Quiz" : "Responda ao Quiz"}
-                  </h3>
-                  <p className="text-sm text-gray-300 font-opensans leading-relaxed">
-                    {lang === "en"
-                      ? "Answer a few simple questions so I can tune into your energy"
-                      : "Responda a algumas perguntas simples para que eu possa sintonizar sua energia"}
+                  <div className="w-12 h-12 rounded-full bg-[#4CAF50] flex items-center justify-center text-xl font-bold">1</div>
+                  <h3 className="font-bold font-merriweather">{lang === "en" ? "Take the Chat / Quiz" : "Responda ao Chat"}</h3>
+                  <p className="text-xs text-gray-300 font-opensans leading-relaxed">
+                    {lang === "en" ? "Answer simple questions to tune energy" : "Responda a perguntas para calibrar sua energia"}
                   </p>
                 </div>
-
-                {/* Step 2 */}
                 <div className="flex flex-col items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-[#4CAF50] flex items-center justify-center text-xl font-bold">
-                    2
-                  </div>
-                  <h3 className="text-lg font-semibold font-merriweather">
-                    {lang === "en" ? "I Channel Your Soulmate" : "Canalizo Sua Alma Gêmea"}
-                  </h3>
-                  <p className="text-sm text-gray-300 font-opensans leading-relaxed">
-                    {lang === "en"
-                      ? "Using my psychic abilities, I visualize and sketch who your soulmate is"
-                      : "Usando minhas habilidades psíquicas, visualizo e desenho quem é sua alma gêmea"}
+                  <div className="w-12 h-12 rounded-full bg-[#4CAF50] flex items-center justify-center text-xl font-bold">2</div>
+                  <h3 className="font-bold font-merriweather">{lang === "en" ? "I Channel Your Soulmate" : "Canalizo Sua Alma Gêmea"}</h3>
+                  <p className="text-xs text-gray-300 font-opensans leading-relaxed">
+                    {lang === "en" ? "I visualize and hand-draw the portrait" : "Visualizo e desenho o rosto em detalhes"}
                   </p>
                 </div>
-
-                {/* Step 3 */}
                 <div className="flex flex-col items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-[#4CAF50] flex items-center justify-center text-xl font-bold">
-                    3
-                  </div>
-                  <h3 className="text-lg font-semibold font-merriweather">
-                    {lang === "en" ? "Delivered to Your Email" : "Entregue no seu E-mail"}
-                  </h3>
-                  <p className="text-sm text-gray-300 font-opensans leading-relaxed">
-                    {lang === "en"
-                      ? "Receive your soulmate sketch and detailed reading within 24 hours"
-                      : "Receba seu desenho em alta resolução e leitura detalhada em até 24 horas"}
+                  <div className="w-12 h-12 rounded-full bg-[#4CAF50] flex items-center justify-center text-xl font-bold">3</div>
+                  <h3 className="font-bold font-merriweather">{lang === "en" ? "Delivered in 24 Hours" : "Entregue em 24h"}</h3>
+                  <p className="text-xs text-gray-300 font-opensans leading-relaxed">
+                    {lang === "en" ? "Receive your high-res sketch & reading" : "Receba seu desenho em alta resolução e leitura"}
                   </p>
                 </div>
               </div>
             </div>
           </section>
 
-          {/* ======================================================================= */}
-          {/* TESTIMONIALS SECTION (WHITE)                                            */}
-          {/* ======================================================================= */}
-          <section className="py-14 md:py-16 px-5 bg-white">
+          {/* Testimonials */}
+          <section className="py-14 px-5 bg-white">
             <div className="max-w-2xl mx-auto">
-              <h2 className="text-2xl md:text-3xl text-center text-gray-900 mb-3 font-merriweather">
+              <h2 className="text-2xl md:text-3xl text-center text-gray-900 mb-8 font-merriweather">
                 {lang === "en" ? "What My Clients Say" : "O Que Meus Clientes Dizem"}
               </h2>
-              <p className="text-center text-gray-500 mb-10 text-base font-opensans">
-                {lang === "en"
-                  ? "Real stories from real people who found their soulmate"
-                  : "Histórias reais de pessoas reais que encontraram sua alma gêmea"}
-              </p>
-
-              {/* 4 Imagens Oficiais de Testemunhos Extraídas de officialtinaaldea.com */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-                <img
-                  src="/images/squeeze/testimonials/alex.jpg"
-                  alt="Testimonial from Alex"
-                  className="rounded-xl shadow-md w-full"
-                  loading="lazy"
-                />
-                <img
-                  src="/images/squeeze/testimonials/angela.jpg"
-                  alt="Testimonial from Angela"
-                  className="rounded-xl shadow-md w-full"
-                  loading="lazy"
-                />
-                <img
-                  src="/images/squeeze/testimonials/julia.jpg"
-                  alt="Testimonial from Julia"
-                  className="rounded-xl shadow-md w-full"
-                  loading="lazy"
-                />
-                <img
-                  src="/images/squeeze/testimonials/lisa.jpg"
-                  alt="Testimonial from Lisa"
-                  className="rounded-xl shadow-md w-full"
-                  loading="lazy"
-                />
-              </div>
-
-              <div className="text-center">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsQuizOpen(true);
-                    setQuizStep(1);
-                  }}
-                  className="bg-[#4CAF50] hover:bg-[#45a049] text-white font-bold py-4 px-10 text-lg rounded-xl shadow-lg inline-flex items-center gap-2 transition-all hover:scale-105 cursor-pointer font-opensans"
-                >
-                  <Sparkles className="w-5 h-5" />
-                  <span>{lang === "en" ? "Start My Soulmate Sketch" : "Iniciar Meu Desenho da Alma Gêmea"}</span>
-                </button>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                <img src="/images/squeeze/testimonials/alex.jpg" alt="" className="rounded-xl shadow-md w-full" />
+                <img src="/images/squeeze/testimonials/angela.jpg" alt="" className="rounded-xl shadow-md w-full" />
+                <img src="/images/squeeze/testimonials/julia.jpg" alt="" className="rounded-xl shadow-md w-full" />
+                <img src="/images/squeeze/testimonials/lisa.jpg" alt="" className="rounded-xl shadow-md w-full" />
               </div>
             </div>
           </section>
 
-          {/* ======================================================================= */}
-          {/* WHO IS THIS FOR? SECTION (WHITE)                                        */}
-          {/* ======================================================================= */}
-          <section className="py-14 md:py-16 px-5 bg-white">
-            <div className="max-w-3xl mx-auto">
-              <h2 className="text-2xl md:text-3xl text-center text-gray-900 mb-3 font-merriweather">
-                {lang === "en" ? "Who Is This For?" : "Para Quem É Isso?"}
-              </h2>
-              <p className="text-center text-gray-500 mb-10 text-base font-opensans">
-                {lang === "en"
-                  ? "A soulmate sketch is the perfect gift for yourself or someone you love"
-                  : "O desenho da alma gêmea é o presente perfeito para você ou para alguém que você ama"}
-              </p>
-
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-5">
-                {[
-                  { title: lang === "en" ? "Looking for Love" : "Em Busca de Amor", icon: Heart, color: "text-rose-400" },
-                  { title: lang === "en" ? "Curious About the Future" : "Curioso(a) sobre o Futuro", icon: Eye, color: "text-indigo-400" },
-                  { title: lang === "en" ? "Seeking Closure" : "Buscando Respostas", icon: Lock, color: "text-amber-400" },
-                  { title: lang === "en" ? "Spiritual Guidance" : "Orientação Espiritual", icon: Compass, color: "text-teal-400" },
-                  { title: lang === "en" ? "A Special Gift" : "Um Presente Especial", icon: Gift, color: "text-pink-400" },
-                  { title: lang === "en" ? "Self-Discovery" : "Autodescoberta", icon: Award, color: "text-sky-400" },
-                ].map((s) => (
-                  <div
-                    key={s.title}
-                    className="rounded-xl bg-[#FDF8F3] p-5 md:p-6 text-center hover:shadow-md transition-shadow"
-                  >
-                    <s.icon className={`w-8 h-8 mx-auto mb-3 ${s.color}`} />
-                    <h3 className="font-semibold text-gray-900 text-sm md:text-base font-opensans">
-                      {s.title}
-                    </h3>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          {/* ======================================================================= */}
-          {/* WHAT YOU GET SECTION (GRAY-50)                                          */}
-          {/* ======================================================================= */}
-          <section className="py-14 md:py-16 px-5 bg-gray-50">
-            <div className="max-w-2xl mx-auto">
-              <h2 className="text-2xl md:text-3xl text-center text-gray-900 mb-3 font-merriweather">
-                {lang === "en" ? "What You Get" : "O Que Você Recebe"}
-              </h2>
-              <p className="text-center text-gray-500 mb-10 text-base font-opensans">
-                {lang === "en"
-                  ? "Your complete soulmate experience, delivered to your inbox"
-                  : "Sua experiência completa da alma gêmea, entregue diretamente no seu e-mail"}
-              </p>
-
-              <div className="space-y-4">
-                {[
-                  {
-                    icon: Palette,
-                    title: lang === "en" ? "Psychic Soulmate Sketch" : "Desenho Psíquico da Alma Gêmea",
-                    desc: lang === "en"
-                      ? "A detailed portrait of your soulmate, channeled through psychic vision"
-                      : "Um retrato detalhado da sua alma gêmea, canalizado através de visão psíquica",
-                  },
-                  {
-                    icon: FileText,
-                    title: lang === "en" ? "Detailed Psychic Reading" : "Leitura Psíquica Detalhada",
-                    desc: lang === "en"
-                      ? "In-depth description of your soulmate's personality, traits, and how you'll meet"
-                      : "Descrição aprofundada da personalidade, traços e como vocês vão se conhecer",
-                  },
-                  {
-                    icon: Gift,
-                    title: lang === "en" ? "Bonus: Soulmate Compatibility Guide" : "Bônus: Guia de Compatibilidade da Alma Gêmea",
-                    desc: lang === "en"
-                      ? "Discover the energetic connection between you and your soulmate"
-                      : "Descubra a conexão energética e astral entre você e sua alma gêmea",
-                  },
-                  {
-                    icon: Clock,
-                    title: lang === "en" ? "24-Hour Delivery" : "Entrega em 24 Horas",
-                    desc: lang === "en"
-                      ? "Receive everything in your email within 24 hours (express 6h option available)"
-                      : "Receba tudo no seu e-mail em até 24 horas (opção expressa de 6h disponível)",
-                  },
-                ].map((s) => (
-                  <div
-                    key={s.title}
-                    className="flex gap-4 items-start bg-white rounded-xl p-5 border border-gray-100 shadow-sm"
-                  >
-                    <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
-                      <s.icon className="w-5 h-5 text-[#4CAF50]" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900 text-base font-merriweather">
-                        {s.title}
-                      </h3>
-                      <p className="text-sm text-gray-500 mt-0.5 font-opensans">
-                        {s.desc}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="text-center mt-8">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsQuizOpen(true);
-                    setQuizStep(1);
-                  }}
-                  className="bg-[#4CAF50] hover:bg-[#45a049] text-white font-bold py-4 px-10 text-lg rounded-xl shadow-lg inline-flex items-center gap-2 transition-all hover:scale-105 cursor-pointer font-opensans"
-                >
-                  <Sparkles className="w-5 h-5" />
-                  <span>{lang === "en" ? "Start My Soulmate Sketch" : "Iniciar Meu Desenho da Alma Gêmea"}</span>
-                </button>
-                <p className="text-xs text-gray-400 mt-3 font-opensans">
-                  {lang === "en" ? "Risk-Free Purchase — 30 day money back guarantee" : "Compra Sem Risco — 30 Dias de Garantia de Reembolso"}
-                </p>
-              </div>
-            </div>
-          </section>
-
-          {/* ======================================================================= */}
-          {/* MY RECENT WORK SECTION (WHITE)                                          */}
-          {/* ======================================================================= */}
-          <section className="py-14 md:py-16 px-5 bg-white">
-            <div className="max-w-2xl mx-auto">
-              <h3 className="text-2xl md:text-3xl text-center text-gray-900 mb-3 font-merriweather">
-                {lang === "en" ? "My Recent Work" : "Meus Trabalhos Recentes"}
-              </h3>
-              <p className="text-center text-gray-600 mb-8 text-base font-opensans">
-                {lang === "en"
-                  ? `See below some examples of my ${currentMonth} ${currentYear} work`
-                  : `Veja abaixo alguns exemplos de desenhos canalizados em ${currentMonth} de ${currentYear}`}
-              </p>
-
-              {/* 4 Esboços Oficiais Baixados de officialtinaaldea.com */}
-              <div className="grid grid-cols-2 gap-4 md:gap-6 mb-10">
-                <img
-                  src="/images/squeeze/sketches/sketch3.jpg"
-                  alt="Soulmate Sketch Example 1"
-                  className="rounded-xl shadow-md w-full"
-                  loading="lazy"
-                />
-                <img
-                  src="/images/squeeze/sketches/sketch4.jpg"
-                  alt="Soulmate Sketch Example 2"
-                  className="rounded-xl shadow-md w-full"
-                  loading="lazy"
-                />
-                <img
-                  src="/images/squeeze/sketches/sketch2025.jpg"
-                  alt="Soulmate Sketch Example 3"
-                  className="rounded-xl shadow-md w-full"
-                  loading="lazy"
-                />
-                <img
-                  src="/images/squeeze/sketches/sketch2.jpg"
-                  alt="Soulmate Sketch Example 4"
-                  className="rounded-xl shadow-md w-full"
-                  loading="lazy"
-                />
-              </div>
-
-              {/* Final Big CTA Button */}
-              <div className="text-center mb-4">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsQuizOpen(true);
-                    setQuizStep(1);
-                  }}
-                  className="bg-[#4CAF50] hover:bg-[#45a049] text-white font-bold py-5 px-8 text-lg md:text-xl rounded-xl shadow-2xl w-full max-w-md mx-auto flex flex-col items-center justify-center transition-transform hover:scale-105 cursor-pointer font-opensans"
-                >
-                  <span>{lang === "en" ? "YES, I WANT MY SOULMATE DRAWING >" : "SIM, QUERO MEU DESENHO DA ALMA GÊMEA >"}</span>
-                  <span className="text-sm font-normal opacity-90 mt-1 font-opensans">
-                    {lang === "en" ? "Risk-Free — 30 day money back guarantee" : "Sem Risco — 30 dias de garantia de reembolso"}
-                  </span>
-                </button>
-              </div>
-            </div>
-          </section>
-
-          {/* ======================================================================= */}
-          {/* FREQUENTLY ASKED QUESTIONS (#FAFAFA)                                    */}
-          {/* ======================================================================= */}
-          <section className="py-14 md:py-16 px-5 bg-[#FAFAFA]">
-            <div className="max-w-2xl mx-auto">
-              <h2 className="text-2xl md:text-3xl text-center text-gray-900 mb-10 font-merriweather">
-                {lang === "en" ? "Frequently Asked Questions" : "Perguntas Frequentes"}
-              </h2>
-
-              <div className="space-y-3">
-                {[
-                  {
-                    q: lang === "en" ? "How does the Soulmate Sketch work?" : "Como funciona o Desenho da Alma Gêmea?",
-                    a: lang === "en"
-                      ? "I use intuitive energy readings to tune into the energies and vibrations associated with you. These energies guide me in visualizing and sketching a representation of your potential soulmate, along with a detailed psychic reading about who they are."
-                      : "Utilizo leituras intuitivas de energia para sintonizar as vibrações associadas a você. Essas energias me guiam na visualização e desenho detalhado da sua alma gêmea, acompanhado de uma leitura psíquica aprofundada sobre quem ela é.",
-                  },
-                  {
-                    q: lang === "en" ? "What is the price?" : "Qual é o valor?",
-                    a: lang === "en"
-                      ? "The soulmate sketch and reading package is just $37 USD / R$ 27,90 (normally $147). This includes the sketch, detailed reading, and bonus content."
-                      : "O pacote completo com o desenho hiper-realista, a leitura detalhada e o guia de bônus custa apenas R$ 27,90 / $37 USD (preço normal R$ 147,00). Pagamento único e sem assinaturas.",
-                  },
-                  {
-                    q: lang === "en" ? "Why should I trust you?" : "Por que devo confiar em você?",
-                    a: lang === "en"
-                      ? "I'm Tina Aldea, a psychic artist with a unique gift that I've honed since childhood. My skills were nurtured in a family with deep roots in spiritual and psychic practices. Over 43,000 satisfied clients have trusted me with their soulmate journey."
-                      : "Sou Tina Aldea, artista e médium com um dom único aperfeiçoado desde a infância. Minhas habilidades foram cultivadas em uma família com raízes profundas em práticas espirituais. Mais de 43.000 clientes satisfeitos confiaram em minhas visões.",
-                  },
-                  {
-                    q: lang === "en" ? "Can I pay with PayPal / PIX / Credit Card?" : "Quais são as formas de pagamento?",
-                    a: lang === "en"
-                      ? "Yes! I accept PayPal, PIX with instant approval, and all major credit cards. There will be no unauthorized charges — transactions can only be made manually by you."
-                      : "Sim! Aceitamos PIX com aprovação imediata, cartão de crédito e PayPal. Não há cobranças não autorizadas nem mensalidades.",
-                  },
-                  {
-                    q: lang === "en" ? "How soon will I receive my sketch?" : "Em quanto tempo recebo meu desenho?",
-                    a: lang === "en"
-                      ? "Your sketch and reading will be delivered to your email within 24 hours. You also have the option for express 6-hour delivery."
-                      : "Seu desenho e leitura serão entregues no seu e-mail e WhatsApp em até 24 horas (com opção de entrega expressa de 6 horas disponível).",
-                  },
-                ].map((faq, idx) => (
-                  <div key={idx} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-xs">
-                    <button
-                      type="button"
-                      onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
-                      className="w-full p-4 text-left font-bold text-sm text-gray-900 flex items-center justify-between gap-3 cursor-pointer hover:bg-gray-50 transition font-merriweather"
-                    >
-                      <span>{faq.q}</span>
-                      <ChevronDown
-                        className={`w-4 h-4 text-gray-400 transition-transform ${openFaq === idx ? "rotate-180" : ""}`}
-                      />
-                    </button>
-                    {openFaq === idx && (
-                      <div className="p-4 pt-0 text-sm text-gray-600 font-opensans leading-relaxed border-t border-gray-100">
-                        {faq.a}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          {/* ======================================================================= */}
-          {/* FINAL RATING / CALL TO ACTION (#FDF8F3)                                 */}
-          {/* ======================================================================= */}
-          <section className="py-14 md:py-16 px-5 bg-[#FDF8F3]">
-            <div className="max-w-md mx-auto text-center">
-              <div className="flex justify-center gap-1 mb-2">
-                {[...Array(5)].map((_, l) => (
-                  <Star key={l} className="w-6 h-6 fill-yellow-400 text-yellow-400" />
-                ))}
-              </div>
-
-              <p className="text-2xl font-bold text-gray-900 font-merriweather">4.9 / 5</p>
-              <p
-                className="text-base text-gray-500 mt-1 mb-8"
-                style={{ fontFamily: "'Open Sans', sans-serif" }}
-              >
-                {lang === "en" ? "Based on 43,000+ happy clients" : "Baseado em mais de 43.000 clientes satisfeitas"}
-              </p>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setIsQuizOpen(true);
-                  setQuizStep(1);
-                }}
-                className="bg-[#4CAF50] hover:bg-[#45a049] text-white font-bold py-5 px-10 text-xl rounded-xl shadow-lg w-full flex items-center justify-center gap-2 transition-all hover:scale-105 cursor-pointer"
-                style={{ fontFamily: "'Open Sans', sans-serif" }}
-              >
-                <Sparkles className="w-5 h-5" />
-                <span>{lang === "en" ? "Start My Soulmate Sketch" : "Iniciar Meu Desenho da Alma Gêmea"}</span>
-              </button>
-
-              <p
-                className="text-xs text-gray-400 mt-3"
-                style={{ fontFamily: "'Open Sans', sans-serif" }}
-              >
-                {lang === "en" ? "Risk-Free Purchase — 30 day money back guarantee" : "Compra Sem Risco — 30 dias de garantia de reembolso"}
-              </p>
-            </div>
-          </section>
-
-          {/* ======================================================================= */}
-          {/* FOOTER OFICIAL COM LOGO E TEXTOS LEGAIS                                 */}
-          {/* ======================================================================= */}
-          <footer
-            className="bg-gray-100 py-10 px-4 text-center text-xs text-gray-500"
-            style={{ fontFamily: "'Open Sans', sans-serif" }}
-          >
-            <div className="mb-6">
-              <img
-                src="/images/misc/logo.png"
-                alt="Tina Aldea - Psychic & Soulmate Sketch Artist"
-                className="h-14 mx-auto"
-              />
-            </div>
-
-            <div className="flex justify-center gap-4 mb-6 flex-wrap">
-              <a href="#privacy" className="hover:text-gray-700">Privacy Policy</a>
-              <span>•</span>
-              <a href="#terms" className="hover:text-gray-700">Terms & Conditions</a>
-              <span>•</span>
-              <a href="#refunds" className="hover:text-gray-700">Refunds</a>
-              <span>•</span>
-              <a href="#contact" className="hover:text-gray-700">Contact</a>
-              <span>•</span>
-              <a href="#disclaimer" className="hover:text-gray-700">Disclaimer</a>
-            </div>
-
-            <p className="font-semibold mb-6">
-              Copyright {currentYear} Tina Aldea. All Rights Reserved.
+          {/* Footer */}
+          <footer className="bg-gray-100 py-10 px-4 text-center text-xs text-gray-500 font-opensans">
+            <img src="/images/misc/logo.png" alt="Tina Aldea" className="h-12 mx-auto mb-4" />
+            <p className="font-semibold mb-2">Copyright {new Date().getFullYear()} Tina Aldea. All Rights Reserved.</p>
+            <p className="text-[11px] text-gray-400 max-w-xl mx-auto">
+              All sketches and readings are intended for entertainment purposes only and may not be unique.
             </p>
-
-            <div className="max-w-3xl mx-auto space-y-4 mb-6 text-gray-400 text-[11px] leading-relaxed">
-              <p className="italic">
-                <strong>Advertising Disclaimer:</strong> This website is not affiliated with, endorsed by or sponsored by Facebook Inc. or Google LLC. Facebook and Google are registered trademarks of their respective companies. Any product claim, statistic, quote or other representation about a product or service should be verified with the manufacturer, provider or party in question.
-              </p>
-              <p className="italic">
-                <strong>Disclaimer:</strong> By participating in my services you acknowledge that I am not a licensed psychologist, lawyer, or health care professional and my services do not replace the care of lawyers, psychologists, or other healthcare professionals. All my sketches and readings are intended for entertainment purposes only and may not be unique.
-              </p>
-            </div>
-
-            <div className="pt-4 border-t border-gray-300">
-              <p className="text-xs">
-                For product support:{" "}
-                <a href="mailto:support@officialtinaaldea.com" className="text-blue-500 hover:underline">
-                  support@officialtinaaldea.com
-                </a>
-              </p>
-            </div>
           </footer>
         </main>
-      )}
-
-      {/* ========================================================================= */}
-      {/* 5. MODAL POPUP DO QUIZ (IDENTICO AO OFICIAL QUANDO CLICA NO CTA)           */}
-      {/* ========================================================================= */}
-      {isQuizOpen && (
-        <div className="fixed inset-0 z-50 bg-white overflow-y-auto animate-in fade-in duration-200">
-          {/* Header Escuro do Modal (#2D2D2D) */}
-          <div className="bg-[#2D2D2D] text-white p-5 text-center relative">
-            <button
-              onClick={() => setIsQuizOpen(false)}
-              className="absolute top-4 right-4 text-white/70 hover:text-white p-1 rounded-full cursor-pointer"
-            >
-              <X className="w-6 h-6" />
-            </button>
-            <p className="text-xs text-gray-300 uppercase tracking-widest font-opensans font-semibold">
-              {lang === "en" ? "Almost Complete..." : "Quase Completo..."}
-            </p>
-            <h3 className="text-base md:text-lg font-bold mt-1.5 leading-snug font-merriweather max-w-md mx-auto">
-              {lang === "en"
-                ? "Just answer a few simple questions so I can draw your Soulmate accurately..."
-                : "Responda a algumas perguntas simples para que eu possa desenhar sua Alma Gêmea com precisão..."}
-            </h3>
-          </div>
-
-          <div className="max-w-md mx-auto px-5 py-6">
-            {/* Barra de Progresso com 5 Segmentos Verdes (#4CAF50) */}
-            <div className="flex gap-1.5 mb-6">
-              {[1, 2, 3, 4, 5].map((st) => (
-                <div
-                  key={st}
-                  className={`h-2 flex-1 rounded-full transition-all duration-300 ${
-                    st <= quizStep ? "bg-[#4CAF50]" : "bg-gray-200"
-                  }`}
-                />
-              ))}
-            </div>
-
-            {/* ETAPA 1 DO QUIZ: INTERESSE */}
-            {quizStep === 1 && (
-              <div className="space-y-4 animate-in fade-in">
-                <h4 className="font-bold text-gray-900 text-lg font-merriweather">
-                  {lang === "en" ? "Who are You Interested In?" : "Em quem você tem interesse no amor?"}
-                </h4>
-                <p className="text-sm text-gray-500 font-opensans">
-                  {lang === "en" ? "Tap to Select your Interest" : "Toque para selecionar sua preferência:"}
-                </p>
-
-                <div className="space-y-3">
-                  {[
-                    { val: "men", label: lang === "en" ? "I am into Men" : "Estou em busca de Homens" },
-                    { val: "women", label: lang === "en" ? "I am into Women" : "Estou em busca de Mulheres" },
-                    { val: "both", label: lang === "en" ? "I am into Both" : "Estou em busca de Ambos" },
-                  ].map((opt) => (
-                    <button
-                      key={opt.val}
-                      type="button"
-                      onClick={() => {
-                        setInterest(opt.val as any);
-                        setQuizStep(2);
-                      }}
-                      className={`w-full p-4 text-left border-2 rounded-xl transition-all text-base font-semibold cursor-pointer ${
-                        interest === opt.val
-                          ? "border-[#4CAF50] bg-green-50 text-gray-900 shadow-sm"
-                          : "border-gray-300 hover:border-[#4CAF50] hover:bg-green-50 text-gray-800"
-                      }`}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* ETAPA 2 DO QUIZ: DATA DE NASCIMENTO */}
-            {quizStep === 2 && (
-              <div className="space-y-4 animate-in fade-in">
-                <h4 className="font-bold text-gray-900 text-lg font-merriweather">
-                  {lang === "en" ? "When were you born?" : "Quando você nasceu?"}
-                </h4>
-                <p className="text-sm text-gray-500 font-opensans">
-                  {lang === "en" ? "Select your birth date" : "Selecione sua data de nascimento:"}
-                </p>
-
-                <div className="grid grid-cols-3 gap-2">
-                  {/* Dia */}
-                  <div>
-                    <label className="text-[11px] text-gray-500 font-bold block mb-1">
-                      {lang === "en" ? "Day" : "Dia"}
-                    </label>
-                    <select
-                      value={birthDay}
-                      onChange={(e) => setBirthDay(e.target.value)}
-                      className="w-full py-3 px-2 rounded-xl border border-gray-300 text-sm font-semibold bg-white text-gray-800 focus:outline-none focus:border-[#4CAF50]"
-                    >
-                      {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
-                        <option key={d} value={d}>
-                          {d}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Mês */}
-                  <div>
-                    <label className="text-[11px] text-gray-500 font-bold block mb-1">
-                      {lang === "en" ? "Month" : "Mês"}
-                    </label>
-                    <select
-                      value={birthMonth}
-                      onChange={(e) => setBirthMonth(e.target.value)}
-                      className="w-full py-3 px-2 rounded-xl border border-gray-300 text-sm font-semibold bg-white text-gray-800 focus:outline-none focus:border-[#4CAF50]"
-                    >
-                      {(lang === "en" ? MONTHS_EN : MONTHS_PT).map((m, idx) => (
-                        <option key={m} value={idx + 1}>
-                          {m}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Ano */}
-                  <div>
-                    <label className="text-[11px] text-gray-500 font-bold block mb-1">
-                      {lang === "en" ? "Year" : "Ano"}
-                    </label>
-                    <select
-                      value={birthYear}
-                      onChange={(e) => setBirthYear(e.target.value)}
-                      className="w-full py-3 px-2 rounded-xl border border-gray-300 text-sm font-semibold bg-white text-gray-800 focus:outline-none focus:border-[#4CAF50]"
-                    >
-                      {Array.from({ length: 70 }, (_, i) => 2006 - i).map((y) => (
-                        <option key={y} value={y}>
-                          {y}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Badge Signo Solar */}
-                <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl">{zodiac.symbol}</span>
-                    <div>
-                      <span className="text-xs font-bold text-amber-900 block">
-                        Sign: {zodiac.name} ({zodiac.element})
-                      </span>
-                      <span className="text-[10px] text-gray-500">Astrological energy calibrated</span>
-                    </div>
-                  </div>
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setQuizStep(3)}
-                  className="w-full py-4 bg-[#4CAF50] hover:bg-[#45a049] text-white font-bold rounded-xl text-base shadow-md cursor-pointer flex items-center justify-center gap-2"
-                >
-                  <span>{lang === "en" ? "Continue" : "Continuar"}</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
-            )}
-
-            {/* ETAPA 3 DO QUIZ: ETNIA / PREFERÊNCIA */}
-            {quizStep === 3 && (
-              <div className="space-y-4 animate-in fade-in">
-                <h4 className="font-bold text-gray-900 text-lg font-merriweather">
-                  {lang === "en" ? "What is your ethnic background?" : "Qual é a sua ascendência ou preferência?"}
-                </h4>
-                <p className="text-sm text-gray-500 font-opensans">
-                  {lang === "en"
-                    ? "This helps me draw your soulmate more accurately"
-                    : "Isso me ajuda a desenhar sua alma gêmea com mais precisão"}
-                </p>
-
-                <div className="space-y-2.5">
-                  {[
-                    { en: "White / Western", pt: "Branca / Ocidental" },
-                    { en: "Hispanic / Latino", pt: "Hispânica / Latina" },
-                    { en: "Black / African", pt: "Negra / Afrodescendente" },
-                    { en: "Asian", pt: "Asiática" },
-                    { en: "Any / Leave to Destiny", pt: "Qualquer / Deixo ao Destino" },
-                  ].map((et) => (
-                    <button
-                      key={et.en}
-                      type="button"
-                      onClick={() => {
-                        setEthnicity(lang === "en" ? et.en : et.pt);
-                        setQuizStep(4);
-                      }}
-                      className={`w-full p-3.5 text-left border rounded-xl transition text-sm font-semibold cursor-pointer ${
-                        ethnicity === (lang === "en" ? et.en : et.pt)
-                          ? "border-[#4CAF50] bg-green-50 text-gray-900 font-bold"
-                          : "border-gray-200 hover:border-[#4CAF50] hover:bg-green-50 text-gray-700"
-                      }`}
-                    >
-                      {lang === "en" ? et.en : et.pt}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* ETAPA 4 DO QUIZ: NOME */}
-            {quizStep === 4 && (
-              <div className="space-y-4 animate-in fade-in">
-                <h4 className="font-bold text-gray-900 text-lg font-merriweather">
-                  {lang === "en" ? "What is Your Name?" : "Como você se chama?"}
-                </h4>
-                <p className="text-sm text-gray-500 font-opensans">
-                  {lang === "en" ? "Enter your name" : "Digite seu nome:"}
-                </p>
-
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder={lang === "en" ? "Enter your name..." : "Digite seu nome aqui..."}
-                  className="w-full h-14 px-4 rounded-xl border border-gray-300 text-base font-semibold focus:outline-none focus:border-[#4CAF50]"
-                  autoFocus
-                />
-
-                <button
-                  type="button"
-                  disabled={!name.trim()}
-                  onClick={() => setQuizStep(5)}
-                  className={`w-full py-4 rounded-xl text-base font-bold shadow-md flex items-center justify-center gap-2 cursor-pointer ${
-                    name.trim()
-                      ? "bg-[#4CAF50] hover:bg-[#45a049] text-white"
-                      : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                  }`}
-                >
-                  <span>{lang === "en" ? "Continue" : "Continuar"}</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
-            )}
-
-            {/* ETAPA 5 DO QUIZ: EMAIL E WHATSAPP */}
-            {quizStep === 5 && (
-              <div className="space-y-4 animate-in fade-in">
-                <h4 className="font-bold text-gray-900 text-lg font-merriweather">
-                  {lang === "en" ? "Where should I send your sketch?" : "Onde devo entregar o seu desenho?"}
-                </h4>
-                <p className="text-sm text-gray-500 font-opensans">
-                  {lang === "en"
-                    ? "Your sketch will be delivered directly to your inbox and WhatsApp"
-                    : "Seu desenho será entregue diretamente no seu e-mail e WhatsApp"}
-                </p>
-
-                <div className="space-y-3 text-left">
-                  <div>
-                    <label className="text-xs font-bold text-gray-700 block mb-1">
-                      {lang === "en" ? "Your WhatsApp (with country/area code):" : "Seu WhatsApp com DDD:"}
-                    </label>
-                    <div className="relative">
-                      <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                      <input
-                        type="tel"
-                        value={whatsapp}
-                        onChange={(e) => handlePhoneMask(e.target.value)}
-                        placeholder="(11) 99999-9999"
-                        className="w-full pl-10 pr-4 py-3.5 rounded-xl border border-gray-300 text-sm font-semibold focus:outline-none focus:border-[#4CAF50]"
-                        autoFocus
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-bold text-gray-700 block mb-1">
-                      {lang === "en" ? "Your Email Address:" : "Seu melhor e-mail:"}
-                    </label>
-                    <div className="relative">
-                      <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="name@example.com"
-                        className="w-full pl-10 pr-4 py-3.5 rounded-xl border border-gray-300 text-sm font-semibold focus:outline-none focus:border-[#4CAF50]"
-                      />
-                    </div>
-                  </div>
-
-                  <label className="flex items-start gap-2 pt-1 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={agreeTerms}
-                      onChange={(e) => setAgreeTerms(e.target.checked)}
-                      className="mt-1 w-4 h-4 text-[#4CAF50] rounded border-gray-300"
-                    />
-                    <span className="text-xs text-gray-500 leading-tight">
-                      {lang === "en"
-                        ? "I confirm I am 18 years or older. I agree to receive emails and updates from Tina Aldea."
-                        : "Confirmo que tenho 18 anos ou mais e concordo em receber o desenho da minha alma gêmea por WhatsApp e e-mail."}
-                    </span>
-                  </label>
-                </div>
-
-                <button
-                  type="button"
-                  disabled={whatsapp.length < 10 || !email.includes("@") || !agreeTerms}
-                  onClick={startChanneling}
-                  className={`w-full py-4 rounded-xl text-base font-bold shadow-lg flex items-center justify-center gap-2 cursor-pointer mt-2 ${
-                    whatsapp.length >= 10 && email.includes("@") && agreeTerms
-                      ? "bg-[#4CAF50] hover:bg-[#45a049] text-white active:scale-98"
-                      : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                  }`}
-                >
-                  <Sparkles className="w-5 h-5" />
-                  <span>{lang === "en" ? "GET MY SOULMATE SKETCH NOW >" : "CANALIZAR MEU DESENHO AGORA >"}</span>
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
       )}
     </div>
   );
