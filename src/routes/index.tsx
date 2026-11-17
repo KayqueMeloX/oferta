@@ -254,6 +254,7 @@ function TinaAldeaExactClone() {
   const [pixCopied, setPixCopied] = useState(false);
   const [isDelivered, setIsDelivered] = useState(false);
   const [isUpsellView, setIsUpsellView] = useState(false);
+  const [deliverableTab, setDeliverableTab] = useState<"sketch" | "reading" | "bonus1" | "bonus2" | "bonus3">("sketch");
 
   // Classic Squeeze State
   const [isClassicQuizOpen, setIsClassicQuizOpen] = useState(false);
@@ -999,26 +1000,269 @@ function TinaAldeaExactClone() {
 
                       {/* Delivered View if confirmed */}
                       {isDelivered && (
-                        <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 text-center animate-in zoom-in-95">
-                          <span className="text-xs font-bold text-emerald-800 bg-emerald-200 px-3 py-1 rounded-full inline-block mb-3">
-                            ✓ {lang === "en" ? "Payment Approved" : "Pagamento Confirmado"}
+                        <div className="bg-white border-2 border-emerald-400 rounded-3xl p-5 text-center shadow-xl animate-in zoom-in-95 my-3">
+                          <span className="text-xs font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 px-3.5 py-1 rounded-full inline-block mb-2 shadow-xs">
+                            ✓ {lang === "en" ? "Order Confirmed • All Deliverables Unlocked" : "Pedido Confirmado • Todos os Entregáveis Desbloqueados"}
                           </span>
-                          <h4 className="text-lg font-bold font-merriweather text-gray-900 mb-1">
-                            {lang === "en" ? `Here is your Soulmate, ${name}!` : `Aqui está sua Alma Gêmea, ${name}!`}
-                          </h4>
-                          <div className="w-full max-w-[240px] mx-auto aspect-[3/3.8] rounded-xl overflow-hidden border-2 border-emerald-400 shadow-lg my-3">
-                            <img src={chosenSketch} alt="Your Soulmate" className="w-full h-full object-cover" />
+
+                          <h3 className="text-lg md:text-xl font-bold font-merriweather text-gray-900 mt-1">
+                            {lang === "en" ? `Client Portal: ${name || "Beloved Soul"}` : `Portal de Entrega: ${name || "Querida(o)"}`}
+                          </h3>
+                          <p className="text-xs text-gray-500 font-opensans mb-4">
+                            {lang === "en"
+                              ? "Here is your full package from Tina Aldea: Hand-Drawn Sketch, Complete Reading & 3 Free Bonuses."
+                              : "Aqui está seu pacote completo de Tina Aldea: Desenho Feito à Mão, Leitura Psíquica e os 3 Bônus Exclusivos."}
+                          </p>
+
+                          {/* Deliverables Tab Navigation */}
+                          <div className="flex gap-1 bg-gray-100 p-1 rounded-xl mb-4 overflow-x-auto text-[11px] font-bold" style={{ scrollbarWidth: "none" }}>
+                            <button
+                              type="button"
+                              onClick={() => setDeliverableTab("sketch")}
+                              className={`flex-1 min-w-[70px] py-2 px-2 rounded-lg transition cursor-pointer flex items-center justify-center gap-1 ${
+                                deliverableTab === "sketch" ? "bg-white text-purple-700 shadow-xs" : "text-gray-600 hover:text-gray-900"
+                              }`}
+                            >
+                              <Palette className="w-3.5 h-3.5" />
+                              <span>{lang === "en" ? "Sketch" : "Desenho"}</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => setDeliverableTab("reading")}
+                              className={`flex-1 min-w-[70px] py-2 px-2 rounded-lg transition cursor-pointer flex items-center justify-center gap-1 ${
+                                deliverableTab === "reading" ? "bg-white text-purple-700 shadow-xs" : "text-gray-600 hover:text-gray-900"
+                              }`}
+                            >
+                              <FileText className="w-3.5 h-3.5" />
+                              <span>{lang === "en" ? "Reading" : "Leitura"}</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => setDeliverableTab("bonus1")}
+                              className={`flex-1 min-w-[70px] py-2 px-2 rounded-lg transition cursor-pointer flex items-center justify-center gap-1 ${
+                                deliverableTab === "bonus1" ? "bg-white text-purple-700 shadow-xs" : "text-gray-600 hover:text-gray-900"
+                              }`}
+                            >
+                              <Gift className="w-3.5 h-3.5" />
+                              <span>Bônus 1</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => setDeliverableTab("bonus2")}
+                              className={`flex-1 min-w-[70px] py-2 px-2 rounded-lg transition cursor-pointer flex items-center justify-center gap-1 ${
+                                deliverableTab === "bonus2" ? "bg-white text-purple-700 shadow-xs" : "text-gray-600 hover:text-gray-900"
+                              }`}
+                            >
+                              <Gift className="w-3.5 h-3.5" />
+                              <span>Bônus 2</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => setDeliverableTab("bonus3")}
+                              className={`flex-1 min-w-[70px] py-2 px-2 rounded-lg transition cursor-pointer flex items-center justify-center gap-1 ${
+                                deliverableTab === "bonus3" ? "bg-white text-purple-700 shadow-xs" : "text-gray-600 hover:text-gray-900"
+                              }`}
+                            >
+                              <Gift className="w-3.5 h-3.5" />
+                              <span>Bônus 3</span>
+                            </button>
                           </div>
-                          <a
-                            href={chosenSketch}
-                            download="soulmate-tina-aldea.jpg"
-                            target="_blank"
-                            rel="noreferrer"
-                            className="w-full py-3 bg-[#4CAF50] hover:bg-[#45a049] text-white font-bold text-xs rounded-xl shadow-md flex items-center justify-center gap-2"
-                          >
-                            <Download className="w-4 h-4" />
-                            <span>{lang === "en" ? "Download High-Res Sketch" : "Baixar Desenho em Alta Resolução"}</span>
-                          </a>
+
+                          {/* ========================================================= */}
+                          {/* TAB 1: SKETCH (DESENHO EM ALTA RESOLUÇÃO)                 */}
+                          {/* ========================================================= */}
+                          {deliverableTab === "sketch" && (
+                            <div className="animate-in fade-in">
+                              <div className="w-full max-w-[260px] mx-auto aspect-[3/3.8] rounded-2xl overflow-hidden border-2 border-emerald-400 shadow-lg my-2 bg-black">
+                                <img src={chosenSketch} alt="Your Soulmate" className="w-full h-full object-cover" />
+                              </div>
+
+                              <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-left text-xs text-amber-900 my-3">
+                                <p className="font-bold flex items-center gap-1">
+                                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                                  <span>{lang === "en" ? "Certificate of Authenticity" : "Certificado de Autenticidade"}</span>
+                                </p>
+                                <p className="text-[11px] text-gray-600 mt-1">
+                                  {lang === "en"
+                                    ? `Digitally channeled and hand-drawn specifically for ${name || "you"} by Tina Aldea.`
+                                    : `Canalizado espiritualmente e desenhado à mão especificamente para ${name || "você"} por Tina Aldea.`}
+                                </p>
+                              </div>
+
+                              <a
+                                href={chosenSketch}
+                                download={`soulmate-sketch-${name || "reading"}.jpg`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="w-full py-3.5 bg-[#4CAF50] hover:bg-[#45a049] text-white font-bold text-xs rounded-xl shadow-md flex items-center justify-center gap-2 cursor-pointer transition hover:scale-102"
+                              >
+                                <Download className="w-4 h-4" />
+                                <span>{lang === "en" ? "Download High-Resolution Portrait (.JPG)" : "Baixar Retrato em Alta Resolução (.JPG)"}</span>
+                              </a>
+                            </div>
+                          )}
+
+                          {/* ========================================================= */}
+                          {/* TAB 2: DETAILED PSYCHIC READING (DOSSIÊ COMPLETO)         */}
+                          {/* ========================================================= */}
+                          {deliverableTab === "reading" && (
+                            <div className="text-left text-xs space-y-3 bg-[#faf8ff] p-4 rounded-2xl border border-purple-100 animate-in fade-in">
+                              <div className="border-b border-purple-200 pb-2">
+                                <span className="font-bold text-purple-900 text-sm font-merriweather block">
+                                  {lang === "en" ? "Part 1: Astral Connection & Soul Resonance" : "Parte 1: Conexão Cósmica e Ressonância Astral"}
+                                </span>
+                                <p className="text-gray-600 mt-1 leading-relaxed">
+                                  {lang === "en"
+                                    ? `Your natal connection as a ${chatZodiac.name} (${chatZodiac.symbol} - ${chatZodiac.element}) creates an electromagnetic pull. This person possesses a complementary energetic aura that stabilizes your heart center.`
+                                    : `Sua vibração cósmica de ${chatZodiac.name} (${chatZodiac.symbol} - Elemento ${chatZodiac.element}) emite uma assinatura magnética pura. A alma gêmea canalizada possui uma aura complementar que ancora e acalma o seu centro cardíaco.`}
+                                </p>
+                              </div>
+
+                              <div className="border-b border-purple-200 pb-2">
+                                <span className="font-bold text-purple-900 text-sm font-merriweather block">
+                                  {lang === "en" ? "Part 2: Physical Traits & Presence" : "Parte 2: Traços Físicos e Expressão"}
+                                </span>
+                                <p className="text-gray-600 mt-1 leading-relaxed">
+                                  {lang === "en"
+                                    ? "Notice the warm, welcoming gaze and the expressive eyes that hold quiet strength. Their smile carries an immediate familiarity — as if you have known each other across multiple lifetimes."
+                                    : "Observe o olhar caloroso e acolhedor, com olhos expressivos que transmitem serenidade e força. O sorriso carrega uma sensação imediata de familiaridade — como se vocês já se conhecessem de muitas vidas passadas."}
+                                </p>
+                              </div>
+
+                              <div className="border-b border-purple-200 pb-2">
+                                <span className="font-bold text-purple-900 text-sm font-merriweather block">
+                                  {lang === "en" ? "Part 3: Personality & Love Language" : "Parte 3: Personalidade e Linguagem do Amor"}
+                                </span>
+                                <p className="text-gray-600 mt-1 leading-relaxed">
+                                  {lang === "en"
+                                    ? "Their primary love language is Physical Touch and Words of Affirmation. They are naturally loyal, deeply communicative in private, and fiercely protective of those they cherish."
+                                    : "A linguagem do amor primária dessa pessoa é Toque Físico e Palavras de Afirmação. É alguém leal por natureza, profundamente transparente a sós e muito protetor com quem ama."}
+                                </p>
+                              </div>
+
+                              <div>
+                                <span className="font-bold text-purple-900 text-sm font-merriweather block">
+                                  {lang === "en" ? "Part 4: The Encounter — When & Where You Will Meet" : "Parte 4: O Encontro — Onde e Quando Vocês Vão Se Conhecer"}
+                                </span>
+                                <p className="text-gray-600 mt-1 leading-relaxed">
+                                  {lang === "en"
+                                    ? "The psychic forecast indicates a window between 14 to 45 days from today. The setting shows movement — a social gathering, a transit hub, or a place connected with books or coffee."
+                                    : "A previsão cósmica indica uma janela temporal entre 14 e 45 dias a partir de hoje. O cenário indica movimento: um encontro social através de conhecidos, um café acolhedor ou um local de aprendizado/viagem."}
+                                </p>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* ========================================================= */}
+                          {/* TAB 3: BONUS 1 — GUARDIAN ANGEL READING                   */}
+                          {/* ========================================================= */}
+                          {deliverableTab === "bonus1" && (
+                            <div className="text-left text-xs space-y-3 bg-amber-50/70 p-4 rounded-2xl border border-amber-200 animate-in fade-in">
+                              <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 rounded-full bg-amber-200 text-amber-800 flex items-center justify-center font-bold">
+                                  👼
+                                </div>
+                                <div>
+                                  <h4 className="font-bold text-amber-950 font-merriweather text-sm">
+                                    {lang === "en" ? "Your Guardian Angel Reading" : "Leitura do Seu Anjo da Guarda"}
+                                  </h4>
+                                  <span className="text-[10px] text-amber-700">Canalizado por Tina Aldea</span>
+                                </div>
+                              </div>
+
+                              <p className="text-gray-700 leading-relaxed">
+                                {lang === "en"
+                                  ? "Your presiding guardian angel is Archangel Chamuel, the angel of peaceful relationships and true love connections. Chamuel is currently working to align your physical path with your soulmate's steps."
+                                  : "O anjo que acompanha seus caminhos amorosos é o Arcanjo Chamuel, o regente dos relacionamentos sagrados e do amor verdadeiro. Chamuel está ativamente desobstruindo interferências energéticas para aproximar seus passos da sua alma gêmea."}
+                              </p>
+
+                              <div className="bg-white p-3 rounded-xl border border-amber-200">
+                                <p className="font-bold text-amber-900 text-[11px] mb-1">
+                                  {lang === "en" ? "Daily Angelic Alignment Prayer:" : "Oração de Alinhamento Diário:"}
+                                </p>
+                                <p className="italic text-gray-600 text-[11px] leading-relaxed">
+                                  {lang === "en"
+                                    ? '"Beloved Guardian Angel Chamuel, clear all fear from my heart. Guide my eyes to recognize my destined soulmate, and open the road for our meeting in perfect divine timing. Amen."'
+                                    : '"Amado Anjo Guardião Chamuel, remove todo o medo e dúvida do meu coração. Guia meus passos para reconhecer minha alma gêmea e abre os caminhos para o nosso encontro no tempo divino perfeito. Amém."'}
+                                </p>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* ========================================================= */}
+                          {/* TAB 4: BONUS 2 — HOW TO ATTRACT YOUR SOULMATE FASTER      */}
+                          {/* ========================================================= */}
+                          {deliverableTab === "bonus2" && (
+                            <div className="text-left text-xs space-y-3 bg-emerald-50/70 p-4 rounded-2xl border border-emerald-200 animate-in fade-in">
+                              <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 rounded-full bg-emerald-200 text-emerald-800 flex items-center justify-center font-bold">
+                                  📖
+                                </div>
+                                <div>
+                                  <h4 className="font-bold text-emerald-950 font-merriweather text-sm">
+                                    {lang === "en" ? "eBook: How to Attract Your Soulmate Faster" : "Livro: Como Atrair Sua Alma Gêmea Mais Rápido"}
+                                  </h4>
+                                  <span className="text-[10px] text-emerald-700">Guia Prático e Metafísico de Manifestação</span>
+                                </div>
+                              </div>
+
+                              <div className="space-y-2 text-gray-700 leading-relaxed">
+                                <p>
+                                  <strong>{lang === "en" ? "Key 1: Clearing Heart Stagnation" : "Chave 1: Desbloqueio do Chacra Cardíaco"}</strong> —{" "}
+                                  {lang === "en"
+                                    ? "Release unconscious energetic loyalty to former partners. Forgive the lessons so the new love finds an open seat."
+                                    : "Corte qualquer lealdade invisível com quem já partiu. Perdoe o ciclo para que a sua alma gêmea encontre espaço livre no seu coração."}
+                                </p>
+                                <p>
+                                  <strong>{lang === "en" ? "Key 2: The Frequency of Certainty" : "Chave 2: A Frequência da Certeza"}</strong> —{" "}
+                                  {lang === "en"
+                                    ? "Act as though the meeting is already scheduled. Avoid desperate seeking; radiate welcoming peace."
+                                    : "Viva com a convicção serena de que o encontro já está agendado nos planos astrais. A calma atrai com 10x mais força do que a ansiedade."}
+                                </p>
+                                <p>
+                                  <strong>{lang === "en" ? "Key 3: The 3-Minute Evening Ritual" : "Chave 3: O Micro-Ritual Noturno de 3 Minutos"}</strong> —{" "}
+                                  {lang === "en"
+                                    ? "Before sleep, place your right hand on your chest and visualize your soulmate's hand holding yours. Feel the warmth."
+                                    : "Antes de dormir, coloque sua mão direita no centro do peito e sinta a sensação de segurar a mão da sua alma gêmea. A vibração do toque acelera a sincronicidade."}
+                                </p>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* ========================================================= */}
+                          {/* TAB 5: BONUS 3 — GUIDED AURA CLEANSING MASTERCLASS        */}
+                          {/* ========================================================= */}
+                          {deliverableTab === "bonus3" && (
+                            <div className="text-left text-xs space-y-3 bg-purple-50/70 p-4 rounded-2xl border border-purple-200 animate-in fade-in">
+                              <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 rounded-full bg-purple-200 text-purple-800 flex items-center justify-center font-bold">
+                                  ✨
+                                </div>
+                                <div>
+                                  <h4 className="font-bold text-purple-950 font-merriweather text-sm">
+                                    {lang === "en" ? "Guided Aura Cleansing Masterclass" : "Masterclass de Limpeza e Purificação de Aura"}
+                                  </h4>
+                                  <span className="text-[10px] text-purple-700">Protocolo de 7 Minutos de Desobstrução</span>
+                                </div>
+                              </div>
+
+                              <p className="text-gray-700 leading-relaxed">
+                                {lang === "en"
+                                  ? "Follow this 7-minute protocol whenever you feel heavy or blocked. Sit comfortably, close your eyes, and inhale violet-golden light into your crown."
+                                  : "Siga este protocolo guiado de 7 minutos para purificar sua energia. Sente-se confortavelmente, feche os olhos e visualize uma luz violeta e dourada descendo pelo topo da cabeça."}
+                              </p>
+
+                              <div className="bg-white p-3 rounded-xl border border-purple-200 space-y-1.5 text-[11px] text-gray-600">
+                                <p>• <strong>{lang === "en" ? "Minute 1-2:" : "Minutos 1-2:"}</strong> {lang === "en" ? "Deep breathing to release tension." : "Respiração profunda e relaxamento corporal."}</p>
+                                <p>• <strong>{lang === "en" ? "Minute 3-5:" : "Minutos 3-5:"}</strong> {lang === "en" ? "Golden cord dissolving past emotional ties." : "Corte de cordões etéricos com o passado."}</p>
+                                <p>• <strong>{lang === "en" ? "Minute 6-7:" : "Minutos 6-7:"}</strong> {lang === "en" ? "Sealing the aura with pure love resonance." : "Blindagem da aura com a vibração do amor verdadeiro."}</p>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
